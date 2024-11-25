@@ -1,0 +1,274 @@
+.chat-card {
+  margin: 2px 0 0!important;
+}
+
+.contact-receiver .dx-list-item-content {
+  font-size: 13px;
+  padding: 0!important;
+}
+
+.epr-emoji-category-label {
+  font-size: 18px!important;
+}
+
+.left {
+  float: left;
+  width: 330px;
+  height: 115.5vh;
+  background: #fff;
+  margin: 0;
+  padding: 0;
+}
+
+.right {
+  overflow: hidden;
+  margin-right: 3px;
+  border-left: 1px solid #d3d7db;
+}
+
+.left .list .dx-list-group-header {
+  color: #f05b41;
+  font-weight: normal;
+  font-size: 18px;
+}
+
+.left .list .dx-list-item {
+  border-bottom: 1px solid #ddd;
+}
+
+.left .list .contact-item {
+  margin: 0;
+  clear: both;
+  padding: 10px 11px 9px;
+}
+
+.left .list .contact-item-selected{
+  background: #cdeefd;
+}
+
+.left .list .contact {
+  min-height: 32px;
+  display: block;
+}
+
+.left .list .contact .name {
+  font-weight: bold;
+  float: left;
+}
+
+.left .list .contact .receive {
+  margin: 5px 0 0 0;
+  clear: both;
+}
+
+.left .list .contact .unread {
+  font-size: 9px;
+  float: right;
+  color: #fff;
+  background: #437b6e;
+  padding: 5px;
+  border-radius: 50%;
+  line-height: 7px;
+}
+
+.right .header {
+  height: 37px;
+  border-bottom: 1px solid #d3d7db;
+  background: #f0f2f5;
+  border-left: 1px solid #d3d7db;
+  padding: 0 7px;
+}
+
+.right .header .name-container {
+  float: left;
+  margin: 3px 0 0;
+}
+
+.right .header .name {
+  font-size: 21px;
+  font-weight: bold;
+}
+
+.right .header .price-container {
+  padding-top: 3px;
+}
+
+.right .name-container .type {
+  margin-top: 0;
+}
+
+.right .tile {
+  margin: 0 -12px 0 -12px;
+}
+
+.right .tile-image {
+  height: 100%;
+  width: 100%;
+  object-fit: cover;
+}
+
+.right .address {
+  padding-top: 30px;
+  font-size: 18px;
+  opacity: 0.7;
+}
+
+.type {
+  margin: 3px 0 5px 0;
+  height: 14px;
+  background-image: url('data:image/svg+xml;charset=utf8,%3Csvg%20version%3D%221.1%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20xmlns%3Axlink%3D%22http%3A%2F%2Fwww.w3.org%2F1999%2Fxlink%22%20width%3D%2218px%22%20height%3D%2214px%22%20%3E%3Cpolyline%20fill%3D%22%23F05B41%22%20points%3D%227.5%2C0%209.972%2C4.399%2014.999%2C5.348%2011.5%2C9.015%2012.135%2C14%207.5%2C11.866%202.865%2C14%203.5%2C9.015%200.001%2C5.348%205.028%2C4.399%207.5%2C0%20%22%2F%3E%3C%2Fsvg%3E');
+  background-size: 18px 14px;
+}
+
+.type.gold {
+  width: 54px;
+}
+
+.type.platinum {
+  width: 72px;
+}
+
+.type.diamond {
+  width: 90px;
+}
+
+.price-container {
+  float: right;
+  padding-top: 13px;
+}
+
+.price-container > div {
+  display: inline-block;
+}
+
+.price-container .price {
+  font-size: 25px;
+}
+
+.price-container .caption {
+  font-size: 11px;
+  line-height: 12px;
+  padding-left: 2px;
+  opacity: 0.7;
+}
+
+/**/
+
+.flex-container {
+  display: flex;
+  flex-direction: column;
+}
+
+#content-whatsapp{
+  display: flex;
+}
+
+.options {
+  padding: 13px;
+  background-color: rgba(191, 191, 191, 0.15);
+}
+
+.options-container {
+  display: flex;
+  align-items: center;
+}
+
+.caption {
+  font-size: 18px;
+  font-weight: 500;
+}
+
+.option {
+  margin-top: 10px;
+  display: inline-block;
+}
+
+.textarea-wrapper {
+  padding: 0 5px;
+  min-width: 820px;
+}
+
+.btn-send{
+  margin: 0 0 0 5px;
+}
+
+.btn-emoji{
+  margin: 0 5px 0 0;
+}
+
+.message-body {
+  margin: 0 !important;
+  padding: 2px 0 3px 13px;
+  width: 100%;
+  height: auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.message-main-receiver {
+  /*padding: 10px 20px;*/
+  max-width: 60%;
+}
+
+.message-main-sender {
+  padding: 3px 20px !important;
+  margin-left: 40% !important;
+  max-width: 60%;
+}
+
+.message-text {
+  margin: 0 0 13px 0 !important;
+  padding: 5px !important;
+  word-wrap:break-word;
+  font-weight: 200;
+  font-size: 14px;
+  padding-bottom: 0 !important;
+}
+
+.message-time {
+  margin: 0 !important;
+  margin-left: 50px !important;
+  font-size: 12px;
+  text-align: right;
+  color: #9a9a9a;
+  width: 100%;
+}
+.right .chat-container{
+  overflow-y: auto!important;
+  height: 100vh;
+}
+
+.right .description {
+  //display: grid;
+  margin: 0 0 5px 0;
+  padding: 13px;
+  //text-align: justify;
+}
+
+.receiver {
+  width: auto !important;
+  padding: 4px 10px 7px !important;
+  border-radius: 10px 10px 10px 0;
+  background: #efe7dd;
+  font-size: 12px;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, .2);
+  word-wrap: break-word;
+  margin: 0 0 5px 0;
+  display: inline-block;
+}
+
+.sender {
+  width: auto !important;
+  background: #dcf8c6;
+  border-radius: 10px 10px 0 10px;
+  padding: 4px 10px 7px !important;
+  font-size: 12px;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, .2);
+  word-wrap: break-word;
+  display: inline-block;
+}
+
+.pull-right {
+  float: right !important;
+}

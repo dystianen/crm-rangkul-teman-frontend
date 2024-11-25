@@ -1,0 +1,218 @@
+@import "./themes/generated/variables.base.scss";
+
+.app {
+  background-color: darken($base-bg, 5.00);
+  display: flex;
+  height: 100%;
+  width: 100%;
+
+  .content {
+    line-height: 1.5;
+    flex-grow: 1;
+
+    h2 {
+      font-size: 30px;
+      margin-top: 10px;
+      margin-bottom: 10px;
+    }
+  }
+
+  .container {
+    height: 100%;
+    flex-direction: column;
+    display: flex;
+  }
+
+  .layout-body {
+    flex: 1;
+    min-height: 0;
+  }
+
+  .content-block {
+    margin-left: 15px;
+    margin-right: 15px;
+    margin-top: 5px;
+  }
+
+  .dx-layout-manager .dx-field-item:not(.dx-last-col) {
+    padding-right: 5px;
+  }
+
+  .dx-layout-manager .dx-field-item:not(.dx-first-col) {
+    padding-left: 5px;
+  }
+}
+
+.dx-card {
+  margin: 2px 0 17px;
+}
+
+.single-card {
+  margin: auto auto !important;
+}
+
+.mb14 {
+  margin-bottom: 14px;
+}
+
+.side-nav-outer-toolbar .dx-drawer {
+  height: calc(100% - 56px)
+}
+
+.screen-x-small .content-block {
+  margin-left: 15px;
+  margin-right: 15px;
+}
+
+.responsive-paddings {
+  padding: 5px;
+  min-height: 15vh;
+
+  .screen-large & {
+    padding: 10px;
+  }
+}
+
+.dx-swatch-additional .dx-treeview-item {
+  gap: 0;
+  padding: 9px 16px;
+  margin: 0;
+}
+
+.dx-texteditor-input-container {
+  background: #ffffff;
+
+  input {
+    color: #000000 !important;
+  }
+}
+
+.dx-texteditor.dx-state-active::before,
+.dx-texteditor.dx-state-focused::before {
+  //border-bottom: none !important;
+}
+
+.dx-texteditor.dx-editor-filled::after {
+  border-bottom: 1px solid #ddd !important;
+}
+
+.dx-texteditor.dx-editor-filled.dx-state-hover::after {
+  border-bottom-color: #ddd !important;
+}
+
+.form__tabs {
+  margin-top: 1rem;
+  padding: 0;
+
+  .dx-layout-manager {
+    .dx-tabpanel {
+      .dx-multiview-item-content {
+        padding: 0 !important;
+      }
+    }
+  }
+
+  .dx-tabs {
+    .dx-tabs-wrapper {
+      display: flex;
+
+      .dx-item {
+        flex: 1 1 auto;
+      }
+
+      .dx-tab-content,
+      .dx-tab-text {
+        float: none;
+        line-height: 34px;
+      }
+    }
+  }
+}
+
+.dx-card.wide-card {
+  border-radius: 0;
+  margin-left: 0;
+  margin-right: 0;
+  border-right: 0;
+  border-left: 0;
+}
+
+.with-footer > .dx-scrollable-wrapper >
+.dx-scrollable-container > .dx-scrollable-content {
+  height: 100%;
+
+  & > .dx-scrollview-content {
+    display: flex;
+    flex-direction: column;
+    min-height: 100%;
+  }
+}
+
+.dx-widget {
+  line-height: 1.2 !important;
+}
+
+.dx-form-group-with-caption {
+  margin-top: 10px !important;
+}
+
+.dx-form-group-with-caption > .dx-form-group-content {
+  border-top: 1px solid #e0e0e0;
+  padding-bottom: 0px !important;
+  padding-top: 12px !important;
+  margin-top: 10px !important;
+}
+
+.dx-field-item-label-location-top {
+  padding: 4px 0px 2px !important;
+}
+
+.dx-layout-manager.dx-layout-manager-one-col .dx-box-item:not(:first-child) .dx-single-column-item-content > .dx-field-item {
+  padding-top: 0 !important;
+}
+
+.next-card {
+  margin-top: 19px;
+}
+
+$side-panel-min-width: 20.5px;
+.dx-first-row {
+  margin-top: 0 !important;
+}
+
+.dx-field-item-has-group {
+  margin-top: 15px;
+}
+
+.react-pdf__Page__canvas {
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.5);
+  margin: 15px auto;
+  width: 80% !important;
+  height: 100% !important;
+}
+
+.dx-theme-material-typography a {
+  color: #000;
+}
+
+.dx-row-focused a {
+  color: #fff;
+}
+
+html, body {
+  margin: 0px;
+  min-height: 100%;
+  height: 100%;
+}
+
+#root {
+  height: 100%;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.menu-container {
+  border-right: 1px solid #c0c0c0!important;
+}

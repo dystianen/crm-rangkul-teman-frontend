@@ -1,0 +1,3201 @@
+{
+	"info": {
+		"_postman_id": "45977355-fb89-4d9d-b9a2-68820955c02b",
+		"name": "Bandung Pilot",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "5555361"
+	},
+	"item": [
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "signin",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"indra\",\r\n    \"password\": \"123\"    \r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://{{host-api}}/api/auth/signin",
+							"protocol": "http",
+							"host": [
+								"{{host-api}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"signin"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "signout",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "oySc0Actk8h8I6dOBUfr8Yt0FASALKWZ1x77bqI8s6t/XHMLOIKSz3OOxlmU3eKOyy6KPDPl6geb01yXgdG0o0nlCN2zbIcr069/IsWfY3CDufG4qAlYnAEX/CLI1mBucgOyVdYO87DG8vE2RY8UMzbFexFTZhro1I8sJcmzi5g=",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"email\": \"indra\",\r\n    \"password\": \"123\"    \r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://{{host-api}}/api/auth/signout",
+							"protocol": "http",
+							"host": [
+								"{{host-api}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"signout"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Product",
+			"item": [
+				{
+					"name": "Calculator",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "SgiRZ/6OeQkmwiNSwOhAKHG0z3MEDb0PBjuWamLUi0gd39V0+YiH59HWZ1mdgp+Bwb1J/fT5fa30TBL1W7wrHrHd/syqaboIuobdvL06CWMqFrFbk7iOR8QnNdk6SJhNRA6mtyEMwEOnBATqb/KlcRCazw3h+VJ0rFwrQ47nuBk=",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"productId\": \"8aeebfe1-15fb-42b8-b7dc-e0f3ca6a47c3\",\r\n    \"amount\": 60000000,\r\n    \"term\": 90\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://{{host-api}}/api/product/calc",
+							"protocol": "http",
+							"host": [
+								"{{host-api}}"
+							],
+							"path": [
+								"api",
+								"product",
+								"calc"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get active list",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "SgiRZ/6OeQkmwiNSwOhAKHG0z3MEDb0PBjuWamLUi0gd39V0+YiH59HWZ1mdgp+Bwb1J/fT5fa30TBL1W7wrHrHd/syqaboIuobdvL06CWMqFrFbk7iOR8QnNdk6SJhNRA6mtyEMwEOnBATqb/KlcRCazw3h+VJ0rFwrQ47nuBk=",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://{{host-api}}/api/product/list",
+							"protocol": "http",
+							"host": [
+								"{{host-api}}"
+							],
+							"path": [
+								"api",
+								"product",
+								"list"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get active term by product",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "SgiRZ/6OeQkmwiNSwOhAKHG0z3MEDb0PBjuWamLUi0gd39V0+YiH59HWZ1mdgp+Bwb1J/fT5fa30TBL1W7wrHrHd/syqaboIuobdvL06CWMqFrFbk7iOR8QnNdk6SJhNRA6mtyEMwEOnBATqb/KlcRCazw3h+VJ0rFwrQ47nuBk=",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://{{host-api}}/api/product/term/list/8aeebfe1-15fb-42b8-b7dc-e0f3ca6a47c3",
+							"protocol": "http",
+							"host": [
+								"{{host-api}}"
+							],
+							"path": [
+								"api",
+								"product",
+								"term",
+								"list",
+								"8aeebfe1-15fb-42b8-b7dc-e0f3ca6a47c3"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get active term by application",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer OJfko0wH0HtkTGNsGywJ4CxE+68gAQOCH1jqAHmVMVDopqB7EDYYDUQTeG7EGsRekb0rZxd3pntXDC9BzFmmePaP5dXvIQKw0sisO4yJZo+YP9/eUsxUN1UHq+oz9MMqn5f+wrsIl5lS7Ylx+oBUm81DM52+/HiU4lNqDYLJAGE=",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://{{host-api}}/api/product/term/list/app/:id",
+							"protocol": "http",
+							"host": [
+								"{{host-api}}"
+							],
+							"path": [
+								"api",
+								"product",
+								"term",
+								"list",
+								"app",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1426f2c8-1c85-4a1a-a15a-5c218309e3ac"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Commons",
+			"item": [
+				{
+					"name": "File",
+					"item": [
+						{
+							"name": "Get File",
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer OJfko0wH0HtkTGNsGywJ4CxE+68gAQOCH1jqAHmVMVDopqB7EDYYDUQTeG7EGsRekb0rZxd3pntXDC9BzFmmePaP5dXvIQKw0sisO4yJZo+YP9/eUsxUN1UHq+oz9MMqn5f+wrsIl5lS7Ylx+oBUm81DM52+/HiU4lNqDYLJAGE=",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "http://{{host-api}}/api/file/get/:path",
+									"protocol": "http",
+									"host": [
+										"{{host-api}}"
+									],
+									"path": [
+										"api",
+										"file",
+										"get",
+										":path"
+									],
+									"variable": [
+										{
+											"key": "path",
+											"value": "/trx/application/0000023/unsigned-application-0000023.pdf"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Data",
+			"item": [
+				{
+					"name": "Bank",
+					"item": [
+						{
+							"name": "Get bank active",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "Hzq7hAVeNYMWLFLybPgwSVxdN7LXljyPcya8ES4B6EfX4S9v0xKeQ6NQhgGflEU4pcqEh1f4du26diGvs3/XOIdxUmJddfMNqamYRlXDCorkzgyUwO2t9bVGClq2m2f4zuNdph5NJGhwb34uFKIjIxKJPtKBVCeQ7FcKpgr4Qp0=",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://{{host-api}}/api/data/bank/list",
+									"protocol": "http",
+									"host": [
+										"{{host-api}}"
+									],
+									"path": [
+										"api",
+										"data",
+										"bank",
+										"list"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Loan Purpose",
+					"item": [
+						{
+							"name": "Get active list",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "Hzq7hAVeNYMWLFLybPgwSVxdN7LXljyPcya8ES4B6EfX4S9v0xKeQ6NQhgGflEU4pcqEh1f4du26diGvs3/XOIdxUmJddfMNqamYRlXDCorkzgyUwO2t9bVGClq2m2f4zuNdph5NJGhwb34uFKIjIxKJPtKBVCeQ7FcKpgr4Qp0=",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://{{host-api}}/api/data/loan/purpose/list",
+									"protocol": "http",
+									"host": [
+										"{{host-api}}"
+									],
+									"path": [
+										"api",
+										"data",
+										"loan",
+										"purpose",
+										"list"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Transaction",
+			"item": [
+				{
+					"name": "Application",
+					"item": [
+						{
+							"name": "Create new application",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "bokJjN+nAw76ZMHsFjP4/ajnlmKUpVYjgRMPpi2OYuErz9yAs2vYCLWJUEfalFAQzumCwsZQX4V51ZvGfOM8qUgwNm+RMHyp/AxBLRGe4yiGVH8+TffuF++ZLAZAWOO+xcn9u5cVoO73N826DZkQDA3+wIlXLrJS0yWizE+YaSQ=",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"productId\": \"8aeebfe1-15fb-42b8-b7dc-e0f3ca6a47c3\",\r\n    \"contactIdentity\": \"628988883636\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://{{host-api}}/api/trx/application/create",
+									"protocol": "http",
+									"host": [
+										"{{host-api}}"
+									],
+									"path": [
+										"api",
+										"trx",
+										"application",
+										"create"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create new application, update step 1",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "bokJjN+nAw76ZMHsFjP4/ajnlmKUpVYjgRMPpi2OYuErz9yAs2vYCLWJUEfalFAQzumCwsZQX4V51ZvGfOM8qUgwNm+RMHyp/AxBLRGe4yiGVH8+TffuF++ZLAZAWOO+xcn9u5cVoO73N826DZkQDA3+wIlXLrJS0yWizE+YaSQ=",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"amount\": 90000001,\r\n    \"termId\": \"80557317-20b5-4f94-83f5-71aa079781b7\",\r\n    \"bankId\": \"34c534d6-9f4e-4a3d-b06f-0f06e6736695\",\r\n    \"bankAccNumber\": \"12e123123\",\r\n    \"purposeId\": \"7eef4616-a2cb-47d9-9514-d94381a22ff6\",\r\n    \"monthlyIncome\": 1000000\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://{{host-api}}/api/trx/application/create/step/1/9605a530-2d2f-43c8-a85e-8d7f120e3f8a",
+									"protocol": "http",
+									"host": [
+										"{{host-api}}"
+									],
+									"path": [
+										"api",
+										"trx",
+										"application",
+										"create",
+										"step",
+										"1",
+										"9605a530-2d2f-43c8-a85e-8d7f120e3f8a"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create new application, update step 2",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "bokJjN+nAw76ZMHsFjP4/ajnlmKUpVYjgRMPpi2OYuErz9yAs2vYCLWJUEfalFAQzumCwsZQX4V51ZvGfOM8qUgwNm+RMHyp/AxBLRGe4yiGVH8+TffuF++ZLAZAWOO+xcn9u5cVoO73N826DZkQDA3+wIlXLrJS0yWizE+YaSQ=",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"customData\":[\r\n        {\r\n            \"name\": \"aaa\",\r\n            \"value\": \"bbb\"\r\n        },\r\n        {\r\n            \"name\": \"xxx\",\r\n            \"value\": \"yyy\"\r\n        }\r\n    ],\r\n    \"incomeProof\": \"/9j/4QAYRXhpZgAASUkqAAgAAAAAAAAAAAAAAP/sABFEdWNreQABAAQAAAA8AAD/4QMhaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wLwA8P3hwYWNrZXQgYmVnaW49Iu+7vyIgaWQ9Ilc1TTBNcENlaGlIenJlU3pOVGN6a2M5ZCI/PiA8eDp4bXBtZXRhIHhtbG5zOng9ImFkb2JlOm5zOm1ldGEvIiB4OnhtcHRrPSJBZG9iZSBYTVAgQ29yZSA1LjAtYzA2MCA2MS4xMzQzNDIsIDIwMTAvMDEvMTAtMTg6MDY6NDMgICAgICAgICI+IDxyZGY6UkRGIHhtbG5zOnJkZj0iaHR0cDovL3d3dy53My5vcmcvMTk5OS8wMi8yMi1yZGYtc3ludGF4LW5zIyI+IDxyZGY6RGVzY3JpcHRpb24gcmRmOmFib3V0PSIiIHhtbG5zOnhtcD0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wLyIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bXA6Q3JlYXRvclRvb2w9IkFkb2JlIFBob3Rvc2hvcCBDUzUiIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6Qjc3RkQ1NkUzNDc3MTFFRUE5NzlEMUM3OUE0NjlBRkUiIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6Qjc3RkQ1NkYzNDc3MTFFRUE5NzlEMUM3OUE0NjlBRkUiPiA8eG1wTU06RGVyaXZlZEZyb20gc3RSZWY6aW5zdGFuY2VJRD0ieG1wLmlpZDpCNzdGRDU2QzM0NzcxMUVFQTk3OUQxQzc5QTQ2OUFGRSIgc3RSZWY6ZG9jdW1lbnRJRD0ieG1wLmRpZDpCNzdGRDU2RDM0NzcxMUVFQTk3OUQxQzc5QTQ2OUFGRSIvPiA8L3JkZjpEZXNjcmlwdGlvbj4gPC9yZGY6UkRGPiA8L3g6eG1wbWV0YT4gPD94cGFja2V0IGVuZD0iciI/Pv/uAA5BZG9iZQBkwAAAAAH/2wCEAAYEBAQFBAYFBQYJBgUGCQsIBgYICwwKCgsKCgwQ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\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://{{host-api}}/api/trx/application/create/step/2/9605a530-2d2f-43c8-a85e-8d7f120e3f8a",
+									"protocol": "http",
+									"host": [
+										"{{host-api}}"
+									],
+									"path": [
+										"api",
+										"trx",
+										"application",
+										"create",
+										"step",
+										"2",
+										"9605a530-2d2f-43c8-a85e-8d7f120e3f8a"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Submit application",
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer gJ1fMf6tY0EdapWVGRh1+h9jDECDY4XDs0PaOVU672IJx3UyOkr95PNVEvzGSVzh0Iu/Y4G4DuhtTwAIqEEEqnjBmdxl+R0ZRXaadyDd8Pp1RKEEOFrkn8fAbbLcmKjBsXvaOdyBNfnmDKyVCcw940T9Huq2NlT4bvpzbv29zo4=",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://{{host-api}}/api/trx/application/submit/:id",
+									"protocol": "http",
+									"host": [
+										"{{host-api}}"
+									],
+									"path": [
+										"api",
+										"trx",
+										"application",
+										"submit",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "1aa77214-40c4-4a28-901a-e74ff8f33f63"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get unsigned application",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "bokJjN+nAw76ZMHsFjP4/ajnlmKUpVYjgRMPpi2OYuErz9yAs2vYCLWJUEfalFAQzumCwsZQX4V51ZvGfOM8qUgwNm+RMHyp/AxBLRGe4yiGVH8+TffuF++ZLAZAWOO+xcn9u5cVoO73N826DZkQDA3+wIlXLrJS0yWizE+YaSQ=",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer gJ1fMf6tY0EdapWVGRh1+h9jDECDY4XDs0PaOVU672IJx3UyOkr95PNVEvzGSVzh0Iu/Y4G4DuhtTwAIqEEEqnjBmdxl+R0ZRXaadyDd8Pp1RKEEOFrkn8fAbbLcmKjBsXvaOdyBNfnmDKyVCcw940T9Huq2NlT4bvpzbv29zo4=",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "http://{{host-api}}/api/trx/application/get/unsigned/:id",
+									"protocol": "http",
+									"host": [
+										"{{host-api}}"
+									],
+									"path": [
+										"api",
+										"trx",
+										"application",
+										"get",
+										"unsigned",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "1aa77214-40c4-4a28-901a-e74ff8f33f63"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "test kafka unsigned application",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "bokJjN+nAw76ZMHsFjP4/ajnlmKUpVYjgRMPpi2OYuErz9yAs2vYCLWJUEfalFAQzumCwsZQX4V51ZvGfOM8qUgwNm+RMHyp/AxBLRGe4yiGVH8+TffuF++ZLAZAWOO+xcn9u5cVoO73N826DZkQDA3+wIlXLrJS0yWizE+YaSQ=",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [
+									{
+										"warning": "This is a duplicate header and will be overridden by the Authorization header generated by Postman.",
+										"key": "Authorization",
+										"value": "Bearer OiSWlPmjmcdKsVLPp68OfAVK1uCyzBIN9nrPwgjo/IggU0eJd0K3MNtHaNHOgcZdfrfJCwM6zOiObrZCj/zo5rXKft/z3BpTSmBE3aG+i5mcyMWXZHkYWIaCYiuL1VksTwwTv5Ma/R4Pxdn2asmAvVbGC03XF5LWFcEXMmy8Qlk=",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "http://{{host-api}}/api/trx/application/test/unsigned/:id",
+									"protocol": "http",
+									"host": [
+										"{{host-api}}"
+									],
+									"path": [
+										"api",
+										"trx",
+										"application",
+										"test",
+										"unsigned",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "003d7134-c21c-488d-9d72-e8650baa7f44"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Submit signed application",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "bokJjN+nAw76ZMHsFjP4/ajnlmKUpVYjgRMPpi2OYuErz9yAs2vYCLWJUEfalFAQzumCwsZQX4V51ZvGfOM8qUgwNm+RMHyp/AxBLRGe4yiGVH8+TffuF++ZLAZAWOO+xcn9u5cVoO73N826DZkQDA3+wIlXLrJS0yWizE+YaSQ=",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"signedDoc\": \"/9j/4QAYRXhpZgAASUkqAAgAAAAAAAAAAAAAAP/sABFEdWNreQABAAQAAAA8AAD/4QMhaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wLwA8P3hwYWNrZXQgYmVnaW49Iu+7vyIgaWQ9Ilc1TTBNcENlaGlIenJlU3pOVGN6a2M5ZCI/PiA8eDp4bXBtZXRhIHhtbG5zOng9ImFkb2JlOm5zOm1ldGEvIiB4OnhtcHRrPSJBZG9iZSBYTVAgQ29yZSA1LjAtYzA2MCA2MS4xMzQzNDIsIDIwMTAvMDEvMTAtMTg6MDY6NDMgICAgICAgICI+IDxyZGY6UkRGIHhtbG5zOnJkZj0iaHR0cDovL3d3dy53My5vcmcvMTk5OS8wMi8yMi1yZGYtc3ludGF4LW5zIyI+IDxyZGY6RGVzY3JpcHRpb24gcmRmOmFib3V0PSIiIHhtbG5zOnhtcD0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wLyIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bXA6Q3JlYXRvclRvb2w9IkFkb2JlIFBob3Rvc2hvcCBDUzUiIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6Qjc3RkQ1NkUzNDc3MTFFRUE5NzlEMUM3OUE0NjlBRkUiIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6Qjc3RkQ1NkYzNDc3MTFFRUE5NzlEMUM3OUE0NjlBRkUiPiA8eG1wTU06RGVyaXZlZEZyb20gc3RSZWY6aW5zdGFuY2VJRD0ieG1wLmlpZDpCNzdGRDU2QzM0NzcxMUVFQTk3OUQxQzc5QTQ2OUFGRSIgc3RSZWY6ZG9jdW1lbnRJRD0ieG1wLmRpZDpCNzdGRDU2RDM0NzcxMUVFQTk3OUQxQzc5QTQ2OUFGRSIvPiA8L3JkZjpEZXNjcmlwdGlvbj4gPC9yZGY6UkRGPiA8L3g6eG1wbWV0YT4gPD94cGFja2V0IGVuZD0iciI/Pv/uAA5BZG9iZQBkwAAAAAH/2wCEAAYEBAQFBAYFBQYJBgUGCQsIBgYICwwKCgsKCgwQ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\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://{{host-api}}/api/trx/application/submit/signed/:appId",
+									"protocol": "http",
+									"host": [
+										"{{host-api}}"
+									],
+									"path": [
+										"api",
+										"trx",
+										"application",
+										"submit",
+										"signed",
+										":appId"
+									],
+									"variable": [
+										{
+											"key": "appId",
+											"value": "1aa77214-40c4-4a28-901a-e74ff8f33f63"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get application",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "bokJjN+nAw76ZMHsFjP4/ajnlmKUpVYjgRMPpi2OYuErz9yAs2vYCLWJUEfalFAQzumCwsZQX4V51ZvGfOM8qUgwNm+RMHyp/AxBLRGe4yiGVH8+TffuF++ZLAZAWOO+xcn9u5cVoO73N826DZkQDA3+wIlXLrJS0yWizE+YaSQ=",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"productId\": \"8aeebfe1-15fb-42b8-b7dc-e0f3ca6a47c3\",\r\n    \"contactIdentity\": \"+628988883636\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://{{host-api}}/api/trx/application/1426f2c8-1c85-4a1a-a15a-5c218309e3ac",
+									"protocol": "http",
+									"host": [
+										"{{host-api}}"
+									],
+									"path": [
+										"api",
+										"trx",
+										"application",
+										"1426f2c8-1c85-4a1a-a15a-5c218309e3ac"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "list Application",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer OJfko0wH0HtkTGNsGywJ4CxE+68gAQOCH1jqAHmVMVDopqB7EDYYDUQTeG7EGsRekb0rZxd3pntXDC9BzFmmePaP5dXvIQKw0sisO4yJZo+YP9/eUsxUN1UHq+oz9MMqn5f+wrsIl5lS7Ylx+oBUm81DM52+/HiU4lNqDYLJAGE=",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "http://{{host-api}}/api/trx/application?start=0&length=100",
+									"protocol": "http",
+									"host": [
+										"{{host-api}}"
+									],
+									"path": [
+										"api",
+										"trx",
+										"application"
+									],
+									"query": [
+										{
+											"key": "start",
+											"value": "0"
+										},
+										{
+											"key": "length",
+											"value": "100"
+										}
+									]
+								}
+							},
+							"response": [
+								{
+									"name": "success",
+									"originalRequest": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "Bearer OJfko0wH0HtkTGNsGywJ4CxE+68gAQOCH1jqAHmVMVDopqB7EDYYDUQTeG7EGsRekb0rZxd3pntXDC9BzFmmePaP5dXvIQKw0sisO4yJZo+YP9/eUsxUN1UHq+oz9MMqn5f+wrsIl5lS7Ylx+oBUm81DM52+/HiU4lNqDYLJAGE=",
+												"type": "text"
+											}
+										],
+										"url": {
+											"raw": "http://dev.ksprtj.net/api/trx/application?start=0&length=10",
+											"protocol": "http",
+											"host": [
+												"dev",
+												"ksprtj",
+												"net"
+											],
+											"path": [
+												"api",
+												"trx",
+												"application"
+											],
+											"query": [
+												{
+													"key": "start",
+													"value": "0"
+												},
+												{
+													"key": "length",
+													"value": "10"
+												}
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Server",
+											"value": "nginx/1.18.0 (Ubuntu)"
+										},
+										{
+											"key": "Date",
+											"value": "Tue, 19 Sep 2023 06:10:31 GMT"
+										},
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										},
+										{
+											"key": "Transfer-Encoding",
+											"value": "chunked"
+										},
+										{
+											"key": "Connection",
+											"value": "keep-alive"
+										},
+										{
+											"key": "Vary",
+											"value": "Origin"
+										},
+										{
+											"key": "Vary",
+											"value": "Access-Control-Request-Method"
+										},
+										{
+											"key": "Vary",
+											"value": "Access-Control-Request-Headers"
+										},
+										{
+											"key": "Access-Control-Allow-Headers",
+											"value": "Authorization, Content-Type, Cache-Control, JSESSIONID, XSRF-TOKEN"
+										},
+										{
+											"key": "Access-Control-Allow-Credentials",
+											"value": "true"
+										},
+										{
+											"key": "Access-Control-Expose-Headers",
+											"value": "XSRF-TOKEN, JSESSIONID"
+										},
+										{
+											"key": "Access-Control-Allow-Methods",
+											"value": "POST, PUT, GET, OPTIONS, DELETE, PATCH"
+										}
+									],
+									"cookie": [],
+									"body": "{\n    \"timestamp\": \"2023-09-19T06:10:31.241+00:00\",\n    \"status\": 200,\n    \"data\": [\n        {\n            \"id\": \"1426f2c8-1c85-4a1a-a15a-5c218309e3ac\",\n            \"seqId\": 23,\n            \"createdOn\": \"2023-08-27T21:26:35.785904\",\n            \"modifiedOn\": \"2023-09-03T21:33:30.209723\",\n            \"createdBy\": \"8ee6634f-63c7-49a9-ab74-d59eeb4b21d4\",\n            \"modifiedBy\": \"8ee6634f-63c7-49a9-ab74-d59eeb4b21d4\",\n            \"name\": null,\n            \"statusId\": \"228018f9-00d1-4894-8800-3d9469edb08e\",\n            \"contactId\": \"9f1ad652-adff-4954-88d7-080dd7e2ba78\",\n            \"productId\": \"8aeebfe1-15fb-42b8-b7dc-e0f3ca6a47c3\",\n            \"referredBy\": \"8ee6634f-63c7-49a9-ab74-d59eeb4b21d4\",\n            \"termIdRequested\": \"80557317-20b5-4f94-83f5-71aa079781b7\",\n            \"termIdApproved\": null,\n            \"bankId\": \"34c534d6-9f4e-4a3d-b06f-0f06e6736695\",\n            \"bankAccName\": null,\n            \"bankAccNumber\": \"12e123123\",\n            \"purposeId\": \"7eef4616-a2cb-47d9-9514-d94381a22ff6\",\n            \"transactionDate\": \"2023-08-27T21:26:35.785904\",\n            \"statusName\": \"Completed\",\n            \"productName\": \"SME Loan Dua Mingguan\",\n            \"contactName\": \"Blasius Indrawan\",\n            \"contactIdSeq\": 2,\n            \"contactEmail\": \"indrasa@gmail.com\",\n            \"contactPhone\": \"628988883636\",\n            \"bankName\": \"Bank Mandiri\",\n            \"loanPurposeName\": \"Modal Usaha\",\n            \"monthlyIncome\": 1000000,\n            \"requestedAmount\": 90000001,\n            \"termNameRequested\": \"3 Bulan\",\n            \"termNameApproved\": null\n        },\n        {\n            \"id\": \"9605a530-2d2f-43c8-a85e-8d7f120e3f8a\",\n            \"seqId\": 24,\n            \"createdOn\": \"2023-09-05T23:23:38.641639\",\n            \"modifiedOn\": \"2023-09-16T21:56:22.057649\",\n            \"createdBy\": \"8ee6634f-63c7-49a9-ab74-d59eeb4b21d4\",\n            \"modifiedBy\": \"8ee6634f-63c7-49a9-ab74-d59eeb4b21d4\",\n            \"name\": null,\n            \"statusId\": \"2c031a75-52a4-4e7f-a12a-a6e79e3c98d8\",\n            \"contactId\": \"9f1ad652-adff-4954-88d7-080dd7e2ba78\",\n            \"productId\": \"8aeebfe1-15fb-42b8-b7dc-e0f3ca6a47c3\",\n            \"referredBy\": \"8ee6634f-63c7-49a9-ab74-d59eeb4b21d4\",\n            \"termIdRequested\": \"80557317-20b5-4f94-83f5-71aa079781b7\",\n            \"termIdApproved\": null,\n            \"bankId\": \"34c534d6-9f4e-4a3d-b06f-0f06e6736695\",\n            \"bankAccName\": null,\n            \"bankAccNumber\": \"12e123123\",\n            \"purposeId\": \"7eef4616-a2cb-47d9-9514-d94381a22ff6\",\n            \"transactionDate\": \"2023-09-05T23:23:38.641639\",\n            \"statusName\": \"Signed\",\n            \"productName\": \"SME Loan Dua Mingguan\",\n            \"contactName\": \"Blasius Indrawan\",\n            \"contactIdSeq\": 2,\n            \"contactEmail\": \"indrasa@gmail.com\",\n            \"contactPhone\": \"628988883636\",\n            \"bankName\": \"Bank Mandiri\",\n            \"loanPurposeName\": \"Modal Usaha\",\n            \"monthlyIncome\": 1000000,\n            \"requestedAmount\": 90000001,\n            \"termNameRequested\": \"3 Bulan\",\n            \"termNameApproved\": null\n        }\n    ],\n    \"totalCount\": 2\n}"
+								}
+							]
+						},
+						{
+							"name": "preview",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer OJfko0wH0HtkTGNsGywJ4CxE+68gAQOCH1jqAHmVMVDopqB7EDYYDUQTeG7EGsRekb0rZxd3pntXDC9BzFmmePaP5dXvIQKw0sisO4yJZo+YP9/eUsxUN1UHq+oz9MMqn5f+wrsIl5lS7Ylx+oBUm81DM52+/HiU4lNqDYLJAGE=",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "http://{{host-api}}/api/trx/application/preview/:id",
+									"protocol": "http",
+									"host": [
+										"{{host-api}}"
+									],
+									"path": [
+										"api",
+										"trx",
+										"application",
+										"preview",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "1426f2c8-1c85-4a1a-a15a-5c218309e3ac"
+										}
+									]
+								}
+							},
+							"response": [
+								{
+									"name": "success",
+									"originalRequest": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "Bearer OJfko0wH0HtkTGNsGywJ4CxE+68gAQOCH1jqAHmVMVDopqB7EDYYDUQTeG7EGsRekb0rZxd3pntXDC9BzFmmePaP5dXvIQKw0sisO4yJZo+YP9/eUsxUN1UHq+oz9MMqn5f+wrsIl5lS7Ylx+oBUm81DM52+/HiU4lNqDYLJAGE=",
+												"type": "text"
+											}
+										],
+										"url": {
+											"raw": "http://dev.ksprtj.net/api/trx/application/preview/:id",
+											"protocol": "http",
+											"host": [
+												"dev",
+												"ksprtj",
+												"net"
+											],
+											"path": [
+												"api",
+												"trx",
+												"application",
+												"preview",
+												":id"
+											],
+											"variable": [
+												{
+													"key": "id",
+													"value": "1426f2c8-1c85-4a1a-a15a-5c218309e3ac"
+												}
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Server",
+											"value": "nginx/1.18.0 (Ubuntu)"
+										},
+										{
+											"key": "Date",
+											"value": "Tue, 19 Sep 2023 10:51:56 GMT"
+										},
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										},
+										{
+											"key": "Transfer-Encoding",
+											"value": "chunked"
+										},
+										{
+											"key": "Connection",
+											"value": "keep-alive"
+										},
+										{
+											"key": "Vary",
+											"value": "Origin"
+										},
+										{
+											"key": "Vary",
+											"value": "Access-Control-Request-Method"
+										},
+										{
+											"key": "Vary",
+											"value": "Access-Control-Request-Headers"
+										},
+										{
+											"key": "Access-Control-Allow-Headers",
+											"value": "Authorization, Content-Type, Cache-Control, JSESSIONID, XSRF-TOKEN"
+										},
+										{
+											"key": "Access-Control-Allow-Credentials",
+											"value": "true"
+										},
+										{
+											"key": "Access-Control-Expose-Headers",
+											"value": "XSRF-TOKEN, JSESSIONID"
+										},
+										{
+											"key": "Access-Control-Allow-Methods",
+											"value": "POST, PUT, GET, OPTIONS, DELETE, PATCH"
+										}
+									],
+									"cookie": [],
+									"body": "{\n    \"timestamp\": \"2023-09-19T10:51:56.165+00:00\",\n    \"status\": 200,\n    \"data\": {\n        \"id\": \"1426f2c8-1c85-4a1a-a15a-5c218309e3ac\",\n        \"loanAmount\": 90000001,\n        \"loanTermId\": \"80557317-20b5-4f94-83f5-71aa079781b7\",\n        \"loanTerm\": \"3 Bulan\",\n        \"bankId\": \"34c534d6-9f4e-4a3d-b06f-0f06e6736695\",\n        \"bankName\": \"Bank Mandiri\",\n        \"bankAccNumber\": \"12e123123\",\n        \"loanPurposeId\": \"7eef4616-a2cb-47d9-9514-d94381a22ff6\",\n        \"loanPurpose\": \"Modal Usaha\",\n        \"monthlyIncome\": 1000000,\n        \"customData\": [\n            {\n                \"no\": 1,\n                \"name\": \"aaa\",\n                \"value\": \"bbb\"\n            },\n            {\n                \"no\": 2,\n                \"name\": \"xxx\",\n                \"value\": \"yyy\"\n            }\n        ],\n        \"incomeProof\": {\n            \"id\": \"19bccd25-dc00-4e21-a37d-5af42f814956\",\n            \"fileName\": \"income-proof-0000023.jpg\",\n            \"fileType\": \"image/jpeg\",\n            \"fileContent\": \"/9j/4QAYRXhpZgAASUkqAAgAAAAAAAAAAAAAAP/sABFEdWNreQABAAQAAAA8AAD/4QMhaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wLwA8P3hwYWNrZXQgYmVnaW49Iu+7vyIgaWQ9Ilc1TTBNcENlaGlIenJlU3pOVGN6a2M5ZCI/PiA8eDp4bXBtZXRhIHhtbG5zOng9ImFkb2JlOm5zOm1ldGEvIiB4OnhtcHRrPSJBZG9iZSBYTVAgQ29yZSA1LjAtYzA2MCA2MS4xMzQzNDIsIDIwMTAvMDEvMTAtMTg6MDY6NDMgICAgICAgICI+IDxyZGY6UkRGIHhtbG5zOnJkZj0iaHR0cDovL3d3dy53My5vcmcvMTk5OS8wMi8yMi1yZGYtc3ludGF4LW5zIyI+IDxyZGY6RGVzY3JpcHRpb24gcmRmOmFib3V0PSIiIHhtbG5zOnhtcD0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wLyIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bXA6Q3JlYXRvclRvb2w9IkFkb2JlIFBob3Rvc2hvcCBDUzUiIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6Qjc3RkQ1NkUzNDc3MTFFRUE5NzlEMUM3OUE0NjlBRkUiIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6Qjc3RkQ1NkYzNDc3MTFFRUE5NzlEMUM3OUE0NjlBRkUiPiA8eG1wTU06RGVyaXZlZEZyb20gc3RSZWY6aW5zdGFuY2VJRD0ieG1wLmlpZDpCNzdGRDU2QzM0NzcxMUVFQTk3OUQxQzc5QTQ2OUFGRSIgc3RSZWY6ZG9jdW1lbnRJRD0ieG1wLmRpZDpCNzdGRDU2RDM0NzcxMUVFQTk3OUQxQzc5QTQ2OUFGRSIvPiA8L3JkZjpEZXNjcmlwdGlvbj4gPC9yZGY6UkRGPiA8L3g6eG1wbWV0YT4gPD94cGFja2V0IGVuZD0iciI/Pv/uAA5BZG9iZQBkwAAAAAH/2wCEAAYEBAQFBAYFBQYJBgUGCQsIBgYICwwKCgsKCgwQ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\"\n        }\n    }\n}"
+								}
+							]
+						},
+						{
+							"name": "detail",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer OJfko0wH0HtkTGNsGywJ4CxE+68gAQOCH1jqAHmVMVDopqB7EDYYDUQTeG7EGsRekb0rZxd3pntXDC9BzFmmePaP5dXvIQKw0sisO4yJZo+YP9/eUsxUN1UHq+oz9MMqn5f+wrsIl5lS7Ylx+oBUm81DM52+/HiU4lNqDYLJAGE=",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "http://{{host-api}}/api/trx/application/detail/:id",
+									"protocol": "http",
+									"host": [
+										"{{host-api}}"
+									],
+									"path": [
+										"api",
+										"trx",
+										"application",
+										"detail",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "1426f2c8-1c85-4a1a-a15a-5c218309e3ac"
+										}
+									]
+								}
+							},
+							"response": [
+								{
+									"name": "success",
+									"originalRequest": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "Bearer OJfko0wH0HtkTGNsGywJ4CxE+68gAQOCH1jqAHmVMVDopqB7EDYYDUQTeG7EGsRekb0rZxd3pntXDC9BzFmmePaP5dXvIQKw0sisO4yJZo+YP9/eUsxUN1UHq+oz9MMqn5f+wrsIl5lS7Ylx+oBUm81DM52+/HiU4lNqDYLJAGE=",
+												"type": "text"
+											}
+										],
+										"url": {
+											"raw": "http://dev.ksprtj.net/api/trx/application/detail/:id",
+											"protocol": "http",
+											"host": [
+												"dev",
+												"ksprtj",
+												"net"
+											],
+											"path": [
+												"api",
+												"trx",
+												"application",
+												"detail",
+												":id"
+											],
+											"variable": [
+												{
+													"key": "id",
+													"value": "1426f2c8-1c85-4a1a-a15a-5c218309e3ac"
+												}
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Server",
+											"value": "nginx/1.18.0 (Ubuntu)"
+										},
+										{
+											"key": "Date",
+											"value": "Tue, 19 Sep 2023 10:52:26 GMT"
+										},
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										},
+										{
+											"key": "Transfer-Encoding",
+											"value": "chunked"
+										},
+										{
+											"key": "Connection",
+											"value": "keep-alive"
+										},
+										{
+											"key": "Vary",
+											"value": "Origin"
+										},
+										{
+											"key": "Vary",
+											"value": "Access-Control-Request-Method"
+										},
+										{
+											"key": "Vary",
+											"value": "Access-Control-Request-Headers"
+										},
+										{
+											"key": "Access-Control-Allow-Headers",
+											"value": "Authorization, Content-Type, Cache-Control, JSESSIONID, XSRF-TOKEN"
+										},
+										{
+											"key": "Access-Control-Allow-Credentials",
+											"value": "true"
+										},
+										{
+											"key": "Access-Control-Expose-Headers",
+											"value": "XSRF-TOKEN, JSESSIONID"
+										},
+										{
+											"key": "Access-Control-Allow-Methods",
+											"value": "POST, PUT, GET, OPTIONS, DELETE, PATCH"
+										}
+									],
+									"cookie": [],
+									"body": "{\n    \"timestamp\": \"2023-09-19T10:52:26.874+00:00\",\n    \"status\": 200,\n    \"data\": {\n        \"application\": {\n            \"id\": \"1426f2c8-1c85-4a1a-a15a-5c218309e3ac\",\n            \"idSeq\": 23,\n            \"transactionDate\": \"2023-08-27T21:26:35.785904\",\n            \"loanAmount\": 90000001,\n            \"loanTerm\": \"3 Bulan\",\n            \"loanStatus\": \"Completed\"\n        },\n        \"client\": {\n            \"id\": \"9f1ad652-adff-4954-88d7-080dd7e2ba78\",\n            \"idSeq\": null,\n            \"name\": \"Blasius Indrawan\",\n            \"phoneNumber\": \"628988883636\",\n            \"email\": \"indrasa@gmail.com\"\n        },\n        \"disbursement\": {\n            \"bank\": \"Bank Mandiri\",\n            \"bankAccNumber\": \"12e123123\"\n        },\n        \"additionalInformation\": {\n            \"loanPurpose\": \"Modal Usaha\",\n            \"monthlyIncome\": 1000000\n        },\n        \"customData\": [\n            {\n                \"no\": 1,\n                \"name\": \"aaa\",\n                \"value\": \"bbb\"\n            },\n            {\n                \"no\": 2,\n                \"name\": \"xxx\",\n                \"value\": \"yyy\"\n            }\n        ]\n    }\n}"
+								}
+							]
+						},
+						{
+							"name": "activity",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer OJfko0wH0HtkTGNsGywJ4CxE+68gAQOCH1jqAHmVMVDopqB7EDYYDUQTeG7EGsRekb0rZxd3pntXDC9BzFmmePaP5dXvIQKw0sisO4yJZo+YP9/eUsxUN1UHq+oz9MMqn5f+wrsIl5lS7Ylx+oBUm81DM52+/HiU4lNqDYLJAGE=",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "http://{{host-api}}/api/trx/application/activity/:id",
+									"protocol": "http",
+									"host": [
+										"{{host-api}}"
+									],
+									"path": [
+										"api",
+										"trx",
+										"application",
+										"activity",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "1426f2c8-1c85-4a1a-a15a-5c218309e3ac"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Approval",
+					"item": [
+						{
+							"name": "Test - On Completed Application",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "bokJjN+nAw76ZMHsFjP4/ajnlmKUpVYjgRMPpi2OYuErz9yAs2vYCLWJUEfalFAQzumCwsZQX4V51ZvGfOM8qUgwNm+RMHyp/AxBLRGe4yiGVH8+TffuF++ZLAZAWOO+xcn9u5cVoO73N826DZkQDA3+wIlXLrJS0yWizE+YaSQ=",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://{{host-api}}/api/trx/approval/test/on-application-completed/1426f2c8-1c85-4a1a-a15a-5c218309e3ac",
+									"protocol": "http",
+									"host": [
+										"{{host-api}}"
+									],
+									"path": [
+										"api",
+										"trx",
+										"approval",
+										"test",
+										"on-application-completed",
+										"1426f2c8-1c85-4a1a-a15a-5c218309e3ac"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "manual-reject-2",
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer Wu1GiuoBnqI1VdqjsTaude5StPJmb2bX2rbostsZw4RQCj7hkWLlXynHazPLWaiUhwR5AcifxqsgD4UjZ6H2vIpimOzgyY+bo22wBJ+AdvAcXcYe7SwyEaLsMmNVHacAe3WHZ+ggK0OJpv6VVezZawMikVr56fEvCYTKXdHqLz8=",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"appId\": \"1aa77214-40c4-4a28-901a-e74ff8f33f63\",\n  \"approvalId\": \"d8697b6f-d985-4ac3-8e76-7cca72cc3c88\",\n  \"description\": \"Track nasabah meragukan\",\n  \"rejectReasonId\": \"217f640e-8768-49d4-94a5-e72580dbab23\"\n}",
+									"options": {
+										"raw": {
+											"headerFamily": "json",
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://{{host-api}}/api/trx/approval/manual/reject/2",
+									"protocol": "http",
+									"host": [
+										"{{host-api}}"
+									],
+									"path": [
+										"api",
+										"trx",
+										"approval",
+										"manual",
+										"reject",
+										"2"
+									]
+								}
+							},
+							"response": [
+								{
+									"name": "ok",
+									"originalRequest": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "Bearer Wu1GiuoBnqI1VdqjsTaude5StPJmb2bX2rbostsZw4RQCj7hkWLlXynHazPLWaiUhwR5AcifxqsgD4UjZ6H2vIpimOzgyY+bo22wBJ+AdvAcXcYe7SwyEaLsMmNVHacAe3WHZ+ggK0OJpv6VVezZawMikVr56fEvCYTKXdHqLz8=",
+												"type": "text"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"appId\": \"1aa77214-40c4-4a28-901a-e74ff8f33f63\",\n  \"approvalId\": \"d8697b6f-d985-4ac3-8e76-7cca72cc3c88\",\n  \"description\": \"Track nasabah meragukan\",\n  \"rejectReasonId\": \"217f640e-8768-49d4-94a5-e72580dbab23\"\n}",
+											"options": {
+												"raw": {
+													"headerFamily": "json",
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "http://{{host-api}}/api/trx/approval/manual/reject/2",
+											"protocol": "http",
+											"host": [
+												"{{host-api}}"
+											],
+											"path": [
+												"api",
+												"trx",
+												"approval",
+												"manual",
+												"reject",
+												"2"
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Server",
+											"value": "nginx/1.18.0 (Ubuntu)"
+										},
+										{
+											"key": "Date",
+											"value": "Mon, 09 Oct 2023 12:54:38 GMT"
+										},
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										},
+										{
+											"key": "Transfer-Encoding",
+											"value": "chunked"
+										},
+										{
+											"key": "Connection",
+											"value": "keep-alive"
+										},
+										{
+											"key": "Vary",
+											"value": "Origin"
+										},
+										{
+											"key": "Vary",
+											"value": "Access-Control-Request-Method"
+										},
+										{
+											"key": "Vary",
+											"value": "Access-Control-Request-Headers"
+										},
+										{
+											"key": "Access-Control-Allow-Headers",
+											"value": "Authorization, Content-Type, Cache-Control, JSESSIONID, XSRF-TOKEN"
+										},
+										{
+											"key": "Access-Control-Allow-Credentials",
+											"value": "true"
+										},
+										{
+											"key": "Access-Control-Expose-Headers",
+											"value": "XSRF-TOKEN, JSESSIONID"
+										},
+										{
+											"key": "Access-Control-Allow-Methods",
+											"value": "POST, PUT, GET, OPTIONS, DELETE, PATCH"
+										}
+									],
+									"cookie": [],
+									"body": "{\n    \"timestamp\": \"2023-10-09T12:54:38.046+00:00\",\n    \"status\": 200,\n    \"data\": {\n        \"success\": true\n    }\n}"
+								}
+							]
+						},
+						{
+							"name": "manual-reject-1",
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer Wu1GiuoBnqI1VdqjsTaude5StPJmb2bX2rbostsZw4RQCj7hkWLlXynHazPLWaiUhwR5AcifxqsgD4UjZ6H2vIpimOzgyY+bo22wBJ+AdvAcXcYe7SwyEaLsMmNVHacAe3WHZ+ggK0OJpv6VVezZawMikVr56fEvCYTKXdHqLz8=",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"appId\": \"9839cd30-cfc5-4cd1-a68e-279c3a2b8cc9\",\n  \"approvalId\": \"5485dd2d-2a20-47d2-81a9-6f00f1792aae\",\n  \"description\": \"track nasabah tidak baik\",\n  \"rejectReasonId\": \"83c254c3-d2c7-4f27-be59-01a32b2c5ead\"\n}",
+									"options": {
+										"raw": {
+											"headerFamily": "json",
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://{{host-api}}/api/trx/approval/manual/reject/1",
+									"protocol": "http",
+									"host": [
+										"{{host-api}}"
+									],
+									"path": [
+										"api",
+										"trx",
+										"approval",
+										"manual",
+										"reject",
+										"1"
+									]
+								}
+							},
+							"response": [
+								{
+									"name": "ok",
+									"originalRequest": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "Bearer Wu1GiuoBnqI1VdqjsTaude5StPJmb2bX2rbostsZw4RQCj7hkWLlXynHazPLWaiUhwR5AcifxqsgD4UjZ6H2vIpimOzgyY+bo22wBJ+AdvAcXcYe7SwyEaLsMmNVHacAe3WHZ+ggK0OJpv6VVezZawMikVr56fEvCYTKXdHqLz8=",
+												"type": "text"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"appId\": \"9839cd30-cfc5-4cd1-a68e-279c3a2b8cc9\",\n  \"approvalId\": \"5485dd2d-2a20-47d2-81a9-6f00f1792aae\",\n  \"description\": \"track nasabah tidak baik\",\n  \"rejectReasonId\": \"83c254c3-d2c7-4f27-be59-01a32b2c5ead\"\n}",
+											"options": {
+												"raw": {
+													"headerFamily": "json",
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "http://{{host-api}}/api/trx/approval/manual/reject/1",
+											"protocol": "http",
+											"host": [
+												"{{host-api}}"
+											],
+											"path": [
+												"api",
+												"trx",
+												"approval",
+												"manual",
+												"reject",
+												"1"
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Access-Control-Allow-Headers",
+											"value": "Authorization, Content-Type, Cache-Control, JSESSIONID, XSRF-TOKEN"
+										},
+										{
+											"key": "Access-Control-Expose-Headers",
+											"value": "XSRF-TOKEN, JSESSIONID"
+										},
+										{
+											"key": "Date",
+											"value": "Mon, 09 Oct 2023 12:41:21 GMT"
+										},
+										{
+											"key": "Connection",
+											"value": "keep-alive"
+										},
+										{
+											"key": "Vary",
+											"value": "Origin"
+										},
+										{
+											"key": "Vary",
+											"value": "Access-Control-Request-Method"
+										},
+										{
+											"key": "Vary",
+											"value": "Access-Control-Request-Headers"
+										},
+										{
+											"key": "Access-Control-Allow-Credentials",
+											"value": "true"
+										},
+										{
+											"key": "Transfer-Encoding",
+											"value": "chunked"
+										},
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										},
+										{
+											"key": "Access-Control-Allow-Methods",
+											"value": "POST, PUT, GET, OPTIONS, DELETE, PATCH"
+										}
+									],
+									"cookie": [],
+									"body": "{\n    \"timestamp\": \"2023-10-09T12:41:21.420+00:00\",\n    \"status\": 200,\n    \"data\": {\n        \"success\": true\n    }\n}"
+								}
+							]
+						},
+						{
+							"name": "approve-list-2",
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer Wu1GiuoBnqI1VdqjsTaude5StPJmb2bX2rbostsZw4RQCj7hkWLlXynHazPLWaiUhwR5AcifxqsgD4UjZ6H2vIpimOzgyY+bo22wBJ+AdvAcXcYe7SwyEaLsMmNVHacAe3WHZ+ggK0OJpv6VVezZawMikVr56fEvCYTKXdHqLz8=",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "http://{{host-api}}/api/trx/approval/manual/approve/2/list?start=0&length=10",
+									"protocol": "http",
+									"host": [
+										"{{host-api}}"
+									],
+									"path": [
+										"api",
+										"trx",
+										"approval",
+										"manual",
+										"approve",
+										"2",
+										"list"
+									],
+									"query": [
+										{
+											"key": "start",
+											"value": "0",
+											"description": "(Required) "
+										},
+										{
+											"key": "length",
+											"value": "10",
+											"description": "(Required) "
+										}
+									]
+								}
+							},
+							"response": [
+								{
+									"name": "ok",
+									"originalRequest": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "Bearer Wu1GiuoBnqI1VdqjsTaude5StPJmb2bX2rbostsZw4RQCj7hkWLlXynHazPLWaiUhwR5AcifxqsgD4UjZ6H2vIpimOzgyY+bo22wBJ+AdvAcXcYe7SwyEaLsMmNVHacAe3WHZ+ggK0OJpv6VVezZawMikVr56fEvCYTKXdHqLz8=",
+												"type": "text"
+											}
+										],
+										"url": {
+											"raw": "http://{{host-api}}/api/trx/approval/manual/approve/2/list?start=0&length=10",
+											"protocol": "http",
+											"host": [
+												"{{host-api}}"
+											],
+											"path": [
+												"api",
+												"trx",
+												"approval",
+												"manual",
+												"approve",
+												"2",
+												"list"
+											],
+											"query": [
+												{
+													"key": "start",
+													"value": "0",
+													"description": "(Required) "
+												},
+												{
+													"key": "length",
+													"value": "10",
+													"description": "(Required) "
+												}
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Server",
+											"value": "nginx/1.18.0 (Ubuntu)"
+										},
+										{
+											"key": "Date",
+											"value": "Mon, 09 Oct 2023 12:51:11 GMT"
+										},
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										},
+										{
+											"key": "Transfer-Encoding",
+											"value": "chunked"
+										},
+										{
+											"key": "Connection",
+											"value": "keep-alive"
+										},
+										{
+											"key": "Vary",
+											"value": "Origin"
+										},
+										{
+											"key": "Vary",
+											"value": "Access-Control-Request-Method"
+										},
+										{
+											"key": "Vary",
+											"value": "Access-Control-Request-Headers"
+										},
+										{
+											"key": "Access-Control-Allow-Headers",
+											"value": "Authorization, Content-Type, Cache-Control, JSESSIONID, XSRF-TOKEN"
+										},
+										{
+											"key": "Access-Control-Allow-Credentials",
+											"value": "true"
+										},
+										{
+											"key": "Access-Control-Expose-Headers",
+											"value": "XSRF-TOKEN, JSESSIONID"
+										},
+										{
+											"key": "Access-Control-Allow-Methods",
+											"value": "POST, PUT, GET, OPTIONS, DELETE, PATCH"
+										}
+									],
+									"cookie": [],
+									"body": "{\n    \"timestamp\": \"2023-10-09T12:51:11.091+00:00\",\n    \"status\": 200,\n    \"data\": [\n        {\n            \"id\": \"92e0a14a-186d-4084-a9aa-4cdb9ea0a4e0\",\n            \"seqId\": 27,\n            \"createdOn\": \"2023-09-21T09:44:22.384+00:00\",\n            \"modifiedOn\": \"2023-10-09T12:31:26.045+00:00\",\n            \"createdBy\": \"9f1ad652-adff-4954-88d7-080dd7e2ba78\",\n            \"modifiedBy\": \"8ee6634f-63c7-49a9-ab74-d59eeb4b21d4\",\n            \"name\": null,\n            \"statusId\": \"1a5bc29b-9f88-4c31-bfec-cd0203c6957e\",\n            \"contactId\": \"c07a8251-9df1-4245-91b5-621e9b96770b\",\n            \"productId\": \"8aeebfe1-15fb-42b8-b7dc-e0f3ca6a47c3\",\n            \"referredBy\": \"9f1ad652-adff-4954-88d7-080dd7e2ba78\",\n            \"termIdRequested\": \"80557317-20b5-4f94-83f5-71aa079781b7\",\n            \"termIdApproved\": null,\n            \"bankId\": \"604dcc15-efb7-4100-8913-8e18c57d07aa\",\n            \"bankAccName\": null,\n            \"bankAccNumber\": \"123e\",\n            \"purposeId\": \"7eef4616-a2cb-47d9-9514-d94381a22ff6\",\n            \"transactionDate\": \"2023-09-21T16:44:22.384609\",\n            \"statusName\": \"On Verifcation\",\n            \"productName\": \"SME Loan Dua Mingguan\",\n            \"productGroupId\": \"d6e4501c-45c2-4f26-baa0-db249b2cea95\",\n            \"contactName\": \"Sutejo\",\n            \"contactIdSeq\": \"19\",\n            \"contactEmail\": \"sutejo@gamil.id\",\n            \"contactPhone\": \"6281927283493\",\n            \"bankName\": \"PT Bank Central Asia Tbk (BCA)\",\n            \"loanPurposeName\": \"Modal Usaha\",\n            \"monthlyIncome\": 6000000,\n            \"requestedAmount\": 5000000,\n            \"approvedAmount\": null,\n            \"termNameRequested\": \"3 Bulan\",\n            \"termValueRequested\": 90,\n            \"termNameApproved\": null,\n            \"termValueApproved\": null,\n            \"docPathUnsigned\": \"/trx/application/0000027/unsigned-application-0000027.pdf\",\n            \"docPathSigned\": \"/trx/application/0000027/signed-application-0000027.jpg\",\n            \"docPathIncomeProof\": \"/trx/application/0000027/income-proof-0000027.jpg\",\n            \"manualApproval1\": null,\n            \"manualApproval2\": \"78136eb1-207a-4a45-b6ee-fc4c2675c4c3\",\n            \"statusIsActive\": true,\n            \"statusIsEligibleVerification\": true,\n            \"statusIsApproved\": false,\n            \"statusIsRejected\": false,\n            \"contactIdNumber\": \"135764576543\",\n            \"requestedInterestRate\": 0.0945000000000000006661338147750939242541790008544921875,\n            \"approvedInterestRate\": null,\n            \"contactAddress\": \"Jl. penduren masjid 4 no 6, Kota Adm. Jakarta Selatan 12345\"\n        },\n        {\n            \"id\": \"1aa77214-40c4-4a28-901a-e74ff8f33f63\",\n            \"seqId\": 55,\n            \"createdOn\": \"2023-10-01T07:17:03.950+00:00\",\n            \"modifiedOn\": \"2023-10-09T12:32:02.152+00:00\",\n            \"createdBy\": \"8ee6634f-63c7-49a9-ab74-d59eeb4b21d4\",\n            \"modifiedBy\": \"8ee6634f-63c7-49a9-ab74-d59eeb4b21d4\",\n            \"name\": null,\n            \"statusId\": \"1a5bc29b-9f88-4c31-bfec-cd0203c6957e\",\n            \"contactId\": \"9f1ad652-adff-4954-88d7-080dd7e2ba78\",\n            \"productId\": \"8aeebfe1-15fb-42b8-b7dc-e0f3ca6a47c3\",\n            \"referredBy\": \"8ee6634f-63c7-49a9-ab74-d59eeb4b21d4\",\n            \"termIdRequested\": \"80557317-20b5-4f94-83f5-71aa079781b7\",\n            \"termIdApproved\": null,\n            \"bankId\": \"34c534d6-9f4e-4a3d-b06f-0f06e6736695\",\n            \"bankAccName\": null,\n            \"bankAccNumber\": \"123123123123\",\n            \"purposeId\": \"7eef4616-a2cb-47d9-9514-d94381a22ff6\",\n            \"transactionDate\": \"2023-10-01T14:17:03.950744\",\n            \"statusName\": \"On Verifcation\",\n            \"productName\": \"SME Loan Dua Mingguan\",\n            \"productGroupId\": \"d6e4501c-45c2-4f26-baa0-db249b2cea95\",\n            \"contactName\": \"Blasius Indrawan\",\n            \"contactIdSeq\": \"2\",\n            \"contactEmail\": \"indrasa@gmail.com\",\n            \"contactPhone\": \"628988883636\",\n            \"bankName\": \"Bank Mandiri\",\n            \"loanPurposeName\": \"Modal Usaha\",\n            \"monthlyIncome\": 1000000,\n            \"requestedAmount\": 10000000,\n            \"approvedAmount\": null,\n            \"termNameRequested\": \"3 Bulan\",\n            \"termValueRequested\": 90,\n            \"termNameApproved\": null,\n            \"termValueApproved\": null,\n            \"docPathUnsigned\": \"/trx/application/0000055/unsigned-application-0000055.pdf\",\n            \"docPathSigned\": \"/trx/application/0000055/signed-application-0000055.jpg\",\n            \"docPathIncomeProof\": \"/trx/application/0000055/income-proof-0000055.jpg\",\n            \"manualApproval1\": null,\n            \"manualApproval2\": \"d8697b6f-d985-4ac3-8e76-7cca72cc3c88\",\n            \"statusIsActive\": true,\n            \"statusIsEligibleVerification\": true,\n            \"statusIsApproved\": false,\n            \"statusIsRejected\": false,\n            \"contactIdNumber\": \"123123123\",\n            \"requestedInterestRate\": 0.0945000000000000006661338147750939242541790008544921875,\n            \"approvedInterestRate\": null,\n            \"contactAddress\": \"Jl. BUnga asdasd asdasdasd, Blang Barom, Kluet Utara, Kab. Buol 123123\"\n        }\n    ],\n    \"totalCount\": 2\n}"
+								}
+							]
+						},
+						{
+							"name": "approve-detail2",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer Wu1GiuoBnqI1VdqjsTaude5StPJmb2bX2rbostsZw4RQCj7hkWLlXynHazPLWaiUhwR5AcifxqsgD4UjZ6H2vIpimOzgyY+bo22wBJ+AdvAcXcYe7SwyEaLsMmNVHacAe3WHZ+ggK0OJpv6VVezZawMikVr56fEvCYTKXdHqLz8=",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "http://{{host-api}}/api/trx/approval/manual/approve/2/detail/:appId",
+									"protocol": "http",
+									"host": [
+										"{{host-api}}"
+									],
+									"path": [
+										"api",
+										"trx",
+										"approval",
+										"manual",
+										"approve",
+										"2",
+										"detail",
+										":appId"
+									],
+									"variable": [
+										{
+											"key": "appId",
+											"value": "1aa77214-40c4-4a28-901a-e74ff8f33f63"
+										}
+									]
+								}
+							},
+							"response": [
+								{
+									"name": "ok",
+									"originalRequest": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "Bearer Wu1GiuoBnqI1VdqjsTaude5StPJmb2bX2rbostsZw4RQCj7hkWLlXynHazPLWaiUhwR5AcifxqsgD4UjZ6H2vIpimOzgyY+bo22wBJ+AdvAcXcYe7SwyEaLsMmNVHacAe3WHZ+ggK0OJpv6VVezZawMikVr56fEvCYTKXdHqLz8=",
+												"type": "text"
+											}
+										],
+										"url": {
+											"raw": "http://{{host-api}}/api/trx/approval/manual/approve/2/detail/:appId",
+											"protocol": "http",
+											"host": [
+												"{{host-api}}"
+											],
+											"path": [
+												"api",
+												"trx",
+												"approval",
+												"manual",
+												"approve",
+												"2",
+												"detail",
+												":appId"
+											],
+											"variable": [
+												{
+													"key": "appId",
+													"value": "92e0a14a-186d-4084-a9aa-4cdb9ea0a4e0"
+												}
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Server",
+											"value": "nginx/1.18.0 (Ubuntu)"
+										},
+										{
+											"key": "Date",
+											"value": "Mon, 09 Oct 2023 12:52:09 GMT"
+										},
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										},
+										{
+											"key": "Transfer-Encoding",
+											"value": "chunked"
+										},
+										{
+											"key": "Connection",
+											"value": "keep-alive"
+										},
+										{
+											"key": "Vary",
+											"value": "Origin"
+										},
+										{
+											"key": "Vary",
+											"value": "Access-Control-Request-Method"
+										},
+										{
+											"key": "Vary",
+											"value": "Access-Control-Request-Headers"
+										},
+										{
+											"key": "Access-Control-Allow-Headers",
+											"value": "Authorization, Content-Type, Cache-Control, JSESSIONID, XSRF-TOKEN"
+										},
+										{
+											"key": "Access-Control-Allow-Credentials",
+											"value": "true"
+										},
+										{
+											"key": "Access-Control-Expose-Headers",
+											"value": "XSRF-TOKEN, JSESSIONID"
+										},
+										{
+											"key": "Access-Control-Allow-Methods",
+											"value": "POST, PUT, GET, OPTIONS, DELETE, PATCH"
+										}
+									],
+									"cookie": [],
+									"body": "{\n    \"timestamp\": \"2023-10-09T12:52:09.544+00:00\",\n    \"status\": 200,\n    \"data\": {\n        \"application\": {\n            \"id\": \"92e0a14a-186d-4084-a9aa-4cdb9ea0a4e0\",\n            \"idSeq\": 27,\n            \"transactionDate\": \"2023-09-21T16:44:22.384609\",\n            \"loanAmount\": 5000000,\n            \"loanTerm\": \"3 Bulan\",\n            \"loanStatus\": \"On Verifcation\"\n        },\n        \"client\": {\n            \"id\": \"c07a8251-9df1-4245-91b5-621e9b96770b\",\n            \"idSeq\": 19,\n            \"name\": \"Sutejo\",\n            \"phoneNumber\": \"6281927283493\",\n            \"email\": \"sutejo@gamil.id\"\n        },\n        \"disbursement\": {\n            \"bank\": \"PT Bank Central Asia Tbk (BCA)\",\n            \"bankAccNumber\": \"123e\"\n        },\n        \"additionalInformation\": {\n            \"loanPurpose\": \"Modal Usaha\",\n            \"monthlyIncome\": 6000000\n        },\n        \"customData\": [\n            {\n                \"no\": 1,\n                \"name\": \"satu\",\n                \"value\": \"1\"\n            },\n            {\n                \"no\": 2,\n                \"name\": \"dua\",\n                \"value\": \"2\"\n            },\n            {\n                \"no\": 3,\n                \"name\": \"tiga\",\n                \"value\": \"3\"\n            }\n        ],\n        \"document\": {\n            \"unsignedDocPath\": \"/trx/application/0000027/unsigned-application-0000027.pdf\",\n            \"signedDocPath\": \"/trx/application/0000027/signed-application-0000027.jpg\",\n            \"incomeProofDocPath\": \"/trx/application/0000027/income-proof-0000027.jpg\"\n        },\n        \"approvalId\": \"78136eb1-207a-4a45-b6ee-fc4c2675c4c3\"\n    }\n}"
+								}
+							]
+						},
+						{
+							"name": "approve2",
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer Wu1GiuoBnqI1VdqjsTaude5StPJmb2bX2rbostsZw4RQCj7hkWLlXynHazPLWaiUhwR5AcifxqsgD4UjZ6H2vIpimOzgyY+bo22wBJ+AdvAcXcYe7SwyEaLsMmNVHacAe3WHZ+ggK0OJpv6VVezZawMikVr56fEvCYTKXdHqLz8=",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"description\": \"<string>\"\n}",
+									"options": {
+										"raw": {
+											"headerFamily": "json",
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://{{host-api}}/api/trx/approval/manual/approve/2/:appId",
+									"protocol": "http",
+									"host": [
+										"{{host-api}}"
+									],
+									"path": [
+										"api",
+										"trx",
+										"approval",
+										"manual",
+										"approve",
+										"2",
+										":appId"
+									],
+									"variable": [
+										{
+											"key": "appId",
+											"value": "92e0a14a-186d-4084-a9aa-4cdb9ea0a4e0"
+										}
+									]
+								}
+							},
+							"response": [
+								{
+									"name": "ok",
+									"originalRequest": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "Bearer Wu1GiuoBnqI1VdqjsTaude5StPJmb2bX2rbostsZw4RQCj7hkWLlXynHazPLWaiUhwR5AcifxqsgD4UjZ6H2vIpimOzgyY+bo22wBJ+AdvAcXcYe7SwyEaLsMmNVHacAe3WHZ+ggK0OJpv6VVezZawMikVr56fEvCYTKXdHqLz8=",
+												"type": "text"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"description\": \"<string>\"\n}",
+											"options": {
+												"raw": {
+													"headerFamily": "json",
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "http://{{host-api}}/api/trx/approval/manual/approve/2/:appId",
+											"protocol": "http",
+											"host": [
+												"{{host-api}}"
+											],
+											"path": [
+												"api",
+												"trx",
+												"approval",
+												"manual",
+												"approve",
+												"2",
+												":appId"
+											],
+											"variable": [
+												{
+													"key": "appId",
+													"value": "92e0a14a-186d-4084-a9aa-4cdb9ea0a4e0"
+												}
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Server",
+											"value": "nginx/1.18.0 (Ubuntu)"
+										},
+										{
+											"key": "Date",
+											"value": "Mon, 09 Oct 2023 12:52:49 GMT"
+										},
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										},
+										{
+											"key": "Transfer-Encoding",
+											"value": "chunked"
+										},
+										{
+											"key": "Connection",
+											"value": "keep-alive"
+										},
+										{
+											"key": "Vary",
+											"value": "Origin"
+										},
+										{
+											"key": "Vary",
+											"value": "Access-Control-Request-Method"
+										},
+										{
+											"key": "Vary",
+											"value": "Access-Control-Request-Headers"
+										},
+										{
+											"key": "Access-Control-Allow-Headers",
+											"value": "Authorization, Content-Type, Cache-Control, JSESSIONID, XSRF-TOKEN"
+										},
+										{
+											"key": "Access-Control-Allow-Credentials",
+											"value": "true"
+										},
+										{
+											"key": "Access-Control-Expose-Headers",
+											"value": "XSRF-TOKEN, JSESSIONID"
+										},
+										{
+											"key": "Access-Control-Allow-Methods",
+											"value": "POST, PUT, GET, OPTIONS, DELETE, PATCH"
+										}
+									],
+									"cookie": [],
+									"body": "{\n    \"timestamp\": \"2023-10-09T12:52:49.558+00:00\",\n    \"status\": 200,\n    \"data\": {\n        \"success\": true\n    }\n}"
+								}
+							]
+						},
+						{
+							"name": "approve-list1",
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer Wu1GiuoBnqI1VdqjsTaude5StPJmb2bX2rbostsZw4RQCj7hkWLlXynHazPLWaiUhwR5AcifxqsgD4UjZ6H2vIpimOzgyY+bo22wBJ+AdvAcXcYe7SwyEaLsMmNVHacAe3WHZ+ggK0OJpv6VVezZawMikVr56fEvCYTKXdHqLz8=",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "http://{{host-api}}/api/trx/approval/manual/approve/1/list?start=0&length=10",
+									"protocol": "http",
+									"host": [
+										"{{host-api}}"
+									],
+									"path": [
+										"api",
+										"trx",
+										"approval",
+										"manual",
+										"approve",
+										"1",
+										"list"
+									],
+									"query": [
+										{
+											"key": "start",
+											"value": "0",
+											"description": "(Required) "
+										},
+										{
+											"key": "length",
+											"value": "10",
+											"description": "(Required) "
+										}
+									]
+								}
+							},
+							"response": [
+								{
+									"name": "ok",
+									"originalRequest": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "Bearer Wu1GiuoBnqI1VdqjsTaude5StPJmb2bX2rbostsZw4RQCj7hkWLlXynHazPLWaiUhwR5AcifxqsgD4UjZ6H2vIpimOzgyY+bo22wBJ+AdvAcXcYe7SwyEaLsMmNVHacAe3WHZ+ggK0OJpv6VVezZawMikVr56fEvCYTKXdHqLz8=",
+												"type": "text"
+											}
+										],
+										"url": {
+											"raw": "http://{{host-api}}/api/trx/approval/manual/approve/1/list?start=0&length=10",
+											"protocol": "http",
+											"host": [
+												"{{host-api}}"
+											],
+											"path": [
+												"api",
+												"trx",
+												"approval",
+												"manual",
+												"approve",
+												"1",
+												"list"
+											],
+											"query": [
+												{
+													"key": "start",
+													"value": "0",
+													"description": "(Required) "
+												},
+												{
+													"key": "length",
+													"value": "10",
+													"description": "(Required) "
+												}
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Server",
+											"value": "nginx/1.18.0 (Ubuntu)"
+										},
+										{
+											"key": "Date",
+											"value": "Mon, 09 Oct 2023 12:30:39 GMT"
+										},
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										},
+										{
+											"key": "Transfer-Encoding",
+											"value": "chunked"
+										},
+										{
+											"key": "Connection",
+											"value": "keep-alive"
+										},
+										{
+											"key": "Vary",
+											"value": "Origin"
+										},
+										{
+											"key": "Vary",
+											"value": "Access-Control-Request-Method"
+										},
+										{
+											"key": "Vary",
+											"value": "Access-Control-Request-Headers"
+										},
+										{
+											"key": "Access-Control-Allow-Headers",
+											"value": "Authorization, Content-Type, Cache-Control, JSESSIONID, XSRF-TOKEN"
+										},
+										{
+											"key": "Access-Control-Allow-Credentials",
+											"value": "true"
+										},
+										{
+											"key": "Access-Control-Expose-Headers",
+											"value": "XSRF-TOKEN, JSESSIONID"
+										},
+										{
+											"key": "Access-Control-Allow-Methods",
+											"value": "POST, PUT, GET, OPTIONS, DELETE, PATCH"
+										}
+									],
+									"cookie": [],
+									"body": "{\n    \"timestamp\": \"2023-10-09T12:30:39.347+00:00\",\n    \"status\": 200,\n    \"data\": [\n        {\n            \"id\": \"9839cd30-cfc5-4cd1-a68e-279c3a2b8cc9\",\n            \"seqId\": 60,\n            \"createdOn\": \"2023-10-08T10:06:15.090+00:00\",\n            \"modifiedOn\": \"2023-10-08T10:10:46.889+00:00\",\n            \"createdBy\": \"9f1ad652-adff-4954-88d7-080dd7e2ba78\",\n            \"modifiedBy\": \"8ee6634f-63c7-49a9-ab74-d59eeb4b21d4\",\n            \"name\": null,\n            \"statusId\": \"1a5bc29b-9f88-4c31-bfec-cd0203c6957e\",\n            \"contactId\": \"17a9b977-07e0-4774-ad2a-c41123aed207\",\n            \"productId\": \"8aeebfe1-15fb-42b8-b7dc-e0f3ca6a47c3\",\n            \"referredBy\": \"9f1ad652-adff-4954-88d7-080dd7e2ba78\",\n            \"termIdRequested\": \"80557317-20b5-4f94-83f5-71aa079781b7\",\n            \"termIdApproved\": null,\n            \"bankId\": \"34c534d6-9f4e-4a3d-b06f-0f06e6736695\",\n            \"bankAccName\": null,\n            \"bankAccNumber\": \"12312312312311\",\n            \"purposeId\": \"7eef4616-a2cb-47d9-9514-d94381a22ff6\",\n            \"transactionDate\": \"2023-10-08T17:06:15.090622\",\n            \"statusName\": \"On Verifcation\",\n            \"productName\": \"SME Loan Dua Mingguan\",\n            \"productGroupId\": \"d6e4501c-45c2-4f26-baa0-db249b2cea95\",\n            \"contactName\": \"Larso\",\n            \"contactIdSeq\": \"24\",\n            \"contactEmail\": \"larso@yopmail.com\",\n            \"contactPhone\": \"6281263716352\",\n            \"bankName\": \"Bank Mandiri\",\n            \"loanPurposeName\": \"Modal Usaha\",\n            \"monthlyIncome\": 1000000,\n            \"requestedAmount\": 10000000,\n            \"approvedAmount\": null,\n            \"termNameRequested\": \"3 Bulan\",\n            \"termValueRequested\": 90,\n            \"termNameApproved\": null,\n            \"termValueApproved\": null,\n            \"docPathUnsigned\": \"/trx/application/0000060/unsigned-application-0000060.pdf\",\n            \"docPathSigned\": \"/trx/application/0000060/signed-application-0000060.jpg\",\n            \"docPathIncomeProof\": \"/trx/application/0000060/income-proof-0000060.jpg\",\n            \"manualApproval1\": \"5485dd2d-2a20-47d2-81a9-6f00f1792aae\",\n            \"manualApproval2\": null,\n            \"statusIsActive\": true,\n            \"statusIsEligibleVerification\": true,\n            \"statusIsApproved\": false,\n            \"statusIsRejected\": false,\n            \"contactIdNumber\": \"1928398712\",\n            \"requestedInterestRate\": 0.0945000000000000006661338147750939242541790008544921875,\n            \"approvedInterestRate\": null,\n            \"contactAddress\": \"Jl sholeh no 7, Kota Bandung \"\n        },\n        {\n            \"id\": \"003d7134-c21c-488d-9d72-e8650baa7f44\",\n            \"seqId\": 25,\n            \"createdOn\": \"2023-09-18T14:57:48.012+00:00\",\n            \"modifiedOn\": \"2023-10-09T12:30:28.545+00:00\",\n            \"createdBy\": \"8ee6634f-63c7-49a9-ab74-d59eeb4b21d4\",\n            \"modifiedBy\": \"8ee6634f-63c7-49a9-ab74-d59eeb4b21d4\",\n            \"name\": null,\n            \"statusId\": \"1a5bc29b-9f88-4c31-bfec-cd0203c6957e\",\n            \"contactId\": \"9f1ad652-adff-4954-88d7-080dd7e2ba78\",\n            \"productId\": \"8aeebfe1-15fb-42b8-b7dc-e0f3ca6a47c3\",\n            \"referredBy\": \"8ee6634f-63c7-49a9-ab74-d59eeb4b21d4\",\n            \"termIdRequested\": \"80557317-20b5-4f94-83f5-71aa079781b7\",\n            \"termIdApproved\": null,\n            \"bankId\": \"604dcc15-efb7-4100-8913-8e18c57d07aa\",\n            \"bankAccName\": null,\n            \"bankAccNumber\": \"123456788\",\n            \"purposeId\": \"bcf01717-7abc-4714-952b-487e7d4b8e95\",\n            \"transactionDate\": \"2023-09-18T21:57:48.012833\",\n            \"statusName\": \"On Verifcation\",\n            \"productName\": \"SME Loan Dua Mingguan\",\n            \"productGroupId\": \"d6e4501c-45c2-4f26-baa0-db249b2cea95\",\n            \"contactName\": \"Blasius Indrawan\",\n            \"contactIdSeq\": \"2\",\n            \"contactEmail\": \"indrasa@gmail.com\",\n            \"contactPhone\": \"628988883636\",\n            \"bankName\": \"PT Bank Central Asia Tbk (BCA)\",\n            \"loanPurposeName\": \"Liburan\",\n            \"monthlyIncome\": 7000000,\n            \"requestedAmount\": 4000000,\n            \"approvedAmount\": null,\n            \"termNameRequested\": \"3 Bulan\",\n            \"termValueRequested\": 90,\n            \"termNameApproved\": null,\n            \"termValueApproved\": null,\n            \"docPathUnsigned\": \"/trx/application/0000025/unsigned-application-0000025.pdf\",\n            \"docPathSigned\": \"/trx/application/0000025/signed-application-0000025.jpg\",\n            \"docPathIncomeProof\": \"/trx/application/0000025/income-proof-0000025.jpg\",\n            \"manualApproval1\": \"cc8bb36f-2c64-443a-8db6-e00c4e8802de\",\n            \"manualApproval2\": null,\n            \"statusIsActive\": true,\n            \"statusIsEligibleVerification\": true,\n            \"statusIsApproved\": false,\n            \"statusIsRejected\": false,\n            \"contactIdNumber\": \"123123123\",\n            \"requestedInterestRate\": 0.0945000000000000006661338147750939242541790008544921875,\n            \"approvedInterestRate\": null,\n            \"contactAddress\": \"Jl. BUnga asdasd asdasdasd, Blang Barom, Kluet Utara, Kab. Buol 123123\"\n        }\n    ],\n    \"totalCount\": 2\n}"
+								}
+							]
+						},
+						{
+							"name": "approve-detail-1",
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer Wu1GiuoBnqI1VdqjsTaude5StPJmb2bX2rbostsZw4RQCj7hkWLlXynHazPLWaiUhwR5AcifxqsgD4UjZ6H2vIpimOzgyY+bo22wBJ+AdvAcXcYe7SwyEaLsMmNVHacAe3WHZ+ggK0OJpv6VVezZawMikVr56fEvCYTKXdHqLz8=",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "http://{{host-api}}/api/trx/approval/manual/approve/1/detail/:id",
+									"protocol": "http",
+									"host": [
+										"{{host-api}}"
+									],
+									"path": [
+										"api",
+										"trx",
+										"approval",
+										"manual",
+										"approve",
+										"1",
+										"detail",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "9839cd30-cfc5-4cd1-a68e-279c3a2b8cc9"
+										}
+									]
+								}
+							},
+							"response": [
+								{
+									"name": "404",
+									"originalRequest": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "Bearer Wu1GiuoBnqI1VdqjsTaude5StPJmb2bX2rbostsZw4RQCj7hkWLlXynHazPLWaiUhwR5AcifxqsgD4UjZ6H2vIpimOzgyY+bo22wBJ+AdvAcXcYe7SwyEaLsMmNVHacAe3WHZ+ggK0OJpv6VVezZawMikVr56fEvCYTKXdHqLz8=",
+												"type": "text"
+											}
+										],
+										"url": {
+											"raw": "http://{{host-api}}/api/trx/approval/manual/approve/1/detail/:id",
+											"protocol": "http",
+											"host": [
+												"{{host-api}}"
+											],
+											"path": [
+												"api",
+												"trx",
+												"approval",
+												"manual",
+												"approve",
+												"1",
+												"detail",
+												":id"
+											],
+											"variable": [
+												{
+													"key": "id",
+													"value": "1aa77214-40c4-4a28-901a-e74ff8f33f63"
+												}
+											]
+										}
+									},
+									"status": "Not Found",
+									"code": 404,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Server",
+											"value": "nginx/1.18.0 (Ubuntu)"
+										},
+										{
+											"key": "Date",
+											"value": "Mon, 09 Oct 2023 12:33:45 GMT"
+										},
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										},
+										{
+											"key": "Transfer-Encoding",
+											"value": "chunked"
+										},
+										{
+											"key": "Connection",
+											"value": "keep-alive"
+										},
+										{
+											"key": "Vary",
+											"value": "Origin"
+										},
+										{
+											"key": "Vary",
+											"value": "Access-Control-Request-Method"
+										},
+										{
+											"key": "Vary",
+											"value": "Access-Control-Request-Headers"
+										},
+										{
+											"key": "Access-Control-Allow-Headers",
+											"value": "Authorization, Content-Type, Cache-Control, JSESSIONID, XSRF-TOKEN"
+										},
+										{
+											"key": "Access-Control-Allow-Credentials",
+											"value": "true"
+										},
+										{
+											"key": "Access-Control-Expose-Headers",
+											"value": "XSRF-TOKEN, JSESSIONID"
+										},
+										{
+											"key": "Access-Control-Allow-Methods",
+											"value": "POST, PUT, GET, OPTIONS, DELETE, PATCH"
+										}
+									],
+									"cookie": [],
+									"body": "{\n    \"id\": \"8729ba00-7352-42ed-8969-711760ef4b0e\",\n    \"timestamp\": \"2023-10-09T12:33:45.977+00:00\",\n    \"status\": null,\n    \"error\": \"Unknown error\",\n    \"message\": \"Active approval is not found!\",\n    \"stackTrace\": null\n}"
+								},
+								{
+									"name": "ok",
+									"originalRequest": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "Bearer Wu1GiuoBnqI1VdqjsTaude5StPJmb2bX2rbostsZw4RQCj7hkWLlXynHazPLWaiUhwR5AcifxqsgD4UjZ6H2vIpimOzgyY+bo22wBJ+AdvAcXcYe7SwyEaLsMmNVHacAe3WHZ+ggK0OJpv6VVezZawMikVr56fEvCYTKXdHqLz8=",
+												"type": "text"
+											}
+										],
+										"url": {
+											"raw": "http://{{host-api}}/api/trx/approval/manual/approve/1/detail/:id",
+											"protocol": "http",
+											"host": [
+												"{{host-api}}"
+											],
+											"path": [
+												"api",
+												"trx",
+												"approval",
+												"manual",
+												"approve",
+												"1",
+												"detail",
+												":id"
+											],
+											"variable": [
+												{
+													"key": "id",
+													"value": "9839cd30-cfc5-4cd1-a68e-279c3a2b8cc9"
+												}
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Server",
+											"value": "nginx/1.18.0 (Ubuntu)"
+										},
+										{
+											"key": "Date",
+											"value": "Mon, 09 Oct 2023 12:34:56 GMT"
+										},
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										},
+										{
+											"key": "Transfer-Encoding",
+											"value": "chunked"
+										},
+										{
+											"key": "Connection",
+											"value": "keep-alive"
+										},
+										{
+											"key": "Vary",
+											"value": "Origin"
+										},
+										{
+											"key": "Vary",
+											"value": "Access-Control-Request-Method"
+										},
+										{
+											"key": "Vary",
+											"value": "Access-Control-Request-Headers"
+										},
+										{
+											"key": "Access-Control-Allow-Headers",
+											"value": "Authorization, Content-Type, Cache-Control, JSESSIONID, XSRF-TOKEN"
+										},
+										{
+											"key": "Access-Control-Allow-Credentials",
+											"value": "true"
+										},
+										{
+											"key": "Access-Control-Expose-Headers",
+											"value": "XSRF-TOKEN, JSESSIONID"
+										},
+										{
+											"key": "Access-Control-Allow-Methods",
+											"value": "POST, PUT, GET, OPTIONS, DELETE, PATCH"
+										}
+									],
+									"cookie": [],
+									"body": "{\n    \"timestamp\": \"2023-10-09T12:34:56.558+00:00\",\n    \"status\": 200,\n    \"data\": {\n        \"application\": {\n            \"id\": \"9839cd30-cfc5-4cd1-a68e-279c3a2b8cc9\",\n            \"idSeq\": 60,\n            \"transactionDate\": \"2023-10-08T17:06:15.090622\",\n            \"loanAmount\": 10000000,\n            \"loanTerm\": \"3 Bulan\",\n            \"loanStatus\": \"On Verifcation\"\n        },\n        \"client\": {\n            \"id\": \"17a9b977-07e0-4774-ad2a-c41123aed207\",\n            \"idSeq\": 24,\n            \"name\": \"Larso\",\n            \"phoneNumber\": \"6281263716352\",\n            \"email\": \"larso@yopmail.com\"\n        },\n        \"disbursement\": {\n            \"bank\": \"Bank Mandiri\",\n            \"bankAccNumber\": \"12312312312311\"\n        },\n        \"additionalInformation\": {\n            \"loanPurpose\": \"Modal Usaha\",\n            \"monthlyIncome\": 1000000\n        },\n        \"customData\": [\n            {\n                \"no\": 1,\n                \"name\": \"aaa\",\n                \"value\": \"bbb\"\n            },\n            {\n                \"no\": 2,\n                \"name\": \"xxx\",\n                \"value\": \"yyy\"\n            }\n        ],\n        \"document\": {\n            \"unsignedDocPath\": \"/trx/application/0000060/unsigned-application-0000060.pdf\",\n            \"signedDocPath\": \"/trx/application/0000060/signed-application-0000060.jpg\",\n            \"incomeProofDocPath\": \"/trx/application/0000060/income-proof-0000060.jpg\"\n        },\n        \"approvalId\": \"5485dd2d-2a20-47d2-81a9-6f00f1792aae\"\n    }\n}"
+								}
+							]
+						},
+						{
+							"name": "approve1",
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer Wu1GiuoBnqI1VdqjsTaude5StPJmb2bX2rbostsZw4RQCj7hkWLlXynHazPLWaiUhwR5AcifxqsgD4UjZ6H2vIpimOzgyY+bo22wBJ+AdvAcXcYe7SwyEaLsMmNVHacAe3WHZ+ggK0OJpv6VVezZawMikVr56fEvCYTKXdHqLz8=",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"description\": \"nasabah trak baik\"\n}",
+									"options": {
+										"raw": {
+											"headerFamily": "json",
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://{{host-api}}/api/trx/approval/manual/approve/1/:appId",
+									"protocol": "http",
+									"host": [
+										"{{host-api}}"
+									],
+									"path": [
+										"api",
+										"trx",
+										"approval",
+										"manual",
+										"approve",
+										"1",
+										":appId"
+									],
+									"variable": [
+										{
+											"key": "appId",
+											"value": "92e0a14a-186d-4084-a9aa-4cdb9ea0a4e0"
+										}
+									]
+								}
+							},
+							"response": [
+								{
+									"name": "ok",
+									"originalRequest": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "Bearer Wu1GiuoBnqI1VdqjsTaude5StPJmb2bX2rbostsZw4RQCj7hkWLlXynHazPLWaiUhwR5AcifxqsgD4UjZ6H2vIpimOzgyY+bo22wBJ+AdvAcXcYe7SwyEaLsMmNVHacAe3WHZ+ggK0OJpv6VVezZawMikVr56fEvCYTKXdHqLz8=",
+												"type": "text"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"description\": \"nasabah trak baik\"\n}",
+											"options": {
+												"raw": {
+													"headerFamily": "json",
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "http://{{host-api}}/api/trx/approval/manual/approve/1/:appId",
+											"protocol": "http",
+											"host": [
+												"{{host-api}}"
+											],
+											"path": [
+												"api",
+												"trx",
+												"approval",
+												"manual",
+												"approve",
+												"1",
+												":appId"
+											],
+											"variable": [
+												{
+													"key": "appId",
+													"value": "1aa77214-40c4-4a28-901a-e74ff8f33f63"
+												}
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Server",
+											"value": "nginx/1.18.0 (Ubuntu)"
+										},
+										{
+											"key": "Date",
+											"value": "Mon, 09 Oct 2023 12:33:17 GMT"
+										},
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										},
+										{
+											"key": "Transfer-Encoding",
+											"value": "chunked"
+										},
+										{
+											"key": "Connection",
+											"value": "keep-alive"
+										},
+										{
+											"key": "Vary",
+											"value": "Origin"
+										},
+										{
+											"key": "Vary",
+											"value": "Access-Control-Request-Method"
+										},
+										{
+											"key": "Vary",
+											"value": "Access-Control-Request-Headers"
+										},
+										{
+											"key": "Access-Control-Allow-Headers",
+											"value": "Authorization, Content-Type, Cache-Control, JSESSIONID, XSRF-TOKEN"
+										},
+										{
+											"key": "Access-Control-Allow-Credentials",
+											"value": "true"
+										},
+										{
+											"key": "Access-Control-Expose-Headers",
+											"value": "XSRF-TOKEN, JSESSIONID"
+										},
+										{
+											"key": "Access-Control-Allow-Methods",
+											"value": "POST, PUT, GET, OPTIONS, DELETE, PATCH"
+										}
+									],
+									"cookie": [],
+									"body": "{\n    \"timestamp\": \"2023-10-09T12:33:17.963+00:00\",\n    \"status\": 200,\n    \"data\": {\n        \"success\": true\n    }\n}"
+								}
+							]
+						},
+						{
+							"name": "reject Reason",
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer Wu1GiuoBnqI1VdqjsTaude5StPJmb2bX2rbostsZw4RQCj7hkWLlXynHazPLWaiUhwR5AcifxqsgD4UjZ6H2vIpimOzgyY+bo22wBJ+AdvAcXcYe7SwyEaLsMmNVHacAe3WHZ+ggK0OJpv6VVezZawMikVr56fEvCYTKXdHqLz8=",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "http://{{host-api}}/api/trx/approval/reject/reason",
+									"protocol": "http",
+									"host": [
+										"{{host-api}}"
+									],
+									"path": [
+										"api",
+										"trx",
+										"approval",
+										"reject",
+										"reason"
+									]
+								}
+							},
+							"response": [
+								{
+									"name": "ok",
+									"originalRequest": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "Bearer Wu1GiuoBnqI1VdqjsTaude5StPJmb2bX2rbostsZw4RQCj7hkWLlXynHazPLWaiUhwR5AcifxqsgD4UjZ6H2vIpimOzgyY+bo22wBJ+AdvAcXcYe7SwyEaLsMmNVHacAe3WHZ+ggK0OJpv6VVezZawMikVr56fEvCYTKXdHqLz8=",
+												"type": "text"
+											}
+										],
+										"url": {
+											"raw": "http://{{host-api}}/api/trx/approval/reject/reason",
+											"protocol": "http",
+											"host": [
+												"{{host-api}}"
+											],
+											"path": [
+												"api",
+												"trx",
+												"approval",
+												"reject",
+												"reason"
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Server",
+											"value": "nginx/1.18.0 (Ubuntu)"
+										},
+										{
+											"key": "Date",
+											"value": "Mon, 09 Oct 2023 12:36:14 GMT"
+										},
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										},
+										{
+											"key": "Transfer-Encoding",
+											"value": "chunked"
+										},
+										{
+											"key": "Connection",
+											"value": "keep-alive"
+										},
+										{
+											"key": "Vary",
+											"value": "Origin"
+										},
+										{
+											"key": "Vary",
+											"value": "Access-Control-Request-Method"
+										},
+										{
+											"key": "Vary",
+											"value": "Access-Control-Request-Headers"
+										},
+										{
+											"key": "Access-Control-Allow-Headers",
+											"value": "Authorization, Content-Type, Cache-Control, JSESSIONID, XSRF-TOKEN"
+										},
+										{
+											"key": "Access-Control-Allow-Credentials",
+											"value": "true"
+										},
+										{
+											"key": "Access-Control-Expose-Headers",
+											"value": "XSRF-TOKEN, JSESSIONID"
+										},
+										{
+											"key": "Access-Control-Allow-Methods",
+											"value": "POST, PUT, GET, OPTIONS, DELETE, PATCH"
+										}
+									],
+									"cookie": [],
+									"body": "{\n    \"timestamp\": \"2023-10-09T12:36:14.450+00:00\",\n    \"status\": 200,\n    \"data\": [\n        {\n            \"id\": \"83c254c3-d2c7-4f27-be59-01a32b2c5ead\",\n            \"createdOn\": \"2023-09-16T13:44:55.572+00:00\",\n            \"modifiedOn\": \"2023-09-28T06:02:42.189+00:00\",\n            \"createdBy\": \"9145884b-3682-4ff0-be85-a7c048421b9a\",\n            \"modifiedBy\": \"9145884b-3682-4ff0-be85-a7c048421b9a\",\n            \"name\": \"By default rule\",\n            \"isOption\": false,\n            \"displayOrder\": 100\n        },\n        {\n            \"id\": \"56a83ebf-392a-42a3-a356-d4f259bbb930\",\n            \"createdOn\": \"2023-09-28T06:01:25.515+00:00\",\n            \"modifiedOn\": \"2023-09-28T06:02:44.189+00:00\",\n            \"createdBy\": \"9145884b-3682-4ff0-be85-a7c048421b9a\",\n            \"modifiedBy\": \"9145884b-3682-4ff0-be85-a7c048421b9a\",\n            \"name\": \"Dokumen tidak lengkap\",\n            \"isOption\": true,\n            \"displayOrder\": 100\n        },\n        {\n            \"id\": \"217f640e-8768-49d4-94a5-e72580dbab23\",\n            \"createdOn\": \"2023-10-07T11:39:17.081+00:00\",\n            \"modifiedOn\": \"2023-10-07T11:39:44.337+00:00\",\n            \"createdBy\": \"9145884b-3682-4ff0-be85-a7c048421b9a\",\n            \"modifiedBy\": \"9145884b-3682-4ff0-be85-a7c048421b9a\",\n            \"name\": \"Mempunyai pinjaman yang aktif\",\n            \"isOption\": true,\n            \"displayOrder\": 100\n        }\n    ]\n}"
+								}
+							]
+						}
+					]
+				},
+				{
+					"name": "Disbursement",
+					"item": [
+						{
+							"name": "Create",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer u5teST8F6Hu8lcsxPpdqr4aSHLxGA+39EuubIQy5VWyWyG2jANv7Sci4w10aOmcmKdjQAXpuq1TU6uEBXfLAsua9Kt/VnA8Ui0X/gBBe92/mzus06DDSfNCM53rtGKHDlm/0kCp716LxhWZjALbYm7oO8iX59MzvZICAFGWiCmU=",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"external_id\": \"358d127a-2a41-482a-a7ea-0d3d012f1fc8\",\n  \"bank_code\": \"BCA\",\n  \"account_holder_name\": \"Bob Jones\",\n  \"account_number\": \"1231241231\",\n  \"amount\": 111222,\n  \"description\": \"Test disbursement\"\n}\n",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://{{host-api}}/api/vendor/im/disbursement",
+									"protocol": "http",
+									"host": [
+										"{{host-api}}"
+									],
+									"path": [
+										"api",
+										"vendor",
+										"im",
+										"disbursement"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Backoffice",
+			"item": [
+				{
+					"name": "General",
+					"item": [
+						{
+							"name": "Main Menu",
+							"item": [
+								{
+									"name": "Get Main Menu",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "OlLYXs4rrTeHpYN+fDiFKUOG6xNlFJAp4gxySo8U4oT2Mgsy9zC5FN107iZ81rwQ53bwm6af+2L2F/HU1EBb/1XNni5NmRQ/LRYAFUYUTFy0HNjdBUADVGsyi0+5ii73XutTpWa4aXQ15aeKrGfcgDYuFfLqG4gX6pqR4NQSz0M=",
+													"type": "string"
+												}
+											]
+										},
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "http://{{host-api}}/api/bo/general/mainmenu",
+											"protocol": "http",
+											"host": [
+												"{{host-api}}"
+											],
+											"path": [
+												"api",
+												"bo",
+												"general",
+												"mainmenu"
+											]
+										}
+									},
+									"response": []
+								}
+							]
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Vendor",
+			"item": [
+				{
+					"name": "Instamoney",
+					"item": [
+						{
+							"name": "Origin",
+							"item": [
+								{
+									"name": "Get Balance",
+									"request": {
+										"auth": {
+											"type": "basic",
+											"basic": [
+												{
+													"key": "username",
+													"value": "xnd_development_NQH0hJ89xsf9dsgCTVJOnqEjxUF1b8nP50bn7cCdrYzVKPvB12IONF1zbKJjf",
+													"type": "string"
+												}
+											]
+										},
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "https://api.xendit.co/balance",
+											"protocol": "https",
+											"host": [
+												"api",
+												"xendit",
+												"co"
+											],
+											"path": [
+												"balance"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Customer - create",
+									"request": {
+										"auth": {
+											"type": "basic",
+											"basic": [
+												{
+													"key": "username",
+													"value": "xnd_development_NQH0hJ89xsf9dsgCTVJOnqEjxUF1b8nP50bn7cCdrYzVKPvB12IONF1zbKJjf",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n     \"reference_id\": \"demo_1475801962607\",\r\n     \"type\": \"INDIVIDUAL\",\r\n     \"individual_detail\": {\r\n       \"given_names\": \"John\",\r\n       \"surname\": \"Doe\"\r\n     },\r\n     \"email\": \"customer@website.com\",\r\n     \"mobile_number\": \"+628121234567890\"\r\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "https://api.xendit.co/customers",
+											"protocol": "https",
+											"host": [
+												"api",
+												"xendit",
+												"co"
+											],
+											"path": [
+												"customers"
+											]
+										}
+									},
+									"response": [
+										{
+											"name": "Customer - create",
+											"originalRequest": {
+												"method": "POST",
+												"header": [],
+												"body": {
+													"mode": "raw",
+													"raw": "{\r\n     \"reference_id\": \"demo_1475801962607\",\r\n     \"type\": \"INDIVIDUAL\",\r\n     \"individual_detail\": {\r\n       \"given_names\": \"John\",\r\n       \"surname\": \"Doe\"\r\n     },\r\n     \"email\": \"customer@website.com\",\r\n     \"mobile_number\": \"+628121234567890\"\r\n}",
+													"options": {
+														"raw": {
+															"language": "json"
+														}
+													}
+												},
+												"url": {
+													"raw": "https://api.xendit.co/customers",
+													"protocol": "https",
+													"host": [
+														"api",
+														"xendit",
+														"co"
+													],
+													"path": [
+														"customers"
+													]
+												}
+											},
+											"_postman_previewlanguage": "Text",
+											"header": [],
+											"cookie": [],
+											"body": "{\r\n    \"type\": \"INDIVIDUAL\",\r\n    \"date_of_registration\": null,\r\n    \"email\": \"customer@website.com\",\r\n    \"mobile_number\": \"+628121234567890\",\r\n    \"phone_number\": null,\r\n    \"created\": \"2023-09-10T05:27:48.736Z\",\r\n    \"updated\": \"2023-09-10T05:27:48.736Z\",\r\n    \"description\": null,\r\n    \"hashed_phone_number\": null,\r\n    \"domicile_of_registration\": null,\r\n    \"kyc_documents\": [],\r\n    \"id\": \"cust-d39c7a1a-4578-446b-8eb1-762251c310cc\",\r\n    \"reference_id\": \"demo_1475801962607\",\r\n    \"metadata\": null,\r\n    \"individual_detail\": {\r\n        \"given_names\": \"John\",\r\n        \"given_names_non_roman\": null,\r\n        \"surname\": \"Doe\",\r\n        \"surname_non_roman\": null,\r\n        \"nationality\": null,\r\n        \"date_of_birth\": null,\r\n        \"place_of_birth\": null,\r\n        \"gender\": null,\r\n        \"employment\": null\r\n    },\r\n    \"business_detail\": null,\r\n    \"addresses\": [],\r\n    \"identity_accounts\": []\r\n}"
+										}
+									]
+								}
+							]
+						},
+						{
+							"name": "Customer",
+							"item": [
+								{
+									"name": "Create customer by contact",
+									"request": {
+										"method": "POST",
+										"header": [],
+										"url": {
+											"raw": "http://{{host-api}}/api/vendor/im/customer/create/d769bd61-4f3e-4504-8243-c63ef9e20641",
+											"protocol": "http",
+											"host": [
+												"{{host-api}}"
+											],
+											"path": [
+												"api",
+												"vendor",
+												"im",
+												"customer",
+												"create",
+												"d769bd61-4f3e-4504-8243-c63ef9e20641"
+											]
+										}
+									},
+									"response": []
+								}
+							]
+						},
+						{
+							"name": "Virtual Account",
+							"item": [
+								{
+									"name": "Create customer by contact Copy",
+									"request": {
+										"auth": {
+											"type": "noauth"
+										},
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n    \"contactId\": \"d769bd61-4f3e-4504-8243-c63ef9e20641\",\r\n    \"bankId\": \"3506276c-e038-4679-b048-5919bd51f6cf\",\r\n    \"refId\": \"5c438c0d-d97b-4a06-8c91-e78358340f66\"\r\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "http://{{host-api}}/api/vendor/im/va/create",
+											"protocol": "http",
+											"host": [
+												"{{host-api}}"
+											],
+											"path": [
+												"api",
+												"vendor",
+												"im",
+												"va",
+												"create"
+											]
+										}
+									},
+									"response": []
+								}
+							]
+						},
+						{
+							"name": "Get Balance",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://{{host-api}}/api/vendor/im/balance",
+									"protocol": "http",
+									"host": [
+										"{{host-api}}"
+									],
+									"path": [
+										"api",
+										"vendor",
+										"im",
+										"balance"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Infobip",
+					"item": [
+						{
+							"name": "Send Message",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"from\": \"447860099299\",\n    \"to\": \"6282243424773\",\n    \"messageId\": \"8cdfde5c-1223-4553-b069-959c89e524d5\",\n    \"content\": {\n        \"text\": \"Halo kok gak terkirim pesannya, bisa gak apinya ini\"\n    },\n    \"notifyUrl\": \"https://1857-147-139-134-133.ngrok-free.app/api/vendor/infobip/message/callback\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://{{host-api}}/api/vendor/infobip/message/:typeMessage",
+									"protocol": "http",
+									"host": [
+										"{{host-api}}"
+									],
+									"path": [
+										"api",
+										"vendor",
+										"infobip",
+										"message",
+										":typeMessage"
+									],
+									"variable": [
+										{
+											"key": "typeMessage",
+											"value": "text"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Contact",
+			"item": [
+				{
+					"name": "list contact",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer u5teST8F6Hu8lcsxPpdqr4aSHLxGA+39EuubIQy5VWyWyG2jANv7Sci4w10aOmcmKdjQAXpuq1TU6uEBXfLAsua9Kt/VnA8Ui0X/gBBe92/mzus06DDSfNCM53rtGKHDlm/0kCp716LxhWZjALbYm7oO8iX59MzvZICAFGWiCmU=",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://{{host-api}}/api/contact?start=0&length=50&sort%5B0%5D%5Bselector%5D=id&sort%5B0%5D%5Bdesc%5D=false",
+							"protocol": "http",
+							"host": [
+								"{{host-api}}"
+							],
+							"path": [
+								"api",
+								"contact"
+							],
+							"query": [
+								{
+									"key": "start",
+									"value": "0"
+								},
+								{
+									"key": "length",
+									"value": "50"
+								},
+								{
+									"key": "sort%5B0%5D%5Bselector%5D",
+									"value": "id"
+								},
+								{
+									"key": "sort%5B0%5D%5Bdesc%5D",
+									"value": "false"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "cek-ktp",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer u5teST8F6Hu8lcsxPpdqr4aSHLxGA+39EuubIQy5VWyWyG2jANv7Sci4w10aOmcmKdjQAXpuq1TU6uEBXfLAsua9Kt/VnA8Ui0X/gBBe92/mzus06DDSfNCM53rtGKHDlm/0kCp716LxhWZjALbYm7oO8iX59MzvZICAFGWiCmU=",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"idNumber\": 8912313,\n    \"contactId\": \"\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://{{host-api}}/api/contact/check-ktp",
+							"protocol": "http",
+							"host": [
+								"{{host-api}}"
+							],
+							"path": [
+								"api",
+								"contact",
+								"check-ktp"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "cek-email",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer u5teST8F6Hu8lcsxPpdqr4aSHLxGA+39EuubIQy5VWyWyG2jANv7Sci4w10aOmcmKdjQAXpuq1TU6uEBXfLAsua9Kt/VnA8Ui0X/gBBe92/mzus06DDSfNCM53rtGKHDlm/0kCp716LxhWZjALbYm7oO8iX59MzvZICAFGWiCmU=",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"danang@jkt.id\",\n    \"contactId\": \"\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://{{host-api}}/api/contact/check-email",
+							"protocol": "http",
+							"host": [
+								"{{host-api}}"
+							],
+							"path": [
+								"api",
+								"contact",
+								"check-email"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "cek-phone",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer u5teST8F6Hu8lcsxPpdqr4aSHLxGA+39EuubIQy5VWyWyG2jANv7Sci4w10aOmcmKdjQAXpuq1TU6uEBXfLAsua9Kt/VnA8Ui0X/gBBe92/mzus06DDSfNCM53rtGKHDlm/0kCp716LxhWZjALbYm7oO8iX59MzvZICAFGWiCmU=",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"phoneNumber\": 628988883636,\n    \"contactId\": \"\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://{{host-api}}/api/contact/check-phone",
+							"protocol": "http",
+							"host": [
+								"{{host-api}}"
+							],
+							"path": [
+								"api",
+								"contact",
+								"check-phone"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Scheduler",
+			"item": [
+				{
+					"name": "update",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "*/*"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer gJ1fMf6tY0EdapWVGRh1+h9jDECDY4XDs0PaOVU672IJx3UyOkr95PNVEvzGSVzh0Iu/Y4G4DuhtTwAIqEEEqnjBmdxl+R0ZRXaadyDd8Pp1RKEEOFrkn8fAbbLcmKjBsXvaOdyBNfnmDKyVCcw940T9Huq2NlT4bvpzbv29zo4=",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"taskId\": \"<string>\",\n  \"name\": \"<string>\",\n  \"topicName\": \"<string>\",\n  \"topicParameter\": \"<string>\",\n  \"cronExpression\": \"<string>\",\n  \"enabled\": \"<boolean>\",\n  \"modifiedBy\": \"<string>\"\n}",
+							"options": {
+								"raw": {
+									"headerFamily": "json",
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://{{host-api}}/api/scheduler/update",
+							"protocol": "http",
+							"host": [
+								"{{host-api}}"
+							],
+							"path": [
+								"api",
+								"scheduler",
+								"update"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "enable",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "*/*",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer gJ1fMf6tY0EdapWVGRh1+h9jDECDY4XDs0PaOVU672IJx3UyOkr95PNVEvzGSVzh0Iu/Y4G4DuhtTwAIqEEEqnjBmdxl+R0ZRXaadyDd8Pp1RKEEOFrkn8fAbbLcmKjBsXvaOdyBNfnmDKyVCcw940T9Huq2NlT4bvpzbv29zo4=",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"taskId\": \"<string>\",\n  \"modifiedBy\": \"<string>\"\n}",
+							"options": {
+								"raw": {
+									"headerFamily": "json",
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://{{host-api}}/api/scheduler/enable",
+							"protocol": "http",
+							"host": [
+								"{{host-api}}"
+							],
+							"path": [
+								"api",
+								"scheduler",
+								"enable"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "disable",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "*/*",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer gJ1fMf6tY0EdapWVGRh1+h9jDECDY4XDs0PaOVU672IJx3UyOkr95PNVEvzGSVzh0Iu/Y4G4DuhtTwAIqEEEqnjBmdxl+R0ZRXaadyDd8Pp1RKEEOFrkn8fAbbLcmKjBsXvaOdyBNfnmDKyVCcw940T9Huq2NlT4bvpzbv29zo4=",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"taskId\": \"<string>\",\n  \"modifiedBy\": \"<string>\"\n}",
+							"options": {
+								"raw": {
+									"headerFamily": "json",
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://{{host-api}}/api/scheduler/disable",
+							"protocol": "http",
+							"host": [
+								"{{host-api}}"
+							],
+							"path": [
+								"api",
+								"scheduler",
+								"disable"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "create",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "*/*",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer gJ1fMf6tY0EdapWVGRh1+h9jDECDY4XDs0PaOVU672IJx3UyOkr95PNVEvzGSVzh0Iu/Y4G4DuhtTwAIqEEEqnjBmdxl+R0ZRXaadyDd8Pp1RKEEOFrkn8fAbbLcmKjBsXvaOdyBNfnmDKyVCcw940T9Huq2NlT4bvpzbv29zo4=",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"<string>\",\n  \"topicName\": \"<string>\",\n  \"topicParameter\": \"<string>\",\n  \"cronExpression\": \"<string>\",\n  \"createdBy\": \"<string>\"\n}",
+							"options": {
+								"raw": {
+									"headerFamily": "json",
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://{{host-api}}/api/scheduler/create",
+							"protocol": "http",
+							"host": [
+								"{{host-api}}"
+							],
+							"path": [
+								"api",
+								"scheduler",
+								"create"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "reload",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "*/*",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer gJ1fMf6tY0EdapWVGRh1+h9jDECDY4XDs0PaOVU672IJx3UyOkr95PNVEvzGSVzh0Iu/Y4G4DuhtTwAIqEEEqnjBmdxl+R0ZRXaadyDd8Pp1RKEEOFrkn8fAbbLcmKjBsXvaOdyBNfnmDKyVCcw940T9Huq2NlT4bvpzbv29zo4=",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://{{host-api}}/api/scheduler/reload",
+							"protocol": "http",
+							"host": [
+								"{{host-api}}"
+							],
+							"path": [
+								"api",
+								"scheduler",
+								"reload"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
