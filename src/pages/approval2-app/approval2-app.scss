@@ -1,0 +1,18 @@
+.dx-fileuploader-files-container {
+  display: none;
+}
+
+.btn-flex {
+  display: flex;
+  justify-content: space-between;
+}
+
+.title-detail {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.title-detail > div {
+  margin-right: 15px;
+}

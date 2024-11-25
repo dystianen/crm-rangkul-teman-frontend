@@ -1,0 +1,71 @@
+{
+  "name": "hayman-fe",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "local": "env-cmd -f ./.env.local react-scripts start",
+    "dev": "env-cmd -f ./.env.dev react-scripts start",
+    "prod": "env-cmd -f ./.env.prod react-scripts start",
+    "build:dev": "env-cmd -f ./.env.dev react-scripts build",
+    "build:prod": "env-cmd -f ./.env.prod react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject",
+    "build-themes": "devextreme build",
+    "postinstall": "npm run build-themes"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "dependencies": {
+    "@reduxjs/toolkit": "^1.9.5",
+    "@testing-library/jest-dom": "^5.17.0",
+    "@testing-library/react": "^13.4.0",
+    "@testing-library/user-event": "^13.5.0",
+    "@types/jest": "^27.5.2",
+    "@types/node": "^16.18.41",
+    "@types/qs": "^6.9.6",
+    "@types/react": "^18.2.20",
+    "@types/react-dom": "^18.2.7",
+    "axios": "^0.24.0",
+    "devextreme": "^23.1.5",
+    "devextreme-react": "^23.1.5",
+    "emoji-picker-react": "^4.8.0",
+    "env-cmd": "^10.1.0",
+    "html-react-parser": "^5.1.8",
+    "moment-timezone": "^0.5.43",
+    "query-string": "^8.1.0",
+    "react": "^18.2.0",
+    "react-app-polyfill": "^1.0.0",
+    "react-doc-viewer": "^0.1.5",
+    "react-dom": "^18.2.0",
+    "react-image-file-resizer": "^0.4.8",
+    "react-pdf": "^5.3.2",
+    "react-redux": "^8.1.2",
+    "react-router-dom": "^6.3.0",
+    "react-scripts": "5.0.1",
+    "sass": "^1.34.1",
+    "save-file": "^2.3.1",
+    "styled-components": "^6.0.7",
+    "typescript": "^4.9.5",
+    "web-vitals": "^2.1.4"
+  },
+  "devDependencies": {
+    "devextreme-cli": "1.6.0",
+    "devextreme-themebuilder": "^23.1.5"
+  }
+}

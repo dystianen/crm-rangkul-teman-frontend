@@ -1,0 +1,41 @@
+@import "../../themes/generated/variables.base.scss";
+@import "../../dx-styles.scss";
+
+.header-component {
+  flex: 0 0 auto;
+  z-index: 1;
+  border-bottom: 1px solid #c0c0c0;
+
+  .dx-toolbar .dx-toolbar-item.menu-button>.dx-toolbar-item-content .dx-icon {
+    color: $base-accent;
+  }
+}
+
+.dx-toolbar.header-toolbar .dx-toolbar-items-container .dx-toolbar-after {
+  padding: 0 40px;
+
+  .screen-x-small & {
+    padding: 0 20px;
+  }
+}
+
+.dx-toolbar .dx-toolbar-item.dx-toolbar-button.menu-button {
+  width: $side-panel-min-width;
+  text-align: center;
+  padding: 0;
+}
+
+.header-title .dx-item-content {
+  padding: 0;
+  margin: 0;
+}
+
+.dx-theme-generic {
+  .dx-toolbar {
+    padding: 10px 0;
+  }
+
+  .user-button>.dx-button-content {
+    padding: 3px;
+  }
+}

@@ -1,0 +1,32 @@
+.status-app {
+  display: inline;
+  padding: 3px 7px;
+  border-radius: 13px;
+
+  span {
+    font-size: 13px;
+  }
+}
+
+.status-closed {
+  background: #10d710;
+  color: #ffffff;
+}
+
+.status-overdue {
+  background: #d71010;
+  color: #ffffff;
+}
+
+.status-unsigned {
+  background: #d77310;
+  color: #ffffff;
+}
+.status-active{
+  background: #d7a910;
+  color: #ffffff;
+}
+.status-incomplete{
+  background: #707070;
+  color: #ffffff;
+}
