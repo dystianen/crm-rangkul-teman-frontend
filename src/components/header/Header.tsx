@@ -17,7 +17,7 @@ export default function Header({ menuToggleEnabled, title, toggleMenu }: HeaderP
         >
           <Button icon="menu" stylingMode="text" onClick={toggleMenu} />
         </Item>
-        <Item location={"before"} cssClass={"header-title"} text={"Capital"} visible={!!title} />
+        <Item location={"before"} cssClass={"header-title"} text={title} visible={!!title} />
         <Item location={"after"} locateInMenu={"auto"} menuItemTemplate={"userPanelTemplate"}>
           <Button
             className={"user-button authorization"}
