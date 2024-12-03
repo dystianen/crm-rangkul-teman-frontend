@@ -193,10 +193,6 @@ export default function EditPage() {
     return () => clearInterval(intervalId);
   }, [id]);
 
-  const closePopupCheckEkyc = () => {
-    setShowPopupCheckEkyc(false);
-  };
-
   const onFileChanged = async (e: any, type: "KTP" | "SELFIE") => {
     if (e.value.length > 0) {
       const uri = await resizeImage(e.value[0]);
@@ -703,13 +699,7 @@ export default function EditPage() {
         </div>
       </div>
 
-      <Popup
-        width={360}
-        height={"auto"}
-        visible={showPopupCheckEkyc}
-        showTitle={false}
-        onHiding={closePopupCheckEkyc}
-      >
+      <Popup width={360} height={"auto"} visible={showPopupCheckEkyc} showTitle={false}>
         <div className="popup-check-ekyc">
           <Loader />
           <h5 className="title">Mohon tunggu sedang dilakukan verifikasi data</h5>
