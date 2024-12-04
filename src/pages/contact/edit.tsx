@@ -1,8 +1,9 @@
-import { Button, DataGrid, Popup } from "devextreme-react";
+import { Button, DataGrid, LoadIndicator, Popup } from "devextreme-react";
 import { Column, Lookup, Pager, Paging, Scrolling } from "devextreme-react/data-grid";
 import Form, {
   AsyncRule,
   ButtonItem,
+  ButtonOptions,
   GroupItem,
   Item,
   PatternRule,
@@ -53,6 +54,7 @@ export default function EditPage() {
   const [selfie, setSelfie] = useState("");
   const [contactRelatives, setContactRelatives] = useState<ContactRelativeDto[]>([]);
   const [showPopupCheckEkyc, setShowPopupCheckEkyc] = useState(false);
+  const [isLoadingUpdate, setLoadingUpdate] = useState(false);
 
   const relativeOptions = selectBoxOptions(new DataSource(contactRelativeStore), "Select Relation");
   const genderOptions = selectBoxOptions(new DataSource(genderStore), "Select gender");
@@ -78,7 +80,10 @@ export default function EditPage() {
       selfie,
       contactRelatives: contactRelatives
     };
+
+    setLoadingUpdate(true);
     updateContact(id, request).then(() => {
+      setLoadingUpdate(false);
       notify(
         {
           message: "Success submitted contact",
@@ -607,14 +612,14 @@ export default function EditPage() {
                 </DataGrid>
               </GroupItem>
             </GroupItem>
-            <ButtonItem
-              horizontalAlignment="left"
-              buttonOptions={{
-                text: "Update Contact",
-                type: "success",
-                useSubmitBehavior: true
-              }}
-            />
+            <ButtonItem horizontalAlignment="left">
+              <ButtonOptions type="success" disabled={isLoadingUpdate} useSubmitBehavior>
+                <div className="button-options">
+                  {isLoadingUpdate && <LoadIndicator width="20px" height="20px" visible />}
+                  <span className="dx-button-text">Update Contact</span>
+                </div>
+              </ButtonOptions>
+            </ButtonItem>
           </Form>
         </form>
         <div className="form__tabs dx-card responsive-paddings next-card">

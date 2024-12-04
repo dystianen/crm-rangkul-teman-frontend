@@ -1,10 +1,11 @@
-import { DataGrid } from "devextreme-react";
+import { DataGrid, LoadIndicator } from "devextreme-react";
 import { Column, Lookup, Pager, Paging, Scrolling } from "devextreme-react/data-grid";
 import "devextreme-react/date-box";
 import "devextreme-react/file-uploader";
 import Form, {
   AsyncRule,
   ButtonItem,
+  ButtonOptions,
   GroupItem,
   Item,
   PatternRule,
@@ -52,6 +53,7 @@ export default function Create() {
   const formRef = useRef<Form>(null);
   const [birthDate, setBirthDate] = useState(new Date(1989, 12, 1));
   const [contactRelatives] = useState<ContactRelativeDto[]>([]);
+  const [isLoadingCreate, setLoadingCreate] = useState(false);
 
   const relativeOptions = selectBoxOptions(new DataSource(contactRelativeStore), "Select Relation");
 
@@ -103,6 +105,7 @@ export default function Create() {
   };
 
   const handleSubmit = (e: any) => {
+    setLoadingCreate(true);
     const form = formRef.current!.instance;
     let request = {
       ...contact,
@@ -115,6 +118,7 @@ export default function Create() {
     };
 
     createContact(request).then(() => {
+      setLoadingCreate(false);
       setContact(initContactValue);
       form.resetValues();
       notify(
@@ -130,8 +134,8 @@ export default function Create() {
       );
       if (backTo) {
         createAppLoanOnboarding({
-          branchId: branchId,
-          productId: productId,
+          branchId,
+          productId,
           contactIdentity: ktp
         }).then((res) => {
           navigate(`/loan-app/create/step/1/?id=${res.appId}`);
@@ -565,14 +569,14 @@ export default function Create() {
                 </DataGrid>
               </GroupItem>
             </GroupItem>
-            <ButtonItem
-              horizontalAlignment="left"
-              buttonOptions={{
-                text: "Register",
-                type: "success",
-                useSubmitBehavior: true
-              }}
-            />
+            <ButtonItem horizontalAlignment="left">
+              <ButtonOptions type="success" disabled={isLoadingCreate} useSubmitBehavior>
+                <div className="button-options">
+                  {isLoadingCreate && <LoadIndicator width="20px" height="20px" visible />}
+                  <span className="dx-button-text">Register</span>
+                </div>
+              </ButtonOptions>
+            </ButtonItem>
           </Form>
         </form>
       </div>
