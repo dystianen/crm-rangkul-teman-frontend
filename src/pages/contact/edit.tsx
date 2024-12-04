@@ -1,4 +1,4 @@
-import { DataGrid } from "devextreme-react";
+import { Button, DataGrid, Popup } from "devextreme-react";
 import { Column, Lookup, Pager, Paging, Scrolling } from "devextreme-react/data-grid";
 import Form, {
   AsyncRule,
@@ -21,6 +21,7 @@ import { useLocation } from "react-router-dom";
 import {
   addressOwnershipStore,
   cityStore,
+  contactCheckEkyc,
   contactDetailApi,
   contactRelativeStore,
   countryStore,
@@ -38,6 +39,7 @@ import {
   validateIdNumber,
   validatePhone
 } from "src/api/contact";
+import Loader from "src/components/loader";
 import { ContactRelativeDto, ContactRequest, initContactValue } from "src/interfaces/contactDto";
 import resizeImage from "src/utils/resizeImage.util";
 import { formatDate } from "../../utils/dateUtils";
@@ -50,6 +52,7 @@ export default function EditPage() {
   const [ktpSrc, setKtpSrc] = useState("");
   const [selfie, setSelfie] = useState("");
   const [contactRelatives, setContactRelatives] = useState<ContactRelativeDto[]>([]);
+  const [showPopupCheckEkyc, setShowPopupCheckEkyc] = useState(false);
 
   const relativeOptions = selectBoxOptions(new DataSource(contactRelativeStore), "Select Relation");
   const genderOptions = selectBoxOptions(new DataSource(genderStore), "Select gender");
@@ -93,7 +96,9 @@ export default function EditPage() {
   };
 
   useEffect(() => {
-    contactDetailApi(String(id)).then((res: any) => {
+    const contactId = String(id);
+
+    contactDetailApi(contactId).then((res: any) => {
       const data: ContactRequest = {
         idNumber: res.idNumber,
         nameBorrower: res.name,
@@ -169,6 +174,23 @@ export default function EditPage() {
 
       setContact(data);
     });
+
+    const handleCheckEkyc = (intervalId: NodeJS.Timeout) => {
+      contactCheckEkyc(contactId).then((res) => {
+        setShowPopupCheckEkyc(res);
+        if (!res) {
+          clearInterval(intervalId);
+        }
+      });
+    };
+
+    const intervalId = setInterval(() => {
+      handleCheckEkyc(intervalId);
+    }, 15000);
+
+    handleCheckEkyc(intervalId);
+
+    return () => clearInterval(intervalId);
   }, [id]);
 
   const onFileChanged = async (e: any, type: "KTP" | "SELFIE") => {
@@ -212,6 +234,7 @@ export default function EditPage() {
       setSubDistrictOptions(selectBoxOptions(new DataSource(subDistrictStore(evt.value)), ""));
     }
 
+    // @ts-expect-error
     contact[evt.dataField] = evt.value;
   };
 
@@ -239,13 +262,16 @@ export default function EditPage() {
     return validateEmail(request);
   };
 
+  const handleBack = () => {
+    navigate(-1);
+  };
+
   const backButtonOptions = {
     icon: "back",
     text: "Kembali",
-    onClick: () => {
-      navigate(-1);
-    }
+    onClick: handleBack
   };
+
   return (
     <>
       <h2 className={"content-block"}>Detail Contact</h2>
@@ -672,6 +698,14 @@ export default function EditPage() {
           </Form>
         </div>
       </div>
+
+      <Popup width={360} height={"auto"} visible={showPopupCheckEkyc} showTitle={false}>
+        <div className="popup-check-ekyc">
+          <Loader />
+          <h5 className="title">Mohon tunggu sedang dilakukan verifikasi data</h5>
+          <Button text="Kembali" type="default" onClick={handleBack} />
+        </div>
+      </Popup>
     </>
   );
 }

@@ -1,7 +1,7 @@
-import { dataRawCustomStore } from "../model/datagrid";
-import { ajaxGet, ajaxPatch, ajaxPost } from "./http.api";
 import qs from "qs";
 import { customStore } from "../model/customStore";
+import { dataRawCustomStore } from "../model/datagrid";
+import { ajaxGet, ajaxPatch, ajaxPost } from "./http.api";
 
 export const contactListStore = customStore({ loadUrl: "/api/contact" });
 
@@ -75,6 +75,11 @@ export const contactDetailApi = async (id: string): Promise<any[]> => {
   return resp.data;
 };
 
+export const contactCheckEkyc = async (id: string): Promise<boolean> => {
+  const resp = await ajaxGet(`/api/contact/ekyc/check/${id}`);
+  return resp.data;
+};
+
 export const findAll = async (paramSearch: any): Promise<any> => {
   const resp = await ajaxGet(`/api/contact/?${qs.stringify(paramSearch)}`);
   return resp.data;
@@ -89,7 +94,7 @@ export const selectBoxBranchOptions = (data: any, placeholder: string) => {
     showClearButton: true,
     deferRendering: true,
     hoverStateEnabled: true,
-    searchEnabled: true,
+    searchEnabled: true
   };
 };
 
@@ -102,7 +107,7 @@ export const selectBoxOptions = (data: any, placeholder: string) => {
     showClearButton: true,
     deferRendering: true,
     hoverStateEnabled: true,
-    searchEnabled: true,
+    searchEnabled: true
   };
 };
 
@@ -123,16 +128,10 @@ export const validateEmail = async (payload: any) => {
 export const contactRelativeStore = dataRawCustomStore(`/api/contact/data/contactRelative?`);
 export const genderStore = dataRawCustomStore(`/api/contact/data/gender?`);
 export const religionStore = dataRawCustomStore(`/api/contact/data/religion?`);
-export const educationStore = dataRawCustomStore(
-  `/api/contact/data/education?`
-);
-export const maritalStatusStore = dataRawCustomStore(
-  `/api/contact/data/maritalStatus?`
-);
+export const educationStore = dataRawCustomStore(`/api/contact/data/education?`);
+export const maritalStatusStore = dataRawCustomStore(`/api/contact/data/maritalStatus?`);
 export const countryStore = dataRawCustomStore(`/api/data/country/list?`);
-export const addressOwnershipStore = dataRawCustomStore(
-  `/api/contact/data/addressOwnership?`
-);
+export const addressOwnershipStore = dataRawCustomStore(`/api/contact/data/addressOwnership?`);
 export const provinceStore = (countryId: string) =>
   dataRawCustomStore(`/api/data/province/${countryId}?`);
 export const cityStore = (provinceId: string) =>
