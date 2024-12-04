@@ -207,8 +207,8 @@ $side-panel-min-width: 24px;
 html,
 body {
   margin: 0px;
-  min-height: 99.4vh;
-  height: 99.4vh;
+  min-height: 99.7%;
+  height: 99.7%;
 }
 
 #root {
@@ -232,9 +232,16 @@ body {
 }
 
 .dx-button {
+  padding: 6px !important;
   border-radius: 6px !important;
   -webkit-border-radius: 6px !important;
   -moz-border-radius: 6px !important;
   -ms-border-radius: 6px !important;
   -o-border-radius: 6px !important;
+}
+
+.button-options {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
