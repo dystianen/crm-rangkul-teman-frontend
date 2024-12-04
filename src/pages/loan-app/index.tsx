@@ -99,9 +99,14 @@ export default function Index() {
         createAppLoanOnboarding(request).then(
             (res) => {
                 if (res) {
-                    setLoanAppOnboarding(initLoanOnboardingValue);
-                    form.resetValues();
-                    navigate(`/loan-app/create/step/1/?id=${res.appId}`);
+                    console.log("app create ", res);
+                    if(res.isEkyc) {
+                        setLoanAppOnboarding(initLoanOnboardingValue);
+                        form.resetValues();
+                        navigate(`/loan-app/create/step/1/?id=${res.appId}`);
+                    } else {
+                        navigate(`/contact/edit?id=${res.contactId}&ktp=${request.contactIdentity}&branchId=${request.branchId}&productId=${request.productId}&backTo=step1`);
+                    }
                 }
             }, (error) => {
                 const {status} = error.options;
