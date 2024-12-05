@@ -38,6 +38,16 @@ export const submitAppLoan = async (id: string): Promise<any> => {
     return resp.data;
 };
 
+export const checkAccess = async (accessId: string): Promise<boolean> => {
+    const resp = await ajaxGet(`${API_PATH.PROFILE_ACCESS}/${accessId}`);
+    return resp;
+};
+
+export const getUnsignedDoc = async (id: string): Promise<any> => {
+    const resp = await ajaxGet(`${API_PATH.APPLICATION}/get/unsigned/${id}`);
+    return resp.data;
+}
+
 export const createAppLoanOnboardingStep1 = async (
     appId: string,
     payload: any
@@ -68,6 +78,11 @@ export const submitAppLoanSignedDocument = async (
         `${API_PATH.APPLICATION}/submit/signed/${appId}`,
         payload
     );
+    return resp.data;
+};
+
+export const detailAppStep = async (id: string): Promise<any> => {
+    const resp = await ajaxGet(`${API_PATH.APPLICATION}/get/step/${id}`);
     return resp.data;
 };
 

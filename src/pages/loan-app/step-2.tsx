@@ -1,7 +1,7 @@
 import React, {useEffect, useRef, useState} from "react";
 import Form, {
     ButtonItem,
-    GroupItem,
+    GroupItem, PatternRule,
     RequiredRule,
     SimpleItem,
 } from "devextreme-react/form";
@@ -26,13 +26,11 @@ import DataGrid, {
     Popup as PopGrid,
     Form as FormGrid,
 } from "devextreme-react/data-grid";
-import {AppLoanRequest} from "src/interfaces/appLoanOnboarding";
-import {createAppLoanOnboardingStep2, detailAppLoan} from "src/api/apploan";
+import {checkAccess, createAppLoanOnboardingStep2, detailAppLoan} from "src/api/apploan";
 import notify from "devextreme/ui/notify";
 import PdfViewer from "src/components/pdf-viewer/PdfViewer";
 import {getFileBase64} from "../../api/helper";
 import ReactDOM from "react-dom/client";
-import {OnClickLink} from "../../components/alink";
 import Resizer from "react-image-file-resizer";
 
 export default function Step2Page() {
@@ -43,11 +41,17 @@ export default function Step2Page() {
     const [fileType, setFileType] = useState<string>("");
     const [dataGrid, setDataGrid] = useState<any[]>([]);
     const formRef = useRef<Form>(null);
+    const [onStep2Loan, setOnStep2Loan] = useState<any>({
+        monthlyIncome: 0,
+        handwrittenSalesBook: false,
+        debitTransaction: 0,
+        creditTransaction: 0,
+    });
     const [submitForm, setSubmitForm] = useState(false);
 
     useEffect(() => {
         detailAppLoan(String(id)).then((res) => {
-            const data = res as AppLoanRequest;
+            const data = res as any;
             const gridStore: any[] = data?.customData || [];
             setDataGrid(gridStore);
             if (data?.incomeProof) {
@@ -57,8 +61,25 @@ export default function Step2Page() {
                     data.incomeProof.fileContent
                 ));
             }
+
+            if (typeof data.monthlyIncome !== 'undefined') {
+                setOnStep2Loan({
+                    monthlyIncome: data?.monthlyIncome,
+                    handwrittenSalesBook: data?.handwrittenSalesBook ? data?.handwrittenSalesBook : false,
+                    debitTransaction: data?.debitTransaction,
+                    creditTransaction: data?.creditTransaction,
+                });
+            }
         });
     }, [id]);
+
+    useEffect(() => {
+        checkAccess('0c0983ad-20b2-446d-8462-328aa64915f7').then((res) => {
+            if (!res) {
+                navigate(`/loan-app`);
+            }
+        });
+    }, []);
 
     const handleSubmit = (e: any) => {
         setSubmitForm(true);
@@ -72,6 +93,10 @@ export default function Step2Page() {
         createAppLoanOnboardingStep2(String(id), {
             customData: customData,
             incomeProof: incomeProof ? incomeProof.split(",")[1] : null,
+            monthlyIncome: onStep2Loan.monthlyIncome,
+            handwrittenSalesBook: onStep2Loan?.handwrittenSalesBook ? onStep2Loan?.handwrittenSalesBook : false,
+            debitTransaction: onStep2Loan?.debitTransaction,
+            creditTransaction: onStep2Loan?.creditTransaction,
         }).then((res) => {
                 setIncomeProof("");
                 setDataGrid([]);
@@ -88,7 +113,7 @@ export default function Step2Page() {
                         },
                     },
                     "error",
-                    3000
+                    15000
                 );
             }
         );
@@ -133,6 +158,9 @@ export default function Step2Page() {
         uploadMode: "useForm",
         onValueChanged: onFileChanged,
     };
+    const onFieldDataChanged = (evt: any) => {
+        onStep2Loan[evt.dataField] = evt.value;
+    };
 
     return (<>
         <LoadPanel
@@ -166,12 +194,12 @@ export default function Step2Page() {
                         <FormGrid showColonAfterLabel={true}
                                   showValidationSummary={true}
                                   validationGroup="customedata" colCount={1}>
-                            <Item dataField="name">
+                            <SimpleItem dataField="name">
                                 <RequiredRule message="Nama wajib diisi"/>
-                            </Item>
-                            <Item dataField="value">
+                            </SimpleItem>
+                            <SimpleItem dataField={"value"}>
                                 <RequiredRule message="Value wajib diisi"/>
-                            </Item>
+                            </SimpleItem>
                         </FormGrid>
                     </Editing>
                     <Column caption={"No."} width={70}
@@ -199,16 +227,58 @@ export default function Step2Page() {
                     id="form"
                     showColonAfterLabel={true}
                     validationGroup="incomeProofData"
+                    formData={onStep2Loan}
+                    onFieldDataChanged={onFieldDataChanged}
                 >
                     <GroupItem colSpan={1} cssClass={"dx-card responsive-paddings next-card"}>
-                        <GroupItem caption="Income Proof" colCount={1}>
+                        <GroupItem caption="Financial Detail" colCount={1}>
+                            <SimpleItem
+                                dataField="monthlyIncome"
+                                label={{text: "Penghasilan perbulan"}}
+                                editorType="dxNumberBox"
+                                editorOptions={{format: "Rp #,##0.00", width: "50%"}}
+                            >
+                                <RequiredRule message="Penghasilan perbulan wajib diisi"/>
+                                <PatternRule
+                                    message="hanya boleh angka"
+                                    pattern={/^[0-9]+$/}
+                                />
+                            </SimpleItem>
+                            <SimpleItem
+                                dataField="handwrittenSalesBook"
+                                label={{text: "Handwritten Sales book"}}
+                                editorType="dxCheckBox"
+                            />
+                            <SimpleItem
+                                dataField="debitTransaction"
+                                label={{text: "Debit Transaksi"}}
+                                editorType="dxNumberBox"
+                                editorOptions={{format: "Rp #,##0.00", width: "50%"}}
+                            >
+                                <RequiredRule message="Debit transaksi wajib diisi"/>
+                                <PatternRule
+                                    message="hanya boleh angka"
+                                    pattern={/^[0-9]+$/}
+                                />
+                            </SimpleItem>
+                            <SimpleItem
+                                dataField="creditTransaction"
+                                label={{text: "Kredit Transaksi"}}
+                                editorType="dxNumberBox"
+                                editorOptions={{format: "Rp #,##0.00", width: "50%"}}
+                            >
+                                <RequiredRule message="Kredit transaksi wajib diisi"/>
+                                <PatternRule
+                                    message="hanya boleh angka"
+                                    pattern={/^[0-9]+$/}
+                                />
+                            </SimpleItem>
                             <SimpleItem
                                 dataField="incomeProof"
-                                editorType="dxFileUploader"
+                                editorType={"dxFileUploader" as any}
                                 editorOptions={uploadKtpOptions}
                                 label={{text: "File"}}
                             >
-                                {/*<RequiredRule message="Income Proof wajib diisi"/>*/}
                             </SimpleItem>
                         </GroupItem>
                         <GroupItem>

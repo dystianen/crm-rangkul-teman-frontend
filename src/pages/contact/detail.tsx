@@ -41,6 +41,7 @@ import {useNavigate} from "react-router";
 import * as Title from "devextreme-react/toolbar";
 import {Column, Pager, Paging, Scrolling} from "devextreme-react/data-grid";
 import {DataGrid} from "devextreme-react";
+import ContactActivity from "../../components/contact/contact-activity";
 
 export default function DetailPage() {
     const navigate = useNavigate();
@@ -63,7 +64,7 @@ export default function DetailPage() {
 
     useEffect(() => {
         contactDetailApi(String(id)).then((res: any) => {
-            const data: ContactRequest = {
+            const data: any = {
                 idNumber: res.idNumber,
                 nameBorrower: res.name,
                 birthPlace: res.birthPlace,
@@ -350,6 +351,9 @@ export default function DetailPage() {
                                         allowedPageSizes={[10, 50, 100]}
                                     />
                                 </DataGrid>
+                            </Tab>
+                            <Tab>
+                                <ContactActivity contactId={id as string}/>
                             </Tab>
                         </TabbedItem>
                     </Form>

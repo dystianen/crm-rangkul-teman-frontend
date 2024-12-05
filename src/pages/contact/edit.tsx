@@ -18,7 +18,7 @@ import TabPanel from "devextreme-react/tab-panel";
 import {
     addressOwnershipStore,
     cityStore,
-    contactDetailApi,
+    contactDetailApi, contactRelativeStore,
     countryStore,
     districtStore,
     educationStore,
@@ -26,20 +26,20 @@ import {
     getFile,
     maritalStatusStore,
     provinceStore,
-    religionStore,
+    religionStore, salesChannelStore,
     selectBoxOptions,
     subDistrictStore, updateContact, validateEmail, validateIdNumber, validatePhone
 } from "src/api/contact";
 import {useLocation} from "react-router-dom";
 import queryString from 'query-string';
-import {ContactRequest, initContactValue} from "src/interfaces/contactDto";
+import {ContactRelativeDto, ContactRequest, initContactValue} from "src/interfaces/contactDto";
 import DataSource from "devextreme/data/data_source";
 import {formatDate} from "../../utils/dateUtils";
 import notify from "devextreme/ui/notify";
 import Resizer from "react-image-file-resizer";
 import {useNavigate} from "react-router";
 import * as Title from "devextreme-react/toolbar";
-import {Column, Pager, Paging, Scrolling} from "devextreme-react/data-grid";
+import {Column, Lookup, Pager, Paging, Scrolling} from "devextreme-react/data-grid";
 import {DataGrid} from "devextreme-react";
 
 export default function EditPage() {
@@ -49,7 +49,17 @@ export default function EditPage() {
     const [selectedIndex, setSelectedIndex] = useState(0);
     const [contact, setContact] = useState<ContactRequest>(initContactValue);
     const [ktpSrc, setKtpSrc] = useState<any>(undefined);
+    const [contactRelatives, setContactRelatives] = useState<ContactRelativeDto[]>([]);
 
+    const salesChannelOptions = selectBoxOptions(
+        new DataSource(salesChannelStore),
+        "Select Sales channel"
+    );
+
+    const relativeOptions = selectBoxOptions(
+        new DataSource(contactRelativeStore),
+        "Select Relation"
+    );
     const genderOptions = selectBoxOptions(new DataSource(genderStore), "Select gender");
     const religionOptions = selectBoxOptions(new DataSource(religionStore), "Select religion");
     const educationOptions = selectBoxOptions(new DataSource(educationStore), "Select education");
@@ -66,16 +76,17 @@ export default function EditPage() {
         const request = {
             ...contact,
             birthDate: formatDate(contact.birthDate),
-            ktpImage: ktpSrc
+            ktpImage: ktpSrc,
+            contactRelatives: contactRelatives
         }
         updateContact(id, request).then(() => {
             notify({
-                message: 'Success submitted the form',
+                message: 'Success submitted contact',
                 position: {
                     my: 'center top',
                     at: 'center top',
                 },
-            }, 'success', 3000);
+            }, 'success', 15000);
             navigate("/contact");
         });
         console.log("ex", request);
@@ -112,6 +123,8 @@ export default function EditPage() {
                 email: res?.contactEmail,
 
                 ktpImage: "",
+                typeOfGood: res?.typeOfGood,
+                salesChannelId: res?.salesChannelId
             }
             if (res?.contactAddressCountryId) {
                 setProvinceOptions(selectBoxOptions(new DataSource(provinceStore(String(res?.contactAddressCountryId))), ""));
@@ -135,6 +148,10 @@ export default function EditPage() {
                     });
             }
 
+            if(res?.contactRelatives) {
+                setContactRelatives(res?.contactRelatives);
+            }
+
             setContact(data);
         });
     }, [id]);
@@ -148,18 +165,10 @@ export default function EditPage() {
             // fileReader.readAsDataURL(e.value[0]);
             try {
                 Resizer.imageFileResizer(
-                    e.value[0],
-                    1772,
-                    1181,
-                    "JPEG",
-                    100,
-                    0,
+                    e.value[0],1772,1181,"JPEG",100,0,
                     (uri) => {
                         setKtpSrc(uri);
-                    },
-                    "base64",
-                    900,
-                    400
+                    },"base64",900,400
                 );
             } catch (err) {
                 console.log(err);
@@ -230,271 +239,378 @@ export default function EditPage() {
                             widget="dxButton"
                             options={backButtonOptions}/>
             </Title.Toolbar>
-            <div className={'dx-card responsive-paddings'}>
-                <form action="update=register" onSubmit={handleSubmit}>
-                    <Form
-                        colCount={2}
-                        id="form"
-                        formData={contact}
-                        showColonAfterLabel={true}
-                        showValidationSummary={true}
-                        validationGroup="contactData"
-                        onFieldDataChanged={onFieldDataChanged}
-                    >
 
-                        <GroupItem colSpan={2}>
-                            <GroupItem caption="Personal Data" colCount={2}>
-                                <SimpleItem dataField="idNumber" label={{text: "KTP Number"}}
-                                            editorOptions={{
-                                                min: 0,
-                                                maxLength: 20,
-                                                onKeyDown: (e: any) => {
-                                                    const key = e.event.key;
-                                                    e.value = String.fromCharCode(e.event.keyCode);
-                                                    if (!/[0-9]/.test(e.value) && key !== "Backspace" && key !== "Delete") e.event.preventDefault();
-                                                },
-                                            }}>
-                                    <RequiredRule message="KTP Number is required"/>
-                                    <AsyncRule
-                                        message="KTP Number is already registered"
-                                        validationCallback={asyncValidationIdNumber}/>
-                                    <PatternRule
-                                        message="Only number on KTP Number"
-                                        pattern={/^[0-9]+$/}
-                                    />
-                                </SimpleItem>
-                                <SimpleItem dataField="nameBorrower" label={{text: "Name"}}>
-                                    <RequiredRule message="Name is required"/>
-                                    <PatternRule message="Do not use digits in the Name"
-                                                 pattern={/^[^0-9]+$/}/>
-                                </SimpleItem>
-                                <SimpleItem dataField="birthPlace" label={{text: "Place of Birth"}}>
-                                    <RequiredRule message="Place of birth is required"/>
-                                </SimpleItem>
-                                <SimpleItem dataField="birthDate" label={{text: "Date of Birth"}}
-                                            editorType="dxDateBox" editorOptions={{
-                                    type: "date",
-                                    pickerType: "calender",
-                                    displayFormat: "dd/MM/yyyy",
-                                }}>
-                                    <RequiredRule message="Date of birth is required"/>
-                                </SimpleItem>
-                                <SimpleItem dataField="idGender"
-                                            label={{text: "Gender"}}
-                                            editorType="dxSelectBox" editorOptions={genderOptions}
-                                >
-                                    <RequiredRule message="Gender is required"/>
-                                </SimpleItem>
-                                <SimpleItem dataField="idReligion"
-                                            editorType="dxSelectBox" editorOptions={religionOptions}
-                                            label={{text: "Religion"}}>
-                                    <RequiredRule message="Religion is required"/>
-                                </SimpleItem>
-                                <SimpleItem dataField="idEducation"
-                                            editorType="dxSelectBox" editorOptions={educationOptions}
-                                            label={{text: "Last Education"}}>
-                                    <RequiredRule message="Last education is required"/>
-                                </SimpleItem>
-                                <SimpleItem dataField="idMarital"
-                                            editorType="dxSelectBox" editorOptions={maritalStatusOptions}
-                                            label={{text: "Marital Status"}}>
-                                    <RequiredRule message="Marital status is required"/>
-                                </SimpleItem>
-                                <SimpleItem dataField="motherMaidenName" label={{text: "Mother Maiden Name"}}>
-                                    <RequiredRule message="Mother maiden name is required"/>
-                                </SimpleItem>
-                                <SimpleItem dataField="lengthOfJob" editorType="dxNumberBox" editorOptions={{min: 0}}
-                                            label={{text: "Length of Job"}}>
-                                    <RequiredRule message="Length of job is required"/>
-                                </SimpleItem>
-                                <SimpleItem dataField="mobilePhone" label={{text: "Mobile Phone Number"}}
-                                            editorOptions={{
-                                                min: 0,
-                                                maxLength: 15,
-                                                onKeyDown: (e: any) => {
-                                                    const key = e.event.key;
-                                                    e.value = String.fromCharCode(e.event.keyCode);
-                                                    if (!/[0-9]/.test(e.value) && key !== "Backspace" && key !== "Delete") e.event.preventDefault();
-                                                }
-                                            }}>
-                                    <RequiredRule message="Mobile phone is required"/>
-                                    <AsyncRule
-                                        message="Mobile phone is already registered"
-                                        validationCallback={asyncValidationPhoneNumber}/>
-                                    <PatternRule
-                                        message="Only number on Mobile phone"
-                                        pattern={/^[0-9]+$/}
-                                    />
-                                </SimpleItem>
-                                <SimpleItem dataField="email" label={{text: "Email Address"}}>
-                                    <AsyncRule
-                                        message="Email is already registered"
-                                        validationCallback={asyncValidationEmail}/>
-                                </SimpleItem>
-                                <SimpleItem dataField="ktpImage" editorType="dxFileUploader"
-                                            editorOptions={uploadKtpOptions} label={{text: "KTP Image"}}>
-                                </SimpleItem>
-                            </GroupItem>
-                            <GroupItem colSpan={2}>
-                                {ktpSrc && <Item><img id="dropzone-ktp" src={ktpSrc} alt="ktp" width={"240px"}/></Item>}
-                            </GroupItem>
+            <form action="update=register" onSubmit={handleSubmit}>
+                <Form
+                    colCount={2}
+                    id="form"
+                    formData={contact}
+                    showColonAfterLabel={true}
+                    showValidationSummary={true}
+                    validationGroup="contactData"
+                    onFieldDataChanged={onFieldDataChanged}
+                >
+
+                    <GroupItem colSpan={2} cssClass={"dx-card responsive-paddings next-card"}>
+                        <GroupItem caption="Personal Data" colCount={2}>
+                            <SimpleItem dataField="idNumber" label={{text: "KTP Number"}}
+                                        editorOptions={{
+                                            min: 0,
+                                            maxLength: 20,
+                                            onKeyDown: (e: any) => {
+                                                const key = e.event.key;
+                                                e.value = String.fromCharCode(e.event.keyCode);
+                                                if (!/[0-9]/.test(e.value) && key !== "Backspace" && key !== "Delete") e.event.preventDefault();
+                                            },
+                                        }}>
+                                <RequiredRule message="KTP Number is required"/>
+                                <AsyncRule
+                                    message="KTP Number is already registered"
+                                    validationCallback={asyncValidationIdNumber}/>
+                                <PatternRule
+                                    message="Only number on KTP Number"
+                                    pattern={/^[0-9]+$/}
+                                />
+                            </SimpleItem>
+                            <SimpleItem dataField="nameBorrower" label={{text: "Name"}}>
+                                <RequiredRule message="Name is required"/>
+                                <PatternRule message="Do not use digits in the Name"
+                                             pattern={/^[^0-9]+$/}/>
+                            </SimpleItem>
+                            <SimpleItem dataField="birthPlace" label={{text: "Place of Birth"}}>
+                                <RequiredRule message="Place of birth is required"/>
+                            </SimpleItem>
+                            <SimpleItem dataField="birthDate" label={{text: "Date of Birth"}}
+                                        editorType="dxDateBox" editorOptions={{
+                                type: "date",
+                                pickerType: "calender",
+                                displayFormat: "dd/MM/yyyy",
+                            }}>
+                                <RequiredRule message="Date of birth is required"/>
+                            </SimpleItem>
+                            <SimpleItem dataField="idGender"
+                                        label={{text: "Gender"}}
+                                        editorType="dxSelectBox" editorOptions={genderOptions}
+                            >
+                                <RequiredRule message="Gender is required"/>
+                            </SimpleItem>
+                            <SimpleItem dataField="idReligion"
+                                        editorType="dxSelectBox" editorOptions={religionOptions}
+                                        label={{text: "Religion"}}>
+                                <RequiredRule message="Religion is required"/>
+                            </SimpleItem>
+                            <SimpleItem dataField="idEducation"
+                                        editorType="dxSelectBox" editorOptions={educationOptions}
+                                        label={{text: "Last Education"}}>
+                                <RequiredRule message="Last education is required"/>
+                            </SimpleItem>
+                            <SimpleItem dataField="idMarital"
+                                        editorType="dxSelectBox" editorOptions={maritalStatusOptions}
+                                        label={{text: "Marital Status"}}>
+                                <RequiredRule message="Marital status is required"/>
+                            </SimpleItem>
+                            <SimpleItem dataField="motherMaidenName" label={{text: "Mother Maiden Name"}}>
+                                <RequiredRule message="Mother maiden name is required"/>
+                            </SimpleItem>
+                            <SimpleItem dataField="lengthOfJob" editorType="dxNumberBox" editorOptions={{min: 0}}
+                                        label={{text: "Length of Job"}}>
+                                <RequiredRule message="Length of job is required"/>
+                            </SimpleItem>
+                            <SimpleItem dataField="mobilePhone" label={{text: "Mobile Phone Number"}}
+                                        editorOptions={{
+                                            min: 0,
+                                            maxLength: 15,
+                                            onKeyDown: (e: any) => {
+                                                const key = e.event.key;
+                                                e.value = String.fromCharCode(e.event.keyCode);
+                                                if (!/[0-9]/.test(e.value) && key !== "Backspace" && key !== "Delete") e.event.preventDefault();
+                                            }
+                                        }}>
+                                <RequiredRule message="Mobile phone is required"/>
+                                <AsyncRule
+                                    message="Mobile phone is already registered"
+                                    validationCallback={asyncValidationPhoneNumber}/>
+                                <PatternRule
+                                    message="Only number on Mobile phone"
+                                    pattern={/^[0-9]+$/}
+                                />
+                            </SimpleItem>
+                            <SimpleItem dataField="email" label={{text: "Email Address"}}>
+                                <AsyncRule
+                                    message="Email is already registered"
+                                    validationCallback={asyncValidationEmail}/>
+                            </SimpleItem>
+                            <SimpleItem dataField="ktpImage" editorType={"dxFileUploader" as any}
+                                        editorOptions={uploadKtpOptions} label={{text: "KTP Image"}}>
+                            </SimpleItem>
                         </GroupItem>
                         <GroupItem colSpan={2}>
-                            <GroupItem caption="Home Address"
-                                       name="HomeAddress" colCount={2}>
-                                <SimpleItem dataField="livingAddressStatus"
-                                            editorType="dxSelectBox" editorOptions={ownerStatusOptions}
-                                            label={{text: "Living Address Status"}}>
-                                    <RequiredRule message="Living address status is required"/>
-                                </SimpleItem>
-                                <SimpleItem dataField="idCountry"
-                                            editorType="dxSelectBox" editorOptions={countryOptions}
-                                            label={{text: "Country"}}/>
-                                <SimpleItem dataField="idProvince"
-                                            editorType="dxSelectBox" editorOptions={proviceOptions}
-                                            label={{text: "Province"}}>
-                                    <RequiredRule message="Province is required"/>
-                                </SimpleItem>
-                                <SimpleItem dataField="idCity"
-                                            editorType="dxSelectBox" editorOptions={cityOptions}
-                                            label={{text: "City"}}>
-                                    <RequiredRule message="City is required"/>
-                                </SimpleItem>
-                                <SimpleItem dataField="address" editorType="dxTextArea" label={{text: "Address"}}>
-                                    <RequiredRule message="Address is required"/>
-                                </SimpleItem>
-                                <SimpleItem dataField="districtId"
-                                            editorType="dxSelectBox" editorOptions={districtOptions}
-                                            label={{text: "District"}}/>
-                                <SimpleItem dataField="subdistrictId"
-                                            editorType="dxSelectBox" editorOptions={subDistrictOptions}
-                                            label={{text: "Sub District"}}/>
-                                <SimpleItem dataField="postalCode" editorOptions={{
-                                    min: 0,
-                                    maxLength: 5,
-                                    onKeyDown: (e: any) => {
-                                        const key = e.event.key;
-                                        e.value = String.fromCharCode(e.event.keyCode);
-                                        if (!/[0-9]/.test(e.value) && key !== "Backspace" && key !== "Delete") e.event.preventDefault();
+                            {ktpSrc && <Item><img id="dropzone-ktp" src={ktpSrc} alt="ktp" width={"240px"}/></Item>}
+                        </GroupItem>
+                    </GroupItem>
+                    <GroupItem colSpan={2} cssClass={"dx-card responsive-paddings next-card"}>
+                        <GroupItem caption="Home Address"
+                                   name="HomeAddress" colCount={2}>
+                            <SimpleItem dataField="livingAddressStatus"
+                                        editorType="dxSelectBox" editorOptions={ownerStatusOptions}
+                                        label={{text: "Living Address Status"}}>
+                                <RequiredRule message="Living address status is required"/>
+                            </SimpleItem>
+                            <SimpleItem dataField="idCountry"
+                                        editorType="dxSelectBox" editorOptions={countryOptions}
+                                        label={{text: "Country"}}/>
+                            <SimpleItem dataField="idProvince"
+                                        editorType="dxSelectBox" editorOptions={proviceOptions}
+                                        label={{text: "Province"}}>
+                                <RequiredRule message="Province is required"/>
+                            </SimpleItem>
+                            <SimpleItem dataField="idCity"
+                                        editorType="dxSelectBox" editorOptions={cityOptions}
+                                        label={{text: "City"}}>
+                                <RequiredRule message="City is required"/>
+                            </SimpleItem>
+                            <SimpleItem dataField="address" editorType="dxTextArea" label={{text: "Address"}}>
+                                <RequiredRule message="Address is required"/>
+                            </SimpleItem>
+                            <SimpleItem dataField="districtId"
+                                        editorType="dxSelectBox" editorOptions={districtOptions}
+                                        label={{text: "District"}}/>
+                            <SimpleItem dataField="subdistrictId"
+                                        editorType="dxSelectBox" editorOptions={subDistrictOptions}
+                                        label={{text: "Sub District"}}/>
+                            <SimpleItem dataField="postalCode" editorOptions={{
+                                min: 0,
+                                maxLength: 5,
+                                onKeyDown: (e: any) => {
+                                    const key = e.event.key;
+                                    e.value = String.fromCharCode(e.event.keyCode);
+                                    if (!/[0-9]/.test(e.value) && key !== "Backspace" && key !== "Delete") e.event.preventDefault();
+                                }
+                            }}
+                                        label={{text: "Postal Code"}}/>
+                            <SimpleItem dataField="neighborhoodUnit"
+                                        editorOptions={{
+                                            min: 0,
+                                            maxLength: 4,
+                                            onKeyDown: (e: any) => {
+                                                const key = e.event.key;
+                                                e.value = String.fromCharCode(e.event.keyCode);
+                                                if (!/[0-9]/.test(e.value) && key !== "Backspace" && key !== "Delete") e.event.preventDefault();
+                                            }
+                                        }} label={{text: "RT"}}/>
+                            <SimpleItem dataField="communityUnit"
+                                        editorOptions={{
+                                            min: 0,
+                                            maxLength: 4,
+                                            onKeyDown: (e: any) => {
+                                                const key = e.event.key;
+                                                e.value = String.fromCharCode(e.event.keyCode);
+                                                if (!/[0-9]/.test(e.value) && key !== "Backspace" && key !== "Delete") e.event.preventDefault();
+                                            }
+                                        }}
+                                        label={{text: "RW"}}/>
+                        </GroupItem>
+                    </GroupItem>
+                    <GroupItem colSpan={2} cssClass={"dx-card responsive-paddings next-card"}>
+                        <GroupItem caption="Additional Information"
+                                   name="AdditionalInformation" colCount={2}>
+                            <SimpleItem
+                                dataField="typeOfGood"
+                                label={{text: "Jenis Barang"}}
+                            >
+                                <RequiredRule message="Jenis Barang wajib diisi"/>
+                            </SimpleItem>
+                            <SimpleItem
+                                dataField="salesChannelId"
+                                label={{text: "Sales Channel"}}
+                                editorType={"dxSelectBox"}
+                                editorOptions={salesChannelOptions}
+                            />
+                        </GroupItem>
+                    </GroupItem>
+                    <GroupItem colSpan={2} cssClass={"dx-card responsive-paddings next-card"}>
+                        <GroupItem caption="Contact Relative"
+                                   name="ContactRelative" colCount={2}>
+                            <DataGrid
+                                dataSource={contactRelatives}
+                                // focusedRowEnabled={true}
+                                remoteOperations={true}
+                                columnAutoWidth={true}
+                                wordWrapEnabled={false}
+                                showBorders={true}
+                                dateSerializationFormat={"yyyy-MM-ddTHH:mm:ss.SSSxxx"}
+                                repaintChangesOnly={true}
+                                editing={{
+                                    mode: "popup",
+                                    allowUpdating: true,
+                                    allowAdding: true,
+                                    allowDeleting: true,
+                                    popup: {
+                                        title: "Relative Contact",
+                                        showTitle: true,
+                                        width: "40%",
+                                        height: 360
+                                    },
+                                    form: {
+                                        colCount: 1,
+                                        items: [
+                                            {
+                                                dataField: "typeId",
+                                                editorType: "dxSelectBox",
+                                                editorOptions: relativeOptions,
+                                                isRequired: true,
+                                            },
+                                            {
+                                                dataField: "name",
+                                                editorOptions: {
+                                                    min: 0,
+                                                    maxLength: 150,
+                                                    onKeyDown: (e: any) => {
+                                                        const key = e.event.key;
+                                                        e.value = String.fromCharCode(e.event.keyCode);
+                                                        if (
+                                                            !/[A-Za-z]/.test(e.value) &&
+                                                            key !== " " &&
+                                                            key !== "Backspace" &&
+                                                            key !== "Delete"
+                                                        )
+                                                            e.event.preventDefault();
+                                                    },
+                                                },
+                                                isRequired: true,
+                                            },
+                                            {
+                                                dataField: "phone",
+                                                editorOptions: {
+                                                    min: 0,
+                                                    maxLength: 15,
+                                                    onKeyDown: (e: any) => {
+                                                        const key = e.event.key;
+                                                        e.value = String.fromCharCode(e.event.keyCode);
+                                                        if (
+                                                            !/[0-9]/.test(e.value) &&
+                                                            key !== "Backspace" &&
+                                                            key !== "Delete"
+                                                        ) {
+                                                            e.event.preventDefault();
+                                                        }
+                                                    },
+                                                },
+                                                isRequired: true,
+                                            },
+                                        ]
                                     }
                                 }}
-                                            label={{text: "Postal Code"}}/>
-                                <SimpleItem dataField="neighborhoodUnit"
-                                            editorOptions={{
-                                                min: 0,
-                                                maxLength: 4,
-                                                onKeyDown: (e: any) => {
-                                                    const key = e.event.key;
-                                                    e.value = String.fromCharCode(e.event.keyCode);
-                                                    if (!/[0-9]/.test(e.value) && key !== "Backspace" && key !== "Delete") e.event.preventDefault();
-                                                }
-                                            }} label={{text: "RT"}}/>
-                                <SimpleItem dataField="communityUnit"
-                                            editorOptions={{
-                                                min: 0,
-                                                maxLength: 4,
-                                                onKeyDown: (e: any) => {
-                                                    const key = e.event.key;
-                                                    e.value = String.fromCharCode(e.event.keyCode);
-                                                    if (!/[0-9]/.test(e.value) && key !== "Backspace" && key !== "Delete") e.event.preventDefault();
-                                                }
-                                            }}
-                                            label={{text: "RW"}}/>
-                            </GroupItem>
+                            >
+                                <Scrolling showScrollbar={"always"}/>
+
+                                <Column dataField={"typeId"} caption={"Relation"}>
+                                    <Lookup dataSource={contactRelativeStore} displayExpr="name" valueExpr="id" />
+                                </Column>
+                                <Column dataField={"name"} caption={"Nama"}/>
+                                <Column dataField={"phone"} caption={"Telepon No."}/>
+                                <Paging defaultPageSize={50}/>
+                                <Pager
+                                    showPageSizeSelector={true}
+                                    showInfo={true}
+                                    allowedPageSizes={[10, 50, 100]}
+                                />
+                            </DataGrid>
                         </GroupItem>
-                        <ButtonItem horizontalAlignment="left"
-                                    buttonOptions={{
-                                        text: 'Update Contact',
-                                        type: 'success',
-                                        useSubmitBehavior: true,
-                                    }}
-                        />
-                    </Form>
-                </form>
-                <div className="form__tabs">
-                    <Form>
-                        <TabbedItem
-                            tabPanelOptions={{
-                                scrollByContent: true,
-                                showNavButtons: true,
-                            }}
-                        >
-                            <Tab title="Application">
-                                <DataGrid
-                                    dataSource={[]}
-                                    // focusedRowEnabled={true}
-                                    remoteOperations={true}
-                                    columnAutoWidth={true}
-                                    wordWrapEnabled={false}
-                                    showBorders={true}
-                                    dateSerializationFormat={"yyyy-MM-ddTHH:mm:ss.SSSxxx"}
-                                    repaintChangesOnly={true}
-                                >
-                                    <Scrolling showScrollbar={"always"}/>
+                    </GroupItem>
+                    <ButtonItem horizontalAlignment="left"
+                                buttonOptions={{
+                                    text: 'Update Contact',
+                                    type: 'success',
+                                    useSubmitBehavior: true,
+                                }}
+                    />
+                </Form>
+            </form>
+            <div className="form__tabs">
+                <Form>
+                    <TabbedItem
+                        tabPanelOptions={{
+                            scrollByContent: true,
+                            showNavButtons: true,
+                        }}
+                    >
+                        <Tab title="Application">
+                            <DataGrid
+                                dataSource={[]}
+                                // focusedRowEnabled={true}
+                                remoteOperations={true}
+                                columnAutoWidth={true}
+                                wordWrapEnabled={false}
+                                showBorders={true}
+                                dateSerializationFormat={"yyyy-MM-ddTHH:mm:ss.SSSxxx"}
+                                repaintChangesOnly={true}
+                            >
+                                <Scrolling showScrollbar={"always"}/>
 
-                                    <Column dataField={"no"} caption={"No."}/>
-                                    <Column dataField={"name"} caption={"Name"}/>
-                                    <Column dataField={"value"} caption={"Value"}/>
-                                    <Paging defaultPageSize={50}/>
-                                    <Pager
-                                        showPageSizeSelector={true}
-                                        showInfo={true}
-                                        allowedPageSizes={[10, 50, 100]}
-                                    />
-                                </DataGrid>
-                            </Tab>
-                            <Tab title="Disbursement">
-                                <DataGrid
-                                    dataSource={[]}
-                                    // focusedRowEnabled={true}
-                                    remoteOperations={true}
-                                    columnAutoWidth={true}
-                                    wordWrapEnabled={false}
-                                    showBorders={true}
-                                    dateSerializationFormat={"yyyy-MM-ddTHH:mm:ss.SSSxxx"}
-                                    repaintChangesOnly={true}
-                                >
-                                    <Scrolling showScrollbar={"always"}/>
+                                <Column dataField={"no"} caption={"No."}/>
+                                <Column dataField={"name"} caption={"Name"}/>
+                                <Column dataField={"value"} caption={"Value"}/>
+                                <Paging defaultPageSize={50}/>
+                                <Pager
+                                    showPageSizeSelector={true}
+                                    showInfo={true}
+                                    allowedPageSizes={[10, 50, 100]}
+                                />
+                            </DataGrid>
+                        </Tab>
+                        <Tab title="Disbursement">
+                            <DataGrid
+                                dataSource={[]}
+                                // focusedRowEnabled={true}
+                                remoteOperations={true}
+                                columnAutoWidth={true}
+                                wordWrapEnabled={false}
+                                showBorders={true}
+                                dateSerializationFormat={"yyyy-MM-ddTHH:mm:ss.SSSxxx"}
+                                repaintChangesOnly={true}
+                            >
+                                <Scrolling showScrollbar={"always"}/>
 
-                                    <Column dataField={"no"} caption={"No."}/>
-                                    <Column dataField={"name"} caption={"Name"}/>
-                                    <Column dataField={"value"} caption={"Value"}/>
-                                    <Paging defaultPageSize={50}/>
-                                    <Pager
-                                        showPageSizeSelector={true}
-                                        showInfo={true}
-                                        allowedPageSizes={[10, 50, 100]}
-                                    />
-                                </DataGrid>
-                            </Tab>
-                            <Tab title="Repayment">
-                                <DataGrid
-                                    dataSource={[]}
-                                    // focusedRowEnabled={true}
-                                    remoteOperations={true}
-                                    columnAutoWidth={true}
-                                    wordWrapEnabled={false}
-                                    showBorders={true}
-                                    dateSerializationFormat={"yyyy-MM-ddTHH:mm:ss.SSSxxx"}
-                                    repaintChangesOnly={true}
-                                >
-                                    <Scrolling showScrollbar={"always"}/>
+                                <Column dataField={"no"} caption={"No."}/>
+                                <Column dataField={"name"} caption={"Name"}/>
+                                <Column dataField={"value"} caption={"Value"}/>
+                                <Paging defaultPageSize={50}/>
+                                <Pager
+                                    showPageSizeSelector={true}
+                                    showInfo={true}
+                                    allowedPageSizes={[10, 50, 100]}
+                                />
+                            </DataGrid>
+                        </Tab>
+                        <Tab title="Repayment">
+                            <DataGrid
+                                dataSource={[]}
+                                // focusedRowEnabled={true}
+                                remoteOperations={true}
+                                columnAutoWidth={true}
+                                wordWrapEnabled={false}
+                                showBorders={true}
+                                dateSerializationFormat={"yyyy-MM-ddTHH:mm:ss.SSSxxx"}
+                                repaintChangesOnly={true}
+                            >
+                                <Scrolling showScrollbar={"always"}/>
 
-                                    <Column dataField={"no"} caption={"No."}/>
-                                    <Column dataField={"name"} caption={"Name"}/>
-                                    <Column dataField={"value"} caption={"Value"}/>
-                                    <Paging defaultPageSize={50}/>
-                                    <Pager
-                                        showPageSizeSelector={true}
-                                        showInfo={true}
-                                        allowedPageSizes={[10, 50, 100]}
-                                    />
-                                </DataGrid>
-                            </Tab>
-                        </TabbedItem>
-                    </Form>
-                </div>
+                                <Column dataField={"no"} caption={"No."}/>
+                                <Column dataField={"name"} caption={"Name"}/>
+                                <Column dataField={"value"} caption={"Value"}/>
+                                <Paging defaultPageSize={50}/>
+                                <Pager
+                                    showPageSizeSelector={true}
+                                    showInfo={true}
+                                    allowedPageSizes={[10, 50, 100]}
+                                />
+                            </DataGrid>
+                        </Tab>
+                    </TabbedItem>
+                </Form>
             </div>
+
         </div>
     </>)
 }

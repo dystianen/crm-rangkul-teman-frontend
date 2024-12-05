@@ -17,7 +17,7 @@ import {
     Paging,
     Scrolling,
 } from "devextreme-react/data-grid";
-import {detailAppLoan, submitAppLoan} from "src/api/apploan";
+import {checkAccess, detailAppLoan, submitAppLoan} from "src/api/apploan";
 import {
     AppLoanRequest,
     initLoanAppValue,
@@ -33,6 +33,14 @@ export default function PreviewPage() {
     const [submitForm, setSubmitForm] = useState(false);
 
     const [loanApp, setLoanApp] = useState<AppLoanRequest>(initLoanAppValue);
+
+    useEffect(() => {
+        checkAccess('d8b5626f-4dca-43ad-8e0a-08f87e50c7ab').then((res) => {
+            if(!res){
+                navigate(`/loan-app`);
+            }
+        });
+    }, []);
     useEffect(() => {
         detailAppLoan(id as string).then((res) => {
             console.log("Detail : ", res);
@@ -79,7 +87,7 @@ export default function PreviewPage() {
                             colCount={1}
                             id="formpreview"
                             showColonAfterLabel={true}
-                            validationGroup="contactData"
+                            validationGroup="loanAppData"
                             formData={loanApp}
                         >
                             <GroupItem colSpan={2}>
@@ -87,12 +95,12 @@ export default function PreviewPage() {
                                     <SimpleItem
                                         dataField="loanAmount"
                                         label={{text: "Jumlah Pinjaman"}}
-                                        editorOptions={{format: "Rp #,##0", disabled: true}}
+                                        editorOptions={{format: "Rp #,##0", readOnly: true}}
                                     ></SimpleItem>
                                     <SimpleItem
                                         dataField="loanTerm"
                                         label={{text: "Jangka Waktu"}}
-                                        editorOptions={{disabled: true}}
+                                        editorOptions={{readOnly: true}}
                                     ></SimpleItem>
                                 </GroupItem>
                             </GroupItem>
@@ -101,12 +109,12 @@ export default function PreviewPage() {
                                     <SimpleItem
                                         dataField="bankName"
                                         label={{text: "Bank"}}
-                                        editorOptions={{disabled: true}}
+                                        editorOptions={{readOnly: true}}
                                     ></SimpleItem>
                                     <SimpleItem
                                         dataField="bankAccNumber"
                                         label={{text: "Nomor Rekening"}}
-                                        editorOptions={{disabled: true}}
+                                        editorOptions={{readOnly: true}}
                                     ></SimpleItem>
                                 </GroupItem>
                             </GroupItem>
@@ -115,12 +123,12 @@ export default function PreviewPage() {
                                     <SimpleItem
                                         dataField="loanPurpose"
                                         label={{text: "Tujuan Pinjaman"}}
-                                        editorOptions={{disabled: true}}
+                                        editorOptions={{readOnly: true}}
                                     ></SimpleItem>
                                     <SimpleItem
                                         dataField="monthlyIncome"
                                         label={{text: "Penghasilan perbulan"}}
-                                        editorOptions={{format: "Rp #,##0", disabled: true}}
+                                        editorOptions={{format: "Rp #,##0", readOnly: true}}
                                     ></SimpleItem>
                                 </GroupItem>
                             </GroupItem>
@@ -153,16 +161,34 @@ export default function PreviewPage() {
                 </div>
 
                 <div className={"dx-card responsive-paddings next-card"}>
-                    <h3>Income Proof</h3>
+                    <h3>Financial Detail</h3>
                     <Form
                         colCount={1}
                         id="form"
                         showColonAfterLabel={true}
                         showValidationSummary={true}
-                        validationGroup="contactData"
+                        validationGroup="loanApp2Data"
+                        formData={loanApp}
                     >
+                        <GroupItem colCount={2}>
+                            <SimpleItem
+                                dataField="debitTransaction"
+                                label={{text: "Debit Transaksi"}}
+                                editorOptions={{format: "Rp #,##0", readOnly: true}}
+                            ></SimpleItem>
+                            <SimpleItem
+                                dataField="creditTransaction"
+                                label={{text: "Kredit Transaksi"}}
+                                editorOptions={{format: "Rp #,##0", readOnly: true}}
+                            ></SimpleItem>
+                            <SimpleItem
+                                dataField="handwrittenSalesBook"
+                                label={{text: "Handwritten Sales book"}}
+                                editorOptions={{readOnly: true}}
+                            ></SimpleItem>
+                        </GroupItem>
                         {loanApp.incomeProof && (
-                            <GroupItem colSpan={1}>
+                            <GroupItem caption={"Income proof"} colCount={1}>
                                 <Item>
                                     {loanApp.incomeProof.fileType.includes("image/") ? <img
                                             id="dropzone-ktp"

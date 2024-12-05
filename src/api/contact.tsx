@@ -4,13 +4,18 @@ import qs from "qs";
 import { customStore } from "../model/customStore";
 
 export const contactListStore = customStore({ loadUrl: "/api/contact" });
+export const contactActivityListStore = customStore({
+  loadUrl: "/api/contact/activity",
+  insertUrl: "/api/contact/activity/create",
+  updateUrl: "/api/contact/activity/update",
+});
 
 export const createContact = async (payload: any): Promise<any> => {
   const resp = await ajaxPost(`/api/contact/create`, payload);
   return resp.data;
 };
 
-export const updateContact = async (id: string, payload: any): Promise<any> => {
+export const updateContact = async (id: any, payload: any): Promise<any> => {
   const resp = await ajaxPatch(`/api/contact/update/${id}`, payload);
   return resp.data;
 };
@@ -120,6 +125,9 @@ export const validateEmail = async (payload: any) => {
   const resp = await ajaxPost(`/api/contact/check-email`, payload);
   return resp?.data;
 };
+
+export const salesChannelStore = dataRawCustomStore(`/api/contact/data/salesChannel?`);
+export const contactRelativeStore = dataRawCustomStore(`/api/contact/data/contactRelative?`);
 export const genderStore = dataRawCustomStore(`/api/contact/data/gender?`);
 export const religionStore = dataRawCustomStore(`/api/contact/data/religion?`);
 export const educationStore = dataRawCustomStore(
