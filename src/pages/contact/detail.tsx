@@ -352,9 +352,6 @@ export default function DetailPage() {
                                     />
                                 </DataGrid>
                             </Tab>
-                            <Tab>
-                                <ContactActivity contactId={id as string}/>
-                            </Tab>
                         </TabbedItem>
                     </Form>
                 </div>

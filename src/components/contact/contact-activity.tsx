@@ -1,9 +1,10 @@
 import React from "react";
-import {Column, Pager, Paging, Scrolling} from "devextreme-react/data-grid";
+import {Column, Lookup, Pager, Paging, Scrolling} from "devextreme-react/data-grid";
 import {DataGrid} from "devextreme-react";
 import {filterOperation} from "../../constants/FilterOperation";
 import {checkAccess} from "../../api/apploan";
-import {contactActivityListStore} from "../../api/contact";
+import {activityResultStore, contactActivityListStore, contactRelativeStore, selectBoxOptions} from "../../api/contact";
+import DataSource from "devextreme/data/data_source";
 
 interface Iprops<T> {
     contactId: string;
@@ -51,15 +52,21 @@ class ContactActivity<T> extends React.PureComponent<Iprops<T>, Istate<T>> {
         this.setState({isCreateVisible: false});
     }
 
-    onToolbarPreparing = (e: any, visible: boolean) => {
+    onToolbarPreparing = (e: any) => {
         const items = e.toolbarOptions.items;
-        console.log("items toolbar preparing", items);
+        console.log("items toolbar preparing", e.data);
     }
 
     render() {
-        return <>
+        let that = this;
+        const resultOptions = selectBoxOptions(
+            new DataSource(activityResultStore),
+            "Select Result"
+        );
+
+        return <div className={"dx-card responsive-paddings"}>
             <DataGrid
-                dataSource={contactActivityListStore}
+                dataSource={contactActivityListStore(this.props.contactId)}
                 // focusedRowEnabled={true}
                 remoteOperations={true}
                 columnAutoWidth={true}
@@ -67,7 +74,50 @@ class ContactActivity<T> extends React.PureComponent<Iprops<T>, Istate<T>> {
                 showBorders={true}
                 dateSerializationFormat={"yyyy-MM-ddTHH:mm:ss.SSSxxx"}
                 repaintChangesOnly={true}
-                toolbar={this.state.toolbar as any}
+                onRowInserting={(options: any) => {
+                    options.data = {
+                        contactId: that.props.contactId,
+                        comment: options.data.name,
+                        resultId: options.data.resultId,
+                    };
+                }}
+                onRowUpdating={(options: any) => {
+                    options.newData = { ...options.oldData, ...options.newData,
+                        contactId: that.props.contactId,
+                        comment: options.newData.name ? options.newData.name : options.oldData.name,
+                    };
+                }}
+                onToolbarPreparing={that.onToolbarPreparing}
+                editing={{
+                    mode: "popup",
+                    allowUpdating: true,
+                    allowAdding: true,
+                    popup: {
+                        title: "Relative Contact",
+                        showTitle: true,
+                        width: "40%",
+                        height: 360
+                    },
+                    form: {
+                        colCount: 1,
+                        items: [
+                            {
+                                label: {text: "Result"},
+                                dataField: "resultId",
+                                editorType: "dxSelectBox",
+                                editorOptions: resultOptions,
+                                isRequired: true,
+                            },
+                            {
+                                label: {text: "Comment"},
+                                dataField: "name",
+                                editorOptions: {},
+                                isRequired: true,
+                                editorType: "dxTextArea"
+                            }
+                        ]
+                    }
+                }}
             >
                 <Scrolling showScrollbar={"always"}/>
                 <Column dataField={"createdByName"} caption={"Created By"}/>
@@ -105,7 +155,9 @@ class ContactActivity<T> extends React.PureComponent<Iprops<T>, Istate<T>> {
                         }}
                         filterOperations={filterOperation.date}/>
                 <Column dataField={"typeName"} caption={"Activity"}/>
-                <Column dataField={"resultName"} caption={"Result"}/>
+                <Column dataField={"resultId"} caption={"Result"}>
+                    <Lookup dataSource={activityResultStore} displayExpr="name" valueExpr="id"/>
+                </Column>
                 <Column dataField={"name"} caption={"Comment"}/>
                 <Paging defaultPageSize={50}/>
                 <Pager
@@ -114,7 +166,7 @@ class ContactActivity<T> extends React.PureComponent<Iprops<T>, Istate<T>> {
                     allowedPageSizes={[10, 50, 100]}
                 />
             </DataGrid>
-        </>;
+        </div>;
     }
 }
 
