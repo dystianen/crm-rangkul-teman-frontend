@@ -6,7 +6,7 @@ const resizeImage = (value: Blob): Promise<string> => {
       value,
       1772,
       1181,
-      "JPEG",
+      "JPG",
       100,
       0,
       (uri) => {
