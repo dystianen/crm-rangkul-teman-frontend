@@ -182,7 +182,7 @@ export default function EditPage() {
 
     const handleCheckEkyc = (intervalId: NodeJS.Timeout) => {
       contactCheckEkyc(contactId).then((res) => {
-        setShowPopupCheckEkyc(res);
+        setShowPopupCheckEkyc(res?.isEkycWaiting);
         if (!res) {
           clearInterval(intervalId);
         }
