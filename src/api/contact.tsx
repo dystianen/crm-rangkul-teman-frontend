@@ -75,7 +75,7 @@ export const contactDetailApi = async (id: string): Promise<any[]> => {
   return resp.data;
 };
 
-export const contactCheckEkyc = async (id: string): Promise<boolean> => {
+export const contactCheckEkyc = async (id: string): Promise<any> => {
   const resp = await ajaxGet(`/api/contact/ekyc/check/${id}`);
   return resp.data;
 };
