@@ -26,6 +26,7 @@ export interface ContactRequest {
 
     ktpImage: string;
     typeOfGood: string;
+    salesChannelId: string;
 }
 
 export const initContactValue:ContactRequest = {
@@ -56,6 +57,7 @@ export const initContactValue:ContactRequest = {
 
     ktpImage: "",
     typeOfGood: "",
+    salesChannelId: ""
 }
 
 export interface ContactRelativeDto{
