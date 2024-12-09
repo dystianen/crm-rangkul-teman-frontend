@@ -30,7 +30,7 @@ import {
   genderStore,
   maritalStatusStore,
   provinceStore,
-  religionStore,
+  religionStore, salesChannelStore,
   selectBoxOptions,
   subDistrictStore,
   validateEmail,
@@ -55,6 +55,10 @@ export default function Create() {
   const [contactRelatives] = useState<ContactRelativeDto[]>([]);
   const [isLoadingCreate, setLoadingCreate] = useState(false);
 
+  const salesChannelOptions = selectBoxOptions(
+      new DataSource(salesChannelStore),
+      "Select Sales channel"
+  );
   const relativeOptions = selectBoxOptions(new DataSource(contactRelativeStore), "Select Relation");
 
   const genderOptions = selectBoxOptions(new DataSource(genderStore), "Select gender");
@@ -161,7 +165,6 @@ export default function Create() {
       setSubDistrictOptions(selectBoxOptions(new DataSource(subDistrictStore(evt.value)), ""));
     }
 
-    // @ts-expect-error
     contact[evt.dataField] = evt.value;
   };
 
@@ -478,6 +481,12 @@ export default function Create() {
                 <SimpleItem dataField="typeOfGood" label={{ text: "Jenis Barang" }}>
                   <RequiredRule message="Jenis Barang wajib diisi" />
                 </SimpleItem>
+                <SimpleItem
+                    dataField="salesChannelId"
+                    label={{text: "Sales Channel"}}
+                    editorType={"dxSelectBox"}
+                    editorOptions={salesChannelOptions}
+                />
               </GroupItem>
             </GroupItem>
             <GroupItem colSpan={2} cssClass={"dx-card responsive-paddings next-card"}>

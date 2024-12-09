@@ -90,6 +90,7 @@ export default function DetailPage() {
                 email: res?.contactEmail,
 
                 ktpImage: "",
+                typeOfGood: res?.typeOfGood
             }
             if (res?.contactAddressCountryId) {
                 setProvinceOptions(selectBoxOptions(new DataSource(provinceStore(String(res?.contactAddressCountryId))), ""));

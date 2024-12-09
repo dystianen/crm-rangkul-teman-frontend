@@ -32,7 +32,7 @@ import {
   getFile,
   maritalStatusStore,
   provinceStore,
-  religionStore,
+  religionStore, salesChannelStore,
   selectBoxOptions,
   subDistrictStore,
   updateContact,
@@ -44,6 +44,7 @@ import Loader from "src/components/loader";
 import { ContactRelativeDto, ContactRequest, initContactValue } from "src/interfaces/contactDto";
 import resizeImage from "src/utils/resizeImage.util";
 import { formatDate } from "../../utils/dateUtils";
+import ContactActivity from "../../components/contact/contact-activity";
 
 export default function EditPage() {
   const navigate = useNavigate();
@@ -53,9 +54,16 @@ export default function EditPage() {
   const [ktpSrc, setKtpSrc] = useState("");
   const [selfie, setSelfie] = useState("");
   const [contactRelatives, setContactRelatives] = useState<ContactRelativeDto[]>([]);
-  const [showPopupCheckEkyc, setShowPopupCheckEkyc] = useState(false);
+  const [isShowPopupCheckEkyc, setShowPopupCheckEkyc] = useState(false);
+  const [isShowPopupError, setShowPopupError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState([""]);
   const [isLoadingUpdate, setLoadingUpdate] = useState(false);
 
+
+  const salesChannelOptions = selectBoxOptions(
+      new DataSource(salesChannelStore),
+      "Select Sales channel"
+  );
   const relativeOptions = selectBoxOptions(new DataSource(contactRelativeStore), "Select Relation");
   const genderOptions = selectBoxOptions(new DataSource(genderStore), "Select gender");
   const religionOptions = selectBoxOptions(new DataSource(religionStore), "Select religion");
@@ -131,7 +139,8 @@ export default function EditPage() {
         email: res?.contactEmail,
 
         ktpImage: "",
-        typeOfGood: res?.typeOfGood
+        typeOfGood: res?.typeOfGood,
+        salesChannelId: res?.salesChannelId,
       };
       if (res?.contactAddressCountryId) {
         setProvinceOptions(
@@ -182,8 +191,12 @@ export default function EditPage() {
 
     const handleCheckEkyc = (intervalId: NodeJS.Timeout) => {
       contactCheckEkyc(contactId).then((res) => {
-        setShowPopupCheckEkyc(res?.isEkycWaiting);
-        if (!res) {
+        setShowPopupCheckEkyc(res.isEkycWaiting);
+        setShowPopupError(res.isShowResult);
+        if (res.message) {
+          setErrorMessage(res.message);
+        }
+        if (!res.isEkycWaiting || res.isShowResult) {
           clearInterval(intervalId);
         }
       });
@@ -239,7 +252,6 @@ export default function EditPage() {
       setSubDistrictOptions(selectBoxOptions(new DataSource(subDistrictStore(evt.value)), ""));
     }
 
-    // @ts-expect-error
     contact[evt.dataField] = evt.value;
   };
 
@@ -417,7 +429,7 @@ export default function EditPage() {
                   dataField="selfie"
                   editorType={"dxFileUploader" as any}
                   editorOptions={uploadPhotoSelfieOptions}
-                  label={{ text: "Foto Selfie" }}
+                  label={{ text: "Selfie Photo" }}
                 ></SimpleItem>
 
                 <Item>
@@ -522,6 +534,12 @@ export default function EditPage() {
                 <SimpleItem dataField="typeOfGood" label={{ text: "Jenis Barang" }}>
                   <RequiredRule message="Jenis Barang wajib diisi" />
                 </SimpleItem>
+                <SimpleItem
+                    dataField="salesChannelId"
+                    label={{text: "Sales Channel"}}
+                    editorType={"dxSelectBox"}
+                    editorOptions={salesChannelOptions}
+                />
               </GroupItem>
             </GroupItem>
             <GroupItem colSpan={2} cssClass={"dx-card responsive-paddings next-card"}>
@@ -699,18 +717,34 @@ export default function EditPage() {
                   />
                 </DataGrid>
               </Tab>
+              <Tab title="Contact Activity">
+                <ContactActivity contactId={id as string}/>
+              </Tab>
             </TabbedItem>
           </Form>
         </div>
       </div>
 
-      <Popup width={360} height={"auto"} visible={showPopupCheckEkyc} showTitle={false}>
+      <Popup width={360} height={"auto"} visible={isShowPopupCheckEkyc} showTitle={false}>
         <div className="popup-check-ekyc">
           <Loader />
           <h5 className="title">Mohon tunggu sedang dilakukan verifikasi data</h5>
-          <Button text="Kembali" type="default" onClick={handleBack} />
+          <Button text="Kembali" type="normal" onClick={handleBack} />
         </div>
       </Popup>
-    </>
-  );
+
+      <Popup width={360} height={"auto"} visible={isShowPopupError} showTitle={false}>
+        <div className="popup-error">
+          <img src="/assets/images/ic_error.webp" width={80} height={80} alt="Error" />
+          <div className="card">
+            <ul>
+              {errorMessage.map((item, index) => (
+                <li key={index}>{item}</li>
+              ))}
+            </ul>
+          </div>
+          <Button text="Tutup" type="normal" onClick={() => setShowPopupError(false)} />
+        </div>
+      </Popup>
+    </>);
 }
