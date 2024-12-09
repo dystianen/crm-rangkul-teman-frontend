@@ -1,9 +1,10 @@
 import {dataRawCustomStore} from "../model/datagrid";
 import {ajaxDelete, ajaxGet, ajaxPatch, ajaxPost, ajaxPut} from "./http.api";
 import qs from "qs";
-import {customStore} from "../model/customStore";
-import CustomStore from "devextreme/data/custom_store";
-import {FilterPss, setFilterPss} from "../interfaces/IFilterPss";
+import { customStore } from "../model/customStore";
+import { dataRawCustomStore } from "../model/datagrid";
+import { ajaxGet, ajaxPatch, ajaxPost } from "./http.api";
+import type { TResCheckEkyc } from "./types/Contact";
 
 export const contactListStore = customStore({loadUrl: "/api/contact"});
 export const contactActivityListStore = (id: string) => new CustomStore({
@@ -111,7 +112,7 @@ export const contactDetailApi = async (id: string): Promise<any[]> => {
     return resp.data;
 };
 
-export const contactCheckEkyc = async (id: string): Promise<any> => {
+export const contactCheckEkyc = async (id: string): Promise<TResCheckEkyc> => {
   const resp = await ajaxGet(`/api/contact/ekyc/check/${id}`);
   return resp.data;
 };

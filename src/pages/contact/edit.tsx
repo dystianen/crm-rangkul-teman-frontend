@@ -53,7 +53,9 @@ export default function EditPage() {
   const [ktpSrc, setKtpSrc] = useState("");
   const [selfie, setSelfie] = useState("");
   const [contactRelatives, setContactRelatives] = useState<ContactRelativeDto[]>([]);
-  const [showPopupCheckEkyc, setShowPopupCheckEkyc] = useState(false);
+  const [isShowPopupCheckEkyc, setShowPopupCheckEkyc] = useState(false);
+  const [isShowPopupError, setShowPopupError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState([""]);
   const [isLoadingUpdate, setLoadingUpdate] = useState(false);
 
   const relativeOptions = selectBoxOptions(new DataSource(contactRelativeStore), "Select Relation");
@@ -182,8 +184,12 @@ export default function EditPage() {
 
     const handleCheckEkyc = (intervalId: NodeJS.Timeout) => {
       contactCheckEkyc(contactId).then((res) => {
-        setShowPopupCheckEkyc(res?.isEkycWaiting);
-        if (!res) {
+        setShowPopupCheckEkyc(res.isEkycWaiting);
+        setShowPopupError(res.isShowResult);
+        if (res.message) {
+          setErrorMessage(res.message);
+        }
+        if (!res.isEkycWaiting || res.isShowResult) {
           clearInterval(intervalId);
         }
       });
@@ -417,7 +423,7 @@ export default function EditPage() {
                   dataField="selfie"
                   editorType={"dxFileUploader" as any}
                   editorOptions={uploadPhotoSelfieOptions}
-                  label={{ text: "Foto Selfie" }}
+                  label={{ text: "Selfie Photo" }}
                 ></SimpleItem>
 
                 <Item>
@@ -704,11 +710,25 @@ export default function EditPage() {
         </div>
       </div>
 
-      <Popup width={360} height={"auto"} visible={showPopupCheckEkyc} showTitle={false}>
+      <Popup width={360} height={"auto"} visible={isShowPopupCheckEkyc} showTitle={false}>
         <div className="popup-check-ekyc">
           <Loader />
           <h5 className="title">Mohon tunggu sedang dilakukan verifikasi data</h5>
-          <Button text="Kembali" type="default" onClick={handleBack} />
+          <Button text="Kembali" type="normal" onClick={handleBack} />
+        </div>
+      </Popup>
+
+      <Popup width={360} height={"auto"} visible={isShowPopupError} showTitle={false}>
+        <div className="popup-error">
+          <img src="/assets/images/ic_error.webp" width={80} height={80} alt="Error" />
+          <div className="card">
+            <ul>
+              {errorMessage.map((item, index) => (
+                <li key={index}>{item}</li>
+              ))}
+            </ul>
+          </div>
+          <Button text="Tutup" type="normal" onClick={() => setShowPopupError(false)} />
         </div>
       </Popup>
     </>
