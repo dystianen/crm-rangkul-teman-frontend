@@ -2,6 +2,7 @@ import qs from "qs";
 import { customStore } from "../model/customStore";
 import { dataRawCustomStore } from "../model/datagrid";
 import { ajaxGet, ajaxPatch, ajaxPost } from "./http.api";
+import type { TResCheckEkyc } from "./types/Contact";
 
 export const contactListStore = customStore({ loadUrl: "/api/contact" });
 
@@ -75,7 +76,7 @@ export const contactDetailApi = async (id: string): Promise<any[]> => {
   return resp.data;
 };
 
-export const contactCheckEkyc = async (id: string): Promise<any> => {
+export const contactCheckEkyc = async (id: string): Promise<TResCheckEkyc> => {
   const resp = await ajaxGet(`/api/contact/ekyc/check/${id}`);
   return resp.data;
 };
