@@ -32,7 +32,7 @@ import {
   getFile,
   maritalStatusStore,
   provinceStore,
-  religionStore,
+  religionStore, salesChannelStore,
   selectBoxOptions,
   subDistrictStore,
   updateContact,
@@ -44,6 +44,7 @@ import Loader from "src/components/loader";
 import { ContactRelativeDto, ContactRequest, initContactValue } from "src/interfaces/contactDto";
 import resizeImage from "src/utils/resizeImage.util";
 import { formatDate } from "../../utils/dateUtils";
+import ContactActivity from "../../components/contact/contact-activity";
 
 export default function EditPage() {
   const navigate = useNavigate();
@@ -58,6 +59,11 @@ export default function EditPage() {
   const [errorMessage, setErrorMessage] = useState([""]);
   const [isLoadingUpdate, setLoadingUpdate] = useState(false);
 
+
+  const salesChannelOptions = selectBoxOptions(
+      new DataSource(salesChannelStore),
+      "Select Sales channel"
+  );
   const relativeOptions = selectBoxOptions(new DataSource(contactRelativeStore), "Select Relation");
   const genderOptions = selectBoxOptions(new DataSource(genderStore), "Select gender");
   const religionOptions = selectBoxOptions(new DataSource(religionStore), "Select religion");
@@ -133,7 +139,8 @@ export default function EditPage() {
         email: res?.contactEmail,
 
         ktpImage: "",
-        typeOfGood: res?.typeOfGood
+        typeOfGood: res?.typeOfGood,
+        salesChannelId: res?.salesChannelId,
       };
       if (res?.contactAddressCountryId) {
         setProvinceOptions(
@@ -245,7 +252,6 @@ export default function EditPage() {
       setSubDistrictOptions(selectBoxOptions(new DataSource(subDistrictStore(evt.value)), ""));
     }
 
-    // @ts-expect-error
     contact[evt.dataField] = evt.value;
   };
 
@@ -528,6 +534,12 @@ export default function EditPage() {
                 <SimpleItem dataField="typeOfGood" label={{ text: "Jenis Barang" }}>
                   <RequiredRule message="Jenis Barang wajib diisi" />
                 </SimpleItem>
+                <SimpleItem
+                    dataField="salesChannelId"
+                    label={{text: "Sales Channel"}}
+                    editorType={"dxSelectBox"}
+                    editorOptions={salesChannelOptions}
+                />
               </GroupItem>
             </GroupItem>
             <GroupItem colSpan={2} cssClass={"dx-card responsive-paddings next-card"}>
@@ -705,6 +717,9 @@ export default function EditPage() {
                   />
                 </DataGrid>
               </Tab>
+              <Tab title="Contact Activity">
+                <ContactActivity contactId={id as string}/>
+              </Tab>
             </TabbedItem>
           </Form>
         </div>
@@ -731,6 +746,5 @@ export default function EditPage() {
           <Button text="Tutup" type="normal" onClick={() => setShowPopupError(false)} />
         </div>
       </Popup>
-    </>
-  );
+    </>);
 }

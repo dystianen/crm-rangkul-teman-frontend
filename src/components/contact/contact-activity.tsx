@@ -93,7 +93,7 @@ class ContactActivity<T> extends React.PureComponent<Iprops<T>, Istate<T>> {
                     allowUpdating: true,
                     allowAdding: true,
                     popup: {
-                        title: "Relative Contact",
+                        title: "Activity Form",
                         showTitle: true,
                         width: "40%",
                         height: 360
