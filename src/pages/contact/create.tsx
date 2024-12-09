@@ -372,7 +372,7 @@ export default function Create() {
                   dataField="selfie"
                   editorType={"dxFileUploader" as any}
                   editorOptions={uploadPhotoSelfieOptions}
-                  label={{ text: "Foto Selfie" }}
+                  label={{ text: "Selfie Photo" }}
                 >
                   <RequiredRule message="Selfie Photo wajib diisi" />
                 </SimpleItem>

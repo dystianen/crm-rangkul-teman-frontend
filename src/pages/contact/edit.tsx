@@ -423,7 +423,7 @@ export default function EditPage() {
                   dataField="selfie"
                   editorType={"dxFileUploader" as any}
                   editorOptions={uploadPhotoSelfieOptions}
-                  label={{ text: "Foto Selfie" }}
+                  label={{ text: "Selfie Photo" }}
                 ></SimpleItem>
 
                 <Item>
