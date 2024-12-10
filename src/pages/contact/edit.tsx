@@ -720,7 +720,7 @@ export default function EditPage() {
 
       <Popup width={360} height={"auto"} visible={isShowPopupError} showTitle={false}>
         <div className="popup-error">
-          <img src="/assets/images/ic_error.webp" width={80} height={80} alt="Error" />
+          <img src="/assets/images/ic_error.png" width={80} height={80} alt="Error" />
           <div className="card">
             <ul>
               {errorMessage.map((item, index) => (
