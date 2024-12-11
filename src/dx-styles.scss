@@ -11,7 +11,7 @@
     flex-grow: 1;
 
     h2 {
-      font-size: 28px;
+      font-size: 20px;
       font-weight: 400;
       margin-top: 10px;
       margin-bottom: 10px;
@@ -244,4 +244,8 @@ body {
   display: flex;
   align-items: center;
   gap: 10px;
+}
+
+.dx-toast-content {
+  justify-content: center !important;
 }

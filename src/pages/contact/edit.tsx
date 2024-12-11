@@ -32,7 +32,8 @@ import {
   getFile,
   maritalStatusStore,
   provinceStore,
-  religionStore, salesChannelStore,
+  religionStore,
+  salesChannelStore,
   selectBoxOptions,
   subDistrictStore,
   updateContact,
@@ -43,8 +44,8 @@ import {
 import Loader from "src/components/loader";
 import { ContactRelativeDto, ContactRequest, initContactValue } from "src/interfaces/contactDto";
 import resizeImage from "src/utils/resizeImage.util";
-import { formatDate } from "../../utils/dateUtils";
 import ContactActivity from "../../components/contact/contact-activity";
+import { formatDate } from "../../utils/dateUtils";
 
 export default function EditPage() {
   const navigate = useNavigate();
@@ -59,10 +60,9 @@ export default function EditPage() {
   const [errorMessage, setErrorMessage] = useState([""]);
   const [isLoadingUpdate, setLoadingUpdate] = useState(false);
 
-
   const salesChannelOptions = selectBoxOptions(
-      new DataSource(salesChannelStore),
-      "Select Sales channel"
+    new DataSource(salesChannelStore),
+    "Select Sales channel"
   );
   const relativeOptions = selectBoxOptions(new DataSource(contactRelativeStore), "Select Relation");
   const genderOptions = selectBoxOptions(new DataSource(genderStore), "Select gender");
@@ -140,7 +140,7 @@ export default function EditPage() {
 
         ktpImage: "",
         typeOfGood: res?.typeOfGood,
-        salesChannelId: res?.salesChannelId,
+        salesChannelId: res?.salesChannelId
       };
       if (res?.contactAddressCountryId) {
         setProvinceOptions(
@@ -252,6 +252,7 @@ export default function EditPage() {
       setSubDistrictOptions(selectBoxOptions(new DataSource(subDistrictStore(evt.value)), ""));
     }
 
+    // @ts-expect-error
     contact[evt.dataField] = evt.value;
   };
 
@@ -291,8 +292,8 @@ export default function EditPage() {
 
   return (
     <>
-      <h2 className={"content-block"}>Detail Contact</h2>
       <div className={"content-block"}>
+        <h2>Detail Contact</h2>
         <Title.Toolbar className={"dx-card"}>
           <Title.Item location="before" widget="dxButton" options={backButtonOptions} />
         </Title.Toolbar>
@@ -535,10 +536,10 @@ export default function EditPage() {
                   <RequiredRule message="Jenis Barang wajib diisi" />
                 </SimpleItem>
                 <SimpleItem
-                    dataField="salesChannelId"
-                    label={{text: "Sales Channel"}}
-                    editorType={"dxSelectBox"}
-                    editorOptions={salesChannelOptions}
+                  dataField="salesChannelId"
+                  label={{ text: "Sales Channel" }}
+                  editorType={"dxSelectBox"}
+                  editorOptions={salesChannelOptions}
                 />
               </GroupItem>
             </GroupItem>
@@ -633,7 +634,7 @@ export default function EditPage() {
             <ButtonItem horizontalAlignment="left">
               <ButtonOptions type="success" disabled={isLoadingUpdate} useSubmitBehavior>
                 <div className="button-options">
-                  {isLoadingUpdate && <LoadIndicator width="20px" height="20px" visible />}
+                  <LoadIndicator width="20px" height="20px" visible={isLoadingUpdate} />
                   <span className="dx-button-text">Update Contact</span>
                 </div>
               </ButtonOptions>
@@ -718,7 +719,7 @@ export default function EditPage() {
                 </DataGrid>
               </Tab>
               <Tab title="Contact Activity">
-                <ContactActivity contactId={id as string}/>
+                <ContactActivity contactId={id as string} />
               </Tab>
             </TabbedItem>
           </Form>
@@ -735,7 +736,7 @@ export default function EditPage() {
 
       <Popup width={360} height={"auto"} visible={isShowPopupError} showTitle={false}>
         <div className="popup-error">
-          <img src="/assets/images/ic_error.webp" width={80} height={80} alt="Error" />
+          <img src="/assets/images/ic_error.png" width={80} height={80} alt="Error" />
           <div className="card">
             <ul>
               {errorMessage.map((item, index) => (
@@ -746,5 +747,6 @@ export default function EditPage() {
           <Button text="Tutup" type="normal" onClick={() => setShowPopupError(false)} />
         </div>
       </Popup>
-    </>);
+    </>
+  );
 }

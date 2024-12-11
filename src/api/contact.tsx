@@ -1,10 +1,10 @@
+import CustomStore from "devextreme/data/custom_store";
 import qs from "qs";
+import type { TReqCreateLeads, TResCheckEkyc } from "../interfaces/contactDto";
+import { FilterPss, setFilterPss } from "../interfaces/IFilterPss";
 import { customStore } from "../model/customStore";
 import { dataRawCustomStore } from "../model/datagrid";
 import { ajaxGet, ajaxPatch, ajaxPost } from "./http.api";
-import type { TResCheckEkyc } from "./types/Contact";
-import CustomStore from "devextreme/data/custom_store";
-import {FilterPss, setFilterPss} from "../interfaces/IFilterPss";
 
 export const contactListStore = customStore({ loadUrl: "/api/contact" });
 
@@ -15,6 +15,21 @@ export const createContact = async (payload: any): Promise<any> => {
 
 export const updateContact = async (id: any, payload: any): Promise<any> => {
   const resp = await ajaxPatch(`/api/contact/update/${id}`, payload);
+  return resp.data;
+};
+
+export const createLeads = async (payload: TReqCreateLeads): Promise<any> => {
+  const resp = await ajaxPost(`/api/contact/leads`, payload);
+  return resp.data;
+};
+
+export const updateLeads = async (id: string, payload: TReqCreateLeads): Promise<any> => {
+  const resp = await ajaxPatch(`/api/contact/leads/${id}`, payload);
+  return resp.data;
+};
+
+export const createContactLeads = async (id: string, payload: TReqCreateLeads): Promise<any> => {
+  const resp = await ajaxPost(`/api/contact/leads/${id}/submit`, payload);
   return resp.data;
 };
 
@@ -130,40 +145,37 @@ export const validateEmail = async (payload: any) => {
 };
 
 export const activityResultStore = dataRawCustomStore(`/api/contact/data/activityResult?`);
-export const contactActivityListStore = (id: string) => new CustomStore({
-  key: "id",
-  load: async (loadOptions) => {
-    let {sort} = loadOptions;
-    if(sort === null) {
-      sort = [{selector: "modifiedOn", desc: false}];
+export const contactActivityListStore = (id: string) =>
+  new CustomStore({
+    key: "id",
+    load: async (loadOptions) => {
+      let { sort } = loadOptions;
+      if (sort === null) {
+        sort = [{ selector: "modifiedOn", desc: false }];
+      }
+      const startVal: number | undefined = loadOptions.skip != null ? loadOptions.skip : 0,
+        lengthVal: number | undefined = loadOptions.take != null ? loadOptions.take : 50;
+      const paramSearch: FilterPss = {
+        ...setFilterPss(),
+        start: startVal,
+        length: lengthVal,
+        sort: sort,
+        searchQuery: JSON.stringify(loadOptions.filter)
+      };
+      const resp = await ajaxGet(`/api/contact/activity/${id}?${qs.stringify(paramSearch)}`);
+      return resp;
+    },
+    cacheRawData: true,
+    insert: async (values: any) => {
+      const resp = await ajaxPost("/api/contact/activity/create", values);
+      console.log("insert", resp);
+    },
+    update: async (key: string, values: any) => {
+      console.log("update", key, values);
+      const resp = await ajaxPatch(`/api/contact/activity/update/${key}`, values);
+      console.log("update", resp);
     }
-    const startVal: number | undefined =
-            loadOptions.skip != null ? loadOptions.skip : 0,
-        lengthVal: number | undefined =
-            loadOptions.take != null ? loadOptions.take : 50;
-    const paramSearch: FilterPss = {
-      ...setFilterPss(),
-      start: startVal,
-      length: lengthVal,
-      sort: sort,
-      searchQuery: JSON.stringify(loadOptions.filter),
-    };
-    const resp = await ajaxGet(
-        `/api/contact/activity/${id}?${qs.stringify(paramSearch)}`
-    );
-    return resp;
-  },
-  cacheRawData: true,
-  insert: async (values: any) => {
-    const resp = await ajaxPost("/api/contact/activity/create", values);
-    console.log("insert", resp);
-  },
-  update: async (key: string, values: any) => {
-    console.log("update", key, values);
-    const resp = await ajaxPatch(`/api/contact/activity/update/${key}`, values);
-    console.log("update", resp);
-  },
-});
+  });
 export const salesChannelStore = dataRawCustomStore(`/api/contact/data/salesChannel?`);
 export const contactRelativeStore = dataRawCustomStore(`/api/contact/data/contactRelative?`);
 export const genderStore = dataRawCustomStore(`/api/contact/data/gender?`);
