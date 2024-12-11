@@ -285,8 +285,8 @@ export default function EditPage() {
 
   return (
     <>
-      <h2 className={"content-block"}>Detail Contact</h2>
       <div className={"content-block"}>
+        <h2>Detail Contact</h2>
         <Title.Toolbar className={"dx-card"}>
           <Title.Item location="before" widget="dxButton" options={backButtonOptions} />
         </Title.Toolbar>
@@ -621,7 +621,7 @@ export default function EditPage() {
             <ButtonItem horizontalAlignment="left">
               <ButtonOptions type="success" disabled={isLoadingUpdate} useSubmitBehavior>
                 <div className="button-options">
-                  {isLoadingUpdate && <LoadIndicator width="20px" height="20px" visible />}
+                  <LoadIndicator width="20px" height="20px" visible={isLoadingUpdate} />
                   <span className="dx-button-text">Update Contact</span>
                 </div>
               </ButtonOptions>

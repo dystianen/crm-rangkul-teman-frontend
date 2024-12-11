@@ -19,7 +19,7 @@ export default function Content() {
         {routes.map(({ ID, path, element }) => (
           <Route key={ID} path={path} element={element} />
         ))}
-        <Route path="*" element={<Navigate to="/home" />} />
+        <Route path="*" element={<Navigate to="/contact" />} />
       </Routes>
 
       <Footer>

@@ -1,3 +1,4 @@
+import { DropDownButton } from "devextreme-react";
 import { Button } from "devextreme-react/button";
 import DataGrid, {
   Column,
@@ -15,7 +16,7 @@ import "devextreme-react/text-area";
 import { AsyncRule, RequiredRule, StringLengthRule } from "devextreme-react/validator";
 import DataSource from "devextreme/data/data_source";
 import "devextreme/data/odata/store";
-import { useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import ReactDOM from "react-dom/client";
 import { useNavigate } from "react-router";
 import { contactListStore, selectBoxBranchOptions, validateIdNumber } from "src/api/contact";
@@ -111,10 +112,15 @@ export default function Index() {
       .catch(console.error);
   };
 
+  const actions = [
+    { id: 1, name: "Add Contact", action: showPopup },
+    { id: 2, name: "Add Leads", action: () => navigate("/contact/leads/create") }
+  ];
+
   return (
     <>
-      <h2 className={"content-block"}>Kontak</h2>
       <div className={"content-block"}>
+        <h2>Kontak</h2>
         <div className={"dx-card"}>
           <DataGrid
             // @ts-expect-error
@@ -138,11 +144,16 @@ export default function Index() {
                 />
               </Item>
               <Item location="after">
-                <Button
-                  text="Tambah baru"
-                  type="default"
+                <DropDownButton
                   stylingMode="contained"
-                  onClick={showPopup}
+                  type="default"
+                  text="Add New"
+                  displayExpr="name"
+                  items={actions}
+                  onItemClick={(e) => {
+                    const action = e.itemData.action;
+                    action();
+                  }}
                 />
               </Item>
             </Toolbar>
@@ -156,7 +167,15 @@ export default function Index() {
               cellTemplate={function (container: any, options: any) {
                 const dom = ReactDOM.createRoot(container);
                 dom.render(
-                  <OnClickLink onClick={() => navigate(`/contact/edit?id=${options.data.id}`)}>
+                  <OnClickLink
+                    onClick={() => {
+                      if (options.data.contactType === "contact") {
+                        navigate(`/contact/edit?id=${options.data.id}`);
+                      } else {
+                        navigate(`/contact/leads/edit?id=${options.data.id}`);
+                      }
+                    }}
+                  >
                     {options.data.seqId}
                   </OnClickLink>
                 );
@@ -243,6 +262,29 @@ export default function Index() {
             <Column
               dataField={"branchName"}
               caption={"Cabang"}
+              alignment={"left"}
+              filterOperations={filterOperation.string}
+            />
+            <Column
+              dataField={"contactType"}
+              caption="Tipe Kontak"
+              alignment={"left"}
+              filterOperations={filterOperation.string}
+            />
+            <Column
+              dataField={"statusName"}
+              caption="Status"
+              alignment={"left"}
+              filterOperations={filterOperation.string}
+            />
+            <Column
+              dataField={"marketAddress"}
+              caption="Alamat Pasar"
+              alignment={"left"}
+              filterOperations={filterOperation.string}
+            />
+            <Column
+              dataField={"uniqueIdentifier"}
               alignment={"left"}
               filterOperations={filterOperation.string}
             />

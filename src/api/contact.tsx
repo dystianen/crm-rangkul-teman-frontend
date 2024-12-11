@@ -1,8 +1,8 @@
 import qs from "qs";
+import type { TReqCreateLeads, TResCheckEkyc } from "../interfaces/contactDto";
 import { customStore } from "../model/customStore";
 import { dataRawCustomStore } from "../model/datagrid";
 import { ajaxGet, ajaxPatch, ajaxPost } from "./http.api";
-import type { TResCheckEkyc } from "./types/Contact";
 
 export const contactListStore = customStore({ loadUrl: "/api/contact" });
 
@@ -13,6 +13,21 @@ export const createContact = async (payload: any): Promise<any> => {
 
 export const updateContact = async (id: any, payload: any): Promise<any> => {
   const resp = await ajaxPatch(`/api/contact/update/${id}`, payload);
+  return resp.data;
+};
+
+export const createLeads = async (payload: TReqCreateLeads): Promise<any> => {
+  const resp = await ajaxPost(`/api/contact/leads`, payload);
+  return resp.data;
+};
+
+export const updateLeads = async (id: string, payload: TReqCreateLeads): Promise<any> => {
+  const resp = await ajaxPatch(`/api/contact/leads/${id}`, payload);
+  return resp.data;
+};
+
+export const createContactLeads = async (id: string, payload: TReqCreateLeads): Promise<any> => {
+  const resp = await ajaxPost(`/api/contact/leads/${id}/submit`, payload);
   return resp.data;
 };
 
