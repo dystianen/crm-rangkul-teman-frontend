@@ -60,7 +60,7 @@ const CreateEditContactLeads = () => {
         await updateLeads(idData, leads);
       }
 
-      form.resetValues();
+      form.clear();
       setLeads(InitLeadsValue);
       setLoadingSave(false);
 
@@ -73,8 +73,7 @@ const CreateEditContactLeads = () => {
             at: "center top"
           }
         },
-        "success",
-        5000
+        "success"
       );
 
       navigate(-1);
@@ -102,7 +101,7 @@ const CreateEditContactLeads = () => {
 
       setLoadingCreateContact(true);
       await createContactLeads(idData, leads);
-      form.resetValues();
+      form.clear();
       setLeads(InitLeadsValue);
       setLoadingCreateContact(false);
 
