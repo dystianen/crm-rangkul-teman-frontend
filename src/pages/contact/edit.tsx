@@ -727,7 +727,7 @@ export default function EditPage() {
       </div>
 
       <Popup width={360} height={"auto"} visible={isShowPopupCheckEkyc} showTitle={false}>
-        <div className="popup-check-ekyc">
+        <div className="wrapper-popup-waiting">
           <Loader />
           <h5 className="title">Mohon tunggu sedang dilakukan verifikasi data</h5>
           <Button text="Kembali" type="normal" onClick={handleBack} />
