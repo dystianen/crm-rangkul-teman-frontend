@@ -4,11 +4,8 @@ import Form, {
   ButtonItem,
   ButtonOptions,
   GroupItem,
-  PatternRule,
-  RequiredRule,
   SimpleItem
 } from "devextreme-react/form";
-import notify from "devextreme/ui/notify";
 import queryString from "query-string";
 import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -20,6 +17,7 @@ import {
   validatePhone
 } from "src/api/contact";
 import { InitLeadsValue, type TReqCreateLeads } from "src/interfaces/contactDto";
+import { notifyError, notifySuccess } from "src/utils/devExtremeUtils";
 
 const CreateEditContactLeads = () => {
   const formRef = useRef<Form>(null);
@@ -47,90 +45,43 @@ const CreateEditContactLeads = () => {
     }
   }, [idData]);
 
+  const handleSuccess = () => {
+    const form = formRef.current!.instance;
+    form.clear();
+    setLeads(InitLeadsValue);
+    setLoadingSave(false);
+    setLoadingCreateContact(false);
+    notifySuccess("Berhasil submit data");
+    navigate(-1);
+  };
+
+  const handleError = (error: any) => {
+    notifyError(error.options.error);
+    setLoadingSave(false);
+    setLoadingCreateContact(false);
+  };
+
   const handleSave = async () => {
     try {
-      const form = formRef.current!.instance;
-      const { isValid } = form.validate();
-      if (!isValid) return;
-
       setLoadingSave(true);
       if (isCreate) {
-        await createLeads(leads);
+        await createLeads(leads).then(handleSuccess).catch(handleError);
       } else {
-        await updateLeads(idData, leads);
+        await updateLeads(idData, leads).then(handleSuccess).catch(handleError);
       }
-
-      form.clear();
-      setLeads(InitLeadsValue);
-      setLoadingSave(false);
-
-      notify(
-        {
-          message: "Berhasil submit data",
-          width: 100,
-          position: {
-            my: "center top",
-            at: "center top"
-          }
-        },
-        "success"
-      );
-
-      navigate(-1);
     } catch (error) {
       setLoadingSave(false);
-      notify(
-        {
-          message: "Gagal menyimpan data, coba lagi!",
-          width: 150,
-          position: {
-            my: "center top",
-            at: "center top"
-          }
-        },
-        "error"
-      );
+      notifyError("Gagal menyimpan data, coba lagi!");
     }
   };
 
   const handleCreateContact = async () => {
     try {
-      const form = formRef.current!.instance;
-      const { isValid } = form.validate();
-      if (!isValid) return;
-
       setLoadingCreateContact(true);
-      await createContactLeads(idData, leads);
-      form.clear();
-      setLeads(InitLeadsValue);
-      setLoadingCreateContact(false);
-
-      notify(
-        {
-          message: "Berhasil submit data",
-          width: 150,
-          position: {
-            my: "center top",
-            at: "center top"
-          }
-        },
-        "success"
-      );
-
-      navigate(-1);
+      await createContactLeads(idData, leads).then(handleSuccess).catch(handleError);
     } catch (error) {
       setLoadingCreateContact(false);
-      notify(
-        {
-          message: "Gagal menyimpan data, coba lagi!",
-          width: 150,
-          position: {
-            my: "center top",
-            at: "center top"
-          }
-        },
-        "error"
-      );
+      notifyError("Gagal menyimpan data, coba lagi!");
     }
   };
 
@@ -160,9 +111,7 @@ const CreateEditContactLeads = () => {
         >
           <GroupItem cssClass={"dx-card responsive-paddings next-card"}>
             <GroupItem caption="Leads Data" colCount={2}>
-              <SimpleItem dataField="name" label={{ text: "Name" }}>
-                <RequiredRule message="Name is required." />
-              </SimpleItem>
+              <SimpleItem dataField="name" label={{ text: "Name" }} />
               <SimpleItem
                 dataField="mobileNumber"
                 label={{ text: "Mobile Number" }}
@@ -177,12 +126,10 @@ const CreateEditContactLeads = () => {
                   }
                 }}
               >
-                <RequiredRule message="Mobile number is required." />
                 <AsyncRule
                   message="Mobile phone is already registered"
                   validationCallback={asyncValidationPhoneNumber}
                 />
-                <PatternRule message="Mobile number is only number" pattern={/^[0-9]+$/} />
               </SimpleItem>
               <SimpleItem
                 dataField="idNumber"
@@ -197,13 +144,8 @@ const CreateEditContactLeads = () => {
                       e.event.preventDefault();
                   }
                 }}
-              >
-                <RequiredRule message="NIK/KTP number is required." />
-                <PatternRule message="NIK/KTP is only number" pattern={/^[0-9]+$/} />
-              </SimpleItem>
-              <SimpleItem dataField="marketAddress" label={{ text: "Market Address" }}>
-                <RequiredRule message="Market Address is required." />
-              </SimpleItem>
+              />
+              <SimpleItem dataField="marketAddress" label={{ text: "Market Address" }} />
             </GroupItem>
 
             <GroupItem colCountByScreen={{ xs: 4, sm: 8, md: 12, lg: 12 }}>
