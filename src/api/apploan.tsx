@@ -33,6 +33,11 @@ export const createAppLoanOnboarding = async (payload: any): Promise<any> => {
   return resp.data;
 };
 
+export const createAppTemp = async (payload: any): Promise<any> => {
+  const resp = await ajaxPost(`/api/contact/create/app/tmp`, payload);
+  return resp.data;
+};
+
 export const submitAppLoan = async (id: string): Promise<any> => {
   const resp = await ajaxPost(`${API_PATH.APPLICATION}/submit/${id}`);
   return resp.data;
