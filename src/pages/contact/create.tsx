@@ -152,6 +152,7 @@ export default function Create() {
     e.preventDefault();
   };
 
+  // @ts-ignore
   const onFieldDataChanged = (evt: any) => {
     if (evt.dataField === "idCountry" && evt.value != null) {
       setProvinceOptions(selectBoxOptions(new DataSource(provinceStore(evt.value)), ""));
@@ -166,7 +167,6 @@ export default function Create() {
       setSubDistrictOptions(selectBoxOptions(new DataSource(subDistrictStore(evt.value)), ""));
     }
 
-    // @ts-expect-error
     contact[evt.dataField] = evt.value;
   };
 

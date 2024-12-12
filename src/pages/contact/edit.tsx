@@ -252,7 +252,6 @@ export default function EditPage() {
       setSubDistrictOptions(selectBoxOptions(new DataSource(subDistrictStore(evt.value)), ""));
     }
 
-    // @ts-expect-error
     contact[evt.dataField] = evt.value;
   };
 
