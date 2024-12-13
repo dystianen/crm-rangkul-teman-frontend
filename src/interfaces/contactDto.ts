@@ -76,6 +76,7 @@ export type TResCheckEkyc = {
   message: string[];
   isResend: boolean;
   isShowResult: boolean;
+  appId: string;
 };
 
 export type TReqCreateLeads = {

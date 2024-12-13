@@ -70,7 +70,6 @@ export default function Index() {
   };
 
   const onFieldDataChanged = (evt: any) => {
-    // @ts-expect-error
     contactData[evt.dataField] = evt.value;
   };
 
