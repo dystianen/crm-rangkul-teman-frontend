@@ -130,25 +130,29 @@ export default function Step1Page() {
   const handleSubmit = (e: any) => {
     setSubmitForm(true);
     createAppLoanOnboardingStep1(id as string, onboardingLoan).then(
-      () => {
-        checkAccess("0c0983ad-20b2-446d-8462-328aa64915f7").then((res) => {
-          if (res) {
-            navigate(`/loan-app/create/step/2?id=${id}`);
-          } else {
-            notify(
-              {
-                message: "Berhasil submit data",
-                position: {
-                  my: "center top",
-                  at: "center top"
-                }
-              },
-              "success",
-              15000
-            );
-            navigate(`/loan-app`);
-          }
-        });
+      (st1) => {
+        if(st1.isWaitingSigning) {
+          setShowWaitingPopup(true);
+        } else {
+          checkAccess("0c0983ad-20b2-446d-8462-328aa64915f7").then((res) => {
+            if (res) {
+              navigate(`/loan-app/create/step/2?id=${id}`);
+            } else {
+              notify(
+                  {
+                    message: "Berhasil submit data",
+                    position: {
+                      my: "center top",
+                      at: "center top"
+                    }
+                  },
+                  "success",
+                  15000
+              );
+              navigate(`/loan-app`);
+            }
+          });
+        }
       },
       (error) => {
         setSubmitForm(false);
@@ -170,7 +174,6 @@ export default function Step1Page() {
   };
 
   const onFieldDataChanged = (evt: any) => {
-    // @ts-expect-error
     onboardingLoan[evt.dataField] = evt.value;
   };
 

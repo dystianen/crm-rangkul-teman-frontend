@@ -220,20 +220,22 @@ export default function Index() {
                                 dom.render(<OnClickLink
                                     onClick={() => navigate(`/loan-app/create/step/1?id=${options.data.id}`)}>{options.data.seqId}</OnClickLink>);
 
-                                detailAppStep(String(id)).then((res) => {
-                                    const step = res?.steps;
-                                    if (typeof res?.allowed !== "undefined") {
-                                        if(res?.allowed) {
-                                            if (step == 1) {
-                                                dom.render(<OnClickLink
-                                                    onClick={() => navigate(`/loan-app/create/step/2?id=${options.data.id}`)}>{options.data.seqId}</OnClickLink>);
-                                            } else if (step <= 2 && step > 1) {
-                                                dom.render(<OnClickLink
-                                                    onClick={() => navigate(`/loan-app/create/preview?id=${options.data.id}`)}>{options.data.seqId}</OnClickLink>);
+                                if(!options.data.isWaitingSigning) {
+                                    detailAppStep(String(id)).then((res) => {
+                                        const step = res?.steps;
+                                        if (typeof res?.allowed !== "undefined") {
+                                            if(res?.allowed) {
+                                                if (step == 1) {
+                                                    dom.render(<OnClickLink
+                                                        onClick={() => navigate(`/loan-app/create/step/2?id=${options.data.id}`)}>{options.data.seqId}</OnClickLink>);
+                                                } else if (step <= 2 && step > 1) {
+                                                    dom.render(<OnClickLink
+                                                        onClick={() => navigate(`/loan-app/create/preview?id=${options.data.id}`)}>{options.data.seqId}</OnClickLink>);
+                                                }
                                             }
                                         }
-                                    }
-                                });
+                                    });
+                                }
                             } else {
                                 dom.render(<OnClickLink
                                     onClick={() => navigate(`/loan-app/detail?id=${options.data.id}`)}>{options.data.seqId}</OnClickLink>);
