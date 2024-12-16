@@ -1,5 +1,6 @@
 export interface ContactRequest {
   idNumber: string;
+  contactId?: string;
   nameBorrower?: string;
   birthPlace: string;
   birthDate: string;

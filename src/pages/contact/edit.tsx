@@ -113,6 +113,7 @@ export default function EditPage() {
 
         contactDetailApi(contactId).then((res: any) => {
             const data: ContactRequest = {
+                contactId: contactId,
                 idNumber: res.idNumber,
                 nameBorrower: res.name,
                 birthPlace: res.birthPlace,
