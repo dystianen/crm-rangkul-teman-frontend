@@ -133,7 +133,7 @@ const CreateEditContactLeads = () => {
               label={{ text: "Mobile Number" }}
               editorOptions={{
                 min: 0,
-                maxLength: 15,
+                maxLength: 14,
                 onKeyDown: (e: any) => {
                   const key = e.event.key;
                   e.value = String.fromCharCode(e.event.keyCode);
@@ -143,7 +143,7 @@ const CreateEditContactLeads = () => {
               }}
             >
               <AsyncRule
-                message="Mobile phone is already registered"
+                message="Mobile Number is already registered"
                 validationCallback={asyncValidationPhoneNumber}
               />
             </SimpleItem>
@@ -151,8 +151,8 @@ const CreateEditContactLeads = () => {
               dataField="idNumber"
               label={{ text: "NIK/KTP Number" }}
               editorOptions={{
-                min: 0,
-                maxLength: 20,
+                min: 16,
+                maxLength: 16,
                 onKeyDown: (e: any) => {
                   const key = e.event.key;
                   e.value = String.fromCharCode(e.event.keyCode);
