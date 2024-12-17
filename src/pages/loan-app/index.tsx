@@ -105,7 +105,7 @@ export default function Index() {
                         form.resetValues();
                         navigate(`/loan-app/create/step/1/?id=${res.appId}`);
                     } else {
-                        navigate(`/contact/edit?id=${res.appId}&ktp=${request.contactIdentity}&branchId=${request.branchId}&productId=${request.productId}&backTo=step1`);
+                        navigate(`/contact/edit?id=${res.contactId}&ktp=${request.contactIdentity}&branchId=${request.branchId}&productId=${request.productId}&backTo=step1`);
                     }
                 }
             }, (error) => {
