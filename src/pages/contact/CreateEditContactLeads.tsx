@@ -133,7 +133,7 @@ const CreateEditContactLeads = () => {
               label={{ text: "Mobile Number" }}
               editorOptions={{
                 min: 0,
-                maxLength: 15,
+                maxLength: 14,
                 onKeyDown: (e: any) => {
                   const key = e.event.key;
                   e.value = String.fromCharCode(e.event.keyCode);
