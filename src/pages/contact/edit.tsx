@@ -611,7 +611,7 @@ export default function EditPage() {
                                                     dataField: "phone",
                                                     editorOptions: {
                                                         min: 0,
-                                                        maxLength: 15,
+                                                        maxLength: 14,
                                                         onKeyDown: (e: any) => {
                                                             const key = e.event.key;
                                                             e.value = String.fromCharCode(e.event.keyCode);
@@ -636,7 +636,7 @@ export default function EditPage() {
                                         <Lookup dataSource={contactRelativeStore} displayExpr="name" valueExpr="id"/>
                                     </Column>
                                     <Column dataField={"name"} caption={"Nama"}/>
-                                    <Column dataField={"phone"} caption={"Telepon No."}/>
+                                    <Column dataField={"phone"} caption={"Telepon No."} />
                                     <Paging defaultPageSize={50}/>
                                     <Pager
                                         showPageSizeSelector={true}
