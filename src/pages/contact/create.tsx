@@ -41,8 +41,9 @@ import {
 import {ContactRelativeDto, ContactRequest, initContactValue} from "src/interfaces/contactDto";
 import {formatDate} from "src/utils/dateUtils";
 import resizeImage from "src/utils/resizeImage.util";
-import {createAppLoanOnboarding, createAppTemp} from "../../api/apploan";
+import {createAppTemp} from "../../api/apploan";
 import "./contact.scss";
+import { notifyError } from "src/utils/devExtremeUtils";
 
 export default function Create() {
     const navigate = useNavigate();
@@ -150,7 +151,10 @@ export default function Create() {
             } else {
                 navigate("/contact");
             }
-        });
+        })
+            .catch((error) => {
+                notifyError(error.message)
+            });
         e.preventDefault();
     };
 
@@ -229,8 +233,8 @@ export default function Create() {
                                 dataField="idNumber"
                                 label={{text: "No.KTP"}}
                                 editorOptions={{
-                                    min: 0,
-                                    maxLength: 20,
+                                    min: 16,
+                                    maxLength: 16,
                                     onKeyDown: (e: any) => {
                                         const key = e.event.key;
                                         e.value = String.fromCharCode(e.event.keyCode);
@@ -359,7 +363,14 @@ export default function Create() {
                                 />
                                 <PatternRule message="No.HP hanya angka" pattern={/^[0-9]+$/}/>
                             </SimpleItem>
-                            <SimpleItem dataField="email" label={{text: "Email"}}>
+                            <SimpleItem 
+                                dataField="email" 
+                                label={{text: "Email"}} 
+                                editorOptions={{
+                                    min: 0,
+                                    maxLength: 32
+                                }}
+                            >
                                 <AsyncRule
                                     message="Email sudah terdaftar"
                                     validationCallback={asyncValidationEmail}
