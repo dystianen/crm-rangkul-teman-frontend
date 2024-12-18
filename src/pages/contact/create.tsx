@@ -147,6 +147,8 @@ export default function Create() {
                     contactId: rest.id
                 }).then((res) => {
                     navigate(`/contact/edit?id=${rest.id}&ktp=${ktp}&branchId=${branchId}&productId=${productId}&backTo=step1`);
+                }).catch((error) => {
+                    notifyError(error.message)
                 });
             } else {
                 navigate("/contact");
@@ -347,7 +349,7 @@ export default function Create() {
                                 label={{text: "No.HP"}}
                                 editorOptions={{
                                     min: 0,
-                                    maxLength: 15,
+                                    maxLength: 14,
                                     onKeyDown: (e: any) => {
                                         const key = e.event.key;
                                         e.value = String.fromCharCode(e.event.keyCode);
