@@ -46,6 +46,7 @@ import {ContactRelativeDto, ContactRequest, initContactValue} from "src/interfac
 import resizeImage from "src/utils/resizeImage.util";
 import ContactActivity from "../../components/contact/contact-activity";
 import {formatDate} from "../../utils/dateUtils";
+import { notifyError } from "src/utils/devExtremeUtils";
 
 export default function EditPage() {
     const navigate = useNavigate();
@@ -104,7 +105,10 @@ export default function EditPage() {
                 15000
             );
             navigate("/contact");
-        });
+        })
+            .catch(error => {
+                notifyError(error.message);
+            });
         e.preventDefault();
     };
 
@@ -318,8 +322,8 @@ export default function EditPage() {
                                     dataField="idNumber"
                                     label={{text: "KTP Number"}}
                                     editorOptions={{
-                                        min: 0,
-                                        maxLength: 20,
+                                        min: 16,
+                                        maxLength: 16,
                                         onKeyDown: (e: any) => {
                                             const key = e.event.key;
                                             e.value = String.fromCharCode(e.event.keyCode);
@@ -418,7 +422,14 @@ export default function EditPage() {
                                     />
                                     <PatternRule message="Only number on Mobile phone" pattern={/^[0-9]+$/}/>
                                 </SimpleItem>
-                                <SimpleItem dataField="email" label={{text: "Email Address"}}>
+                                <SimpleItem
+                                    dataField="email" 
+                                    label={{text: "Email"}} 
+                                    editorOptions={{
+                                        min: 0,
+                                        maxLength: 32
+                                    }}
+                                >
                                     <AsyncRule
                                         message="Email is already registered"
                                         validationCallback={asyncValidationEmail}
