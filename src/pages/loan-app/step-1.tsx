@@ -79,7 +79,7 @@ export default function Step1Page() {
 
     const intervalId = setInterval(() => {
       handleCheck(intervalId);
-    }, 15000);
+    }, 5000);
 
     handleCheck(intervalId);
 
