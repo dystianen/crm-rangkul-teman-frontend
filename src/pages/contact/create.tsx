@@ -155,6 +155,7 @@ export default function Create() {
             }
         })
             .catch((error) => {
+                setLoadingCreate(false);
                 notifyError(error.message)
             });
         e.preventDefault();

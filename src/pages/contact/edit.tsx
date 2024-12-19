@@ -91,22 +91,24 @@ export default function EditPage() {
         };
 
         setLoadingUpdate(true);
-        updateContact(id, request).then(() => {
-            setLoadingUpdate(false);
-            notify(
-                {
-                    message: "Success submitted contact",
-                    position: {
-                        my: "center top",
-                        at: "center top"
-                    }
-                },
-                "success",
-                15000
-            );
-            navigate("/contact");
-        })
+        updateContact(id, request)
+            .then(() => {
+                setLoadingUpdate(false);
+                notify(
+                    {
+                        message: "Success submitted contact",
+                        position: {
+                            my: "center top",
+                            at: "center top"
+                        }
+                    },
+                    "success",
+                    15000
+                );
+                navigate("/contact");
+            })
             .catch(error => {
+                setLoadingUpdate(false);
                 notifyError(error.message);
             });
         e.preventDefault();
@@ -213,7 +215,7 @@ export default function EditPage() {
 
         const intervalId = setInterval(() => {
             handleCheckEkyc(intervalId);
-        }, 15000);
+        }, 5000);
 
         handleCheckEkyc(intervalId);
 
