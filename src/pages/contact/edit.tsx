@@ -84,6 +84,7 @@ export default function EditPage() {
     const handleSubmit = (e: any) => {
         const request = {
             ...contact,
+            contactId: id,
             birthDate: formatDate(contact.birthDate),
             ktpImage: ktpSrc,
             selfie,
