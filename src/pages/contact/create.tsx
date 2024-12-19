@@ -126,7 +126,7 @@ export default function Create() {
         createContact(request).then((rest) => {
             setLoadingCreate(false);
             setContact(initContactValue);
-            form.resetValues();
+            form.clear();
             notify(
                 {
                     message: "Berhasil submit data",
@@ -145,7 +145,7 @@ export default function Create() {
                     productId,
                     ktp,
                     contactId: rest.id
-                }).then((res) => {
+                }).then(() => {
                     navigate(`/contact/edit?id=${rest.id}&ktp=${ktp}&branchId=${branchId}&productId=${productId}&backTo=step1`);
                 }).catch((error) => {
                     notifyError(error.message)
@@ -502,6 +502,9 @@ export default function Create() {
                                     editorType={"dxSelectBox"}
                                     editorOptions={salesChannelOptions}
                                 />
+                                <SimpleItem dataField="marketAddress" label={{text: "Market Address"}}>
+                                    <RequiredRule message="Alamat pasar wajib diisi"/>
+                                </SimpleItem>
                             </GroupItem>
                         </GroupItem>
                     </GroupItem>

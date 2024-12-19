@@ -147,7 +147,8 @@ export default function EditPage() {
 
                 ktpImage: "",
                 typeOfGood: res?.typeOfGood,
-                salesChannelId: res?.salesChannelId
+                salesChannelId: res?.salesChannelId,
+                marketAddress: res.marketAddress
             };
             if (res?.contactAddressCountryId) {
                 setProvinceOptions(
@@ -558,6 +559,9 @@ export default function EditPage() {
                                     editorType={"dxSelectBox"}
                                     editorOptions={salesChannelOptions}
                                 />
+                                <SimpleItem dataField="marketAddress" label={{text: "Market Address"}}>
+                                    <RequiredRule message="Alamat pasar wajib diisi"/>
+                                </SimpleItem>
                             </GroupItem>
                         </GroupItem>
                         <GroupItem colSpan={2} cssClass={"dx-card responsive-paddings next-card"}>
