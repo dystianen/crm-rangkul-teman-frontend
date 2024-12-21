@@ -11,9 +11,10 @@ import Form, {
 } from "devextreme-react/form";
 import { LoadPanel } from "devextreme-react/load-panel";
 import DataSource from "devextreme/data/data_source";
+import { FieldDataChangedEvent } from "devextreme/ui/form";
 import notify from "devextreme/ui/notify";
 import queryString from "query-string";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 import { useLocation } from "react-router-dom";
 import {
@@ -40,7 +41,8 @@ export default function Step1Page() {
   const navigate = useNavigate();
   const { loanapp } = store.getState();
   const location = useLocation();
-  const { id } = queryString.parse(location.search);
+  const { id, autoNext } = queryString.parse(location.search);
+  const isAutoNext = autoNext === "false" ? false : true;
   const idData = id as string;
   const [onboardingLoan, setOnboardingLoan] = useState<AppLoanOnboardingStep1Request>(
     initLoanOnboardingStep1Value
@@ -51,6 +53,24 @@ export default function Step1Page() {
   const [isDisableButtonNext, setDisableButtonNext] = useState(false);
 
   const formRef = useRef<Form>(null);
+
+  const handleCheckSigning = useCallback(
+    (intervalId: NodeJS.Timeout) => {
+      checkStatusSigning(idData).then((res) => {
+        setShowWaitingPopup(res);
+        setDisableButtonNext(res);
+
+        if (!res) {
+          clearInterval(intervalId);
+
+          if (isAutoNext) {
+            navigate(`/loan-app/create/step/2?id=${idData}`);
+          }
+        }
+      });
+    },
+    [idData, navigate, isAutoNext]
+  );
 
   useEffect(() => {
     detailAppLoan(idData).then((res) => {
@@ -66,25 +86,37 @@ export default function Step1Page() {
       setOnboardingLoan(map);
     });
 
-    const handleCheck = (intervalId: NodeJS.Timeout) => {
-      checkStatusSigning(idData).then((res) => {
-        setShowWaitingPopup(res);
-        setDisableButtonNext(res);
-
-        if (!res) {
-          clearInterval(intervalId);
-        }
-      });
-    };
-
     const intervalId = setInterval(() => {
-      handleCheck(intervalId);
+      handleCheckSigning(intervalId);
     }, 5000);
 
-    handleCheck(intervalId);
+    handleCheckSigning(intervalId);
 
     return () => clearInterval(intervalId);
-  }, [idData]);
+  }, [idData, handleCheckSigning]);
+
+  useEffect(() => {
+    detailAppLoan(idData).then((res) => {
+      const data = res as AppLoanRequest;
+      const map = {
+        amount: data.loanAmount,
+        termId: data.loanTermId,
+        bankId: data.bankId,
+        bankAccNumber: data.bankAccNumber,
+        purposeId: data.loanPurposeId,
+        monthlyIncome: data.monthlyIncome
+      };
+      setOnboardingLoan(map);
+    });
+
+    const intervalId = setInterval(() => {
+      handleCheckSigning(intervalId);
+    }, 5000);
+
+    handleCheckSigning(intervalId);
+
+    return () => clearInterval(intervalId);
+  }, [idData, handleCheckSigning]);
 
   useEffect(() => {
     setOnboardingLoan({
@@ -101,7 +133,7 @@ export default function Step1Page() {
   const listBank = selectBoxOptions(new DataSource(getListBank), "Pilih bank");
   const listLoanPurpose = selectBoxOptions(new DataSource(getLoanPurpose), "Pilih tujuan pinjaman");
 
-  const downloadUnsigned = (e: any) => {
+  const downloadUnsigned = () => {
     setLoadingDownloadBtn(true);
     getUnsignedDoc(id as any)
       .then((dt) => {
@@ -127,27 +159,33 @@ export default function Step1Page() {
       .finally(() => setLoadingDownloadBtn(false));
   };
 
-  const handleSubmit = (e: any) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     setSubmitForm(true);
     createAppLoanOnboardingStep1(id as string, onboardingLoan).then(
       (st1) => {
-        if(st1.isWaitingSigning) {
+        if (st1.isWaitingSigning) {
           setShowWaitingPopup(true);
+
+          const intervalId = setInterval(() => {
+            handleCheckSigning(intervalId);
+          }, 5000);
+
+          handleCheckSigning(intervalId);
         } else {
           checkAccess("0c0983ad-20b2-446d-8462-328aa64915f7").then((res) => {
             if (res) {
               navigate(`/loan-app/create/step/2?id=${id}`);
             } else {
               notify(
-                  {
-                    message: "Berhasil submit data",
-                    position: {
-                      my: "center top",
-                      at: "center top"
-                    }
-                  },
-                  "success",
-                  15000
+                {
+                  message: "Berhasil submit data",
+                  position: {
+                    my: "center top",
+                    at: "center top"
+                  }
+                },
+                "success",
+                15000
               );
               navigate(`/loan-app`);
             }
@@ -173,8 +211,16 @@ export default function Step1Page() {
     e.preventDefault();
   };
 
-  const onFieldDataChanged = (evt: any) => {
-    onboardingLoan[evt.dataField] = evt.value;
+  const onFieldDataChanged = (evt: FieldDataChangedEvent) => {
+    const { dataField, value } = evt;
+    if (dataField) {
+      if (dataField in onboardingLoan) {
+        setOnboardingLoan((prevState) => ({
+          ...prevState,
+          [dataField]: value
+        }));
+      }
+    }
   };
 
   return (
@@ -202,7 +248,7 @@ export default function Step1Page() {
           type="success"
           stylingMode="contained"
           disabled={loadingDownloadBtn}
-          onClick={(e) => downloadUnsigned(e)}
+          onClick={downloadUnsigned}
         />
       </div>
       <div className={"content-block"}>
@@ -294,7 +340,7 @@ export default function Step1Page() {
         <div className="wrapper-popup-waiting">
           <Loader />
           <h5 className="title">Mohon tunggu penandatanganan perjanjian sedang diproses</h5>
-          <Button text="Tutup" type="normal" onClick={() => setShowWaitingPopup(false)} />
+          <Button text="Kembali" type="normal" onClick={() => navigate(-1)} />
         </div>
       </Popup>
     </>
