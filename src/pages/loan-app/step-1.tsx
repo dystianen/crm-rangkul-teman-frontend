@@ -63,9 +63,9 @@ export default function Step1Page() {
         if (!res) {
           clearInterval(intervalId);
 
-          if (isAutoNext) {
-            navigate(`/loan-app/create/step/2?id=${idData}`);
-          }
+          // if (isAutoNext) {
+          //   navigate(`/loan-app/create/step/2?id=${idData}`);
+          // }
         }
       });
     },
