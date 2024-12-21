@@ -166,7 +166,7 @@ export default function Step1Page() {
           setShowWaitingPopup(true);
 
           const intervalId = setInterval(() => {
-            handleCheckSigning(intervalId);
+            handleCheckSigning(intervalId, true);
           }, 5000);
 
           handleCheckSigning(intervalId, true);
