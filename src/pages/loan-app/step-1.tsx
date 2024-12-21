@@ -41,7 +41,8 @@ export default function Step1Page() {
   const navigate = useNavigate();
   const { loanapp } = store.getState();
   const location = useLocation();
-  const { id } = queryString.parse(location.search);
+  const { id, autoNext } = queryString.parse(location.search);
+  const isAutoNext = autoNext === "false" ? false : true;
   const idData = id as string;
   const [onboardingLoan, setOnboardingLoan] = useState<AppLoanOnboardingStep1Request>(
     initLoanOnboardingStep1Value
@@ -54,7 +55,7 @@ export default function Step1Page() {
   const formRef = useRef<Form>(null);
 
   const handleCheckSigning = useCallback(
-    (intervalId: NodeJS.Timeout, nextStep = false) => {
+    (intervalId: NodeJS.Timeout) => {
       checkStatusSigning(idData).then((res) => {
         setShowWaitingPopup(res);
         setDisableButtonNext(res);
@@ -62,13 +63,13 @@ export default function Step1Page() {
         if (!res) {
           clearInterval(intervalId);
 
-          if (nextStep) {
+          if (isAutoNext) {
             navigate(`/loan-app/create/step/2?id=${idData}`);
           }
         }
       });
     },
-    [idData, navigate]
+    [idData, navigate, isAutoNext]
   );
 
   useEffect(() => {
@@ -166,10 +167,10 @@ export default function Step1Page() {
           setShowWaitingPopup(true);
 
           const intervalId = setInterval(() => {
-            handleCheckSigning(intervalId, true);
+            handleCheckSigning(intervalId);
           }, 5000);
 
-          handleCheckSigning(intervalId, true);
+          handleCheckSigning(intervalId);
         } else {
           checkAccess("0c0983ad-20b2-446d-8462-328aa64915f7").then((res) => {
             if (res) {
