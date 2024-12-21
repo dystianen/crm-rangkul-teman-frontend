@@ -27,9 +27,10 @@ import "devextreme-react/date-box";
 import notify from "devextreme/ui/notify";
 import ReactDOM from "react-dom/client";
 import Resizer from "react-image-file-resizer";
-import { checkAccess, createAppLoanOnboardingStep2, detailAppLoan } from "src/api/apploan";
+import {checkAccess, createAppLoanOnboardingStep2, detailAppLoan, getSignedDoc, getUnsignedDoc} from "src/api/apploan";
 import PdfViewer from "src/components/pdf-viewer/PdfViewer";
 import { getFileBase64 } from "../../api/helper";
+import {Button} from "devextreme-react/button";
 
 export default function Step2Page() {
   const navigate = useNavigate();
@@ -46,6 +47,8 @@ export default function Step2Page() {
     creditTransaction: 0
   });
   const [submitForm, setSubmitForm] = useState(false);
+  const [loadingDownloadBtn, setLoadingDownloadBtn] = useState(false);
+
 
   useEffect(() => {
     detailAppLoan(String(id)).then((res) => {
@@ -75,6 +78,32 @@ export default function Step2Page() {
       }
     });
   }, []);
+
+  const downloadDocSigned = () => {
+    setLoadingDownloadBtn(true);
+    getSignedDoc(id as any)
+        .then((dt) => {
+          const link = document.createElement("a");
+          link.href = `data:${dt.fileType};base64,${dt.fileContent}`;
+          link.target = "_blank";
+          link.download = dt.fileName;
+          link.click();
+        })
+        .catch((e) => {
+          notify(
+              {
+                message: e?.message,
+                position: {
+                  my: "center top",
+                  at: "center top"
+                }
+              },
+              "warning",
+              15000
+          );
+        })
+        .finally(() => setLoadingDownloadBtn(false));
+  };
 
   const handleSubmit = (e: any) => {
     setSubmitForm(true);
@@ -174,17 +203,33 @@ export default function Step2Page() {
         showPane={true}
         hideOnOutsideClick={false}
       />
-      <h2 className={"content-block"}>Step 2</h2>
+      <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            margin: "0 15px 0"
+          }}
+      >
+        <h2>Step 2</h2>
+        <Button
+            text="Download Signed Contract"
+            type="success"
+            stylingMode="contained"
+            disabled={loadingDownloadBtn}
+            onClick={downloadDocSigned}
+        />
+      </div>
       <div className={"content-block"}>
         <div className={"dx-card responsive-paddings"}>
           <h3>Custom Data</h3>
           <DataGrid
-            dataSource={dataGrid}
-            columnAutoWidth={true}
-            wordWrapEnabled={false}
-            showBorders={true}
-            dateSerializationFormat={"yyyy-MM-ddTHH:mm:ss.SSSxxx"}
-            repaintChangesOnly={true}
+              dataSource={dataGrid}
+              columnAutoWidth={true}
+              wordWrapEnabled={false}
+              showBorders={true}
+              dateSerializationFormat={"yyyy-MM-ddTHH:mm:ss.SSSxxx"}
+              repaintChangesOnly={true}
           >
             <Editing mode="popup" allowUpdating={true} allowAdding={true} allowDeleting={true}>
               <PopGrid title="Custom Data Form" showTitle={true} width={360} height={320} />

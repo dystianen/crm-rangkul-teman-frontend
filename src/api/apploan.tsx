@@ -53,6 +53,12 @@ export const getUnsignedDoc = async (id: string): Promise<any> => {
   return resp.data;
 };
 
+export const getSignedDoc = async (id: string): Promise<any> => {
+  const resp = await ajaxGet(`${API_PATH.APPLICATION}/get/signed/${id}`);
+  return resp.data;
+};
+
+
 export const checkStatusSigning = async (id: string): Promise<boolean> => {
   const resp = await ajaxGet(`${API_PATH.APPLICATION}/check/signed/${id}`);
   return resp.data;
