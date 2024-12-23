@@ -64,9 +64,26 @@ export default function Step1Page() {
         if (!res) {
           clearInterval(intervalId);
 
-          // if (isAutoNext) {
-          //   navigate(`/loan-app/create/step/2?id=${idData}`);
-          // }
+          if (isAutoNext) {
+            checkAccess("0c0983ad-20b2-446d-8462-328aa64915f7").then((res) => {
+              if (res) {
+                navigate(`/loan-app/create/step/2?id=${idData}`);
+              } else {
+                notify(
+                    {
+                      message: "Berhasil submit data",
+                      position: {
+                        my: "center top",
+                        at: "center top"
+                      }
+                    },
+                    "success",
+                    15000
+                );
+                navigate(`/loan-app`);
+              }
+            });
+          }
         }
       });
     },
@@ -179,22 +196,21 @@ export default function Step1Page() {
               navigate(`/loan-app/create/step/2?id=${id}`);
             } else {
               notify(
-                {
-                  message: "Berhasil submit data",
-                  position: {
-                    my: "center top",
-                    at: "center top"
-                  }
-                },
-                "success",
-                15000
+                  {
+                    message: "Berhasil submit data",
+                    position: {
+                      my: "center top",
+                      at: "center top"
+                    }
+                  },
+                  "success",
+                  15000
               );
               navigate(`/loan-app`);
             }
           });
         }
-      },
-      (error) => {
+      }, (error) => {
         setSubmitForm(false);
         notify(
           {

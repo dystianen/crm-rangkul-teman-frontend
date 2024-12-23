@@ -31,6 +31,7 @@ import {checkAccess, createAppLoanOnboardingStep2, detailAppLoan, getSignedDoc, 
 import PdfViewer from "src/components/pdf-viewer/PdfViewer";
 import { getFileBase64 } from "../../api/helper";
 import {Button} from "devextreme-react/button";
+import {notifyWarning} from "../../utils/devExtremeUtils";
 
 export default function Step2Page() {
   const navigate = useNavigate();
@@ -75,6 +76,7 @@ export default function Step2Page() {
     checkAccess("0c0983ad-20b2-446d-8462-328aa64915f7").then((res) => {
       if (!res) {
         navigate(`/loan-app`);
+        notifyWarning("User tidak memilik akses ke menu step 2");
       }
     });
   }, []);
@@ -263,7 +265,7 @@ export default function Step2Page() {
           </DataGrid>
         </div>
 
-        <form action="validate" onSubmit={handleSubmit}>
+        <form action="validate" onSubmit={handleSubmit} className={'next-card'}>
           <Form
             ref={formRef}
             colCount={1}
