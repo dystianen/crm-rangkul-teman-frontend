@@ -42,7 +42,8 @@ export default function Step1Page() {
   const { loanapp } = store.getState();
   const location = useLocation();
   const { id, autoNext } = queryString.parse(location.search);
-  const isAutoNext = autoNext === "false" ? false : true;
+  const autoNextVal = autoNext === "false" ? false : true;
+  const [isAutoNext, setAutoNext] = useState(autoNextVal);
   const idData = id as string;
   const [onboardingLoan, setOnboardingLoan] = useState<AppLoanOnboardingStep1Request>(
     initLoanOnboardingStep1Value
@@ -165,6 +166,7 @@ export default function Step1Page() {
       (st1) => {
         if (st1.isWaitingSigning) {
           setShowWaitingPopup(true);
+          setAutoNext(true);
 
           const intervalId = setInterval(() => {
             handleCheckSigning(intervalId);
