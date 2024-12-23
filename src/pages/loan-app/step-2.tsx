@@ -275,13 +275,13 @@ export default function Step2Page() {
             formData={onStep2Loan}
             onFieldDataChanged={onFieldDataChanged}
           >
-            <GroupItem colSpan={1} cssClass={"dx-card responsive-paddings next-card"}>
-              <GroupItem caption="Financial Detail" colCount={1}>
+            <GroupItem colSpan={2} cssClass={"dx-card responsive-paddings next-card"}>
+              <GroupItem caption="Financial Detail" colCount={2}>
                 <SimpleItem
                   dataField="monthlyIncome"
                   label={{ text: "Penghasilan perbulan" }}
                   editorType="dxNumberBox"
-                  editorOptions={{ format: "Rp #,##0.00", width: "50%" }}
+                  editorOptions={{ format: "Rp #,##0.00"}}
                 >
                   <RequiredRule message="Penghasilan perbulan wajib diisi" />
                   <PatternRule message="hanya boleh angka" pattern={/^[0-9]+$/} />
@@ -295,7 +295,7 @@ export default function Step2Page() {
                   dataField="debitTransaction"
                   label={{ text: "Debit Transaksi" }}
                   editorType="dxNumberBox"
-                  editorOptions={{ format: "Rp #,##0.00", width: "50%" }}
+                  editorOptions={{ format: "Rp #,##0.00"}}
                 >
                   <RequiredRule message="Debit transaksi wajib diisi" />
                   <PatternRule message="hanya boleh angka" pattern={/^[0-9]+$/} />
@@ -304,7 +304,7 @@ export default function Step2Page() {
                   dataField="creditTransaction"
                   label={{ text: "Kredit Transaksi" }}
                   editorType="dxNumberBox"
-                  editorOptions={{ format: "Rp #,##0.00", width: "50%" }}
+                  editorOptions={{ format: "Rp #,##0.00"}}
                 >
                   <RequiredRule message="Kredit transaksi wajib diisi" />
                   <PatternRule message="hanya boleh angka" pattern={/^[0-9]+$/} />
@@ -320,7 +320,7 @@ export default function Step2Page() {
                 {incomeProof && (
                   <Item>
                     {fileType.includes("image/") ? (
-                      <img id="dropzone-ktp" src={incomeProof} alt="ktp" width={"50%"} />
+                      <img id="dropzone-ktp" src={incomeProof} alt="income-proof" width={"50%"} />
                     ) : (
                       <PdfViewer url={incomeProof} />
                     )}
