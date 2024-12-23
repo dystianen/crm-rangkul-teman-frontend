@@ -210,7 +210,7 @@ export default function EditPage() {
                 }
                 if (!res.isEkycWaiting && res.appId != null) {
                     clearInterval(intervalId);
-                    navigate(`/loan-app/create/step/1/?id=${res.appId}`);
+                    navigate(`/loan-app/create/step/1/?id=${res.appId}&autoNext=false`);
                 }
             });
         };
@@ -427,8 +427,8 @@ export default function EditPage() {
                                     <PatternRule message="Only number on Mobile phone" pattern={/^[0-9]+$/}/>
                                 </SimpleItem>
                                 <SimpleItem
-                                    dataField="email" 
-                                    label={{text: "Email"}} 
+                                    dataField="email"
+                                    label={{text: "Email"}}
                                     editorOptions={{
                                         min: 0,
                                         maxLength: 32

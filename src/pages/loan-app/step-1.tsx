@@ -2,40 +2,21 @@ import { Popup } from "devextreme-react";
 import { Button } from "devextreme-react/button";
 import "devextreme-react/date-box";
 import "devextreme-react/file-uploader";
-import Form, {
-  ButtonItem,
-  GroupItem,
-  PatternRule,
-  RequiredRule,
-  SimpleItem
-} from "devextreme-react/form";
+import Form, {ButtonItem, GroupItem, PatternRule, RequiredRule, SimpleItem} from "devextreme-react/form";
 import { LoadPanel } from "devextreme-react/load-panel";
 import DataSource from "devextreme/data/data_source";
 import { FieldDataChangedEvent } from "devextreme/ui/form";
-import notify from "devextreme/ui/notify";
 import queryString from "query-string";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 import { useLocation } from "react-router-dom";
-import {
-  checkAccess,
-  checkStatusSigning,
-  createAppLoanOnboardingStep1,
-  detailAppLoan,
-  getListBank,
-  getLoanPurpose,
-  getUnsignedDoc,
-  loanTermStore
-} from "src/api/apploan";
+import {checkAccess, checkStatusSigning, createAppLoanOnboardingStep1, detailAppLoan, getListBank, getLoanPurpose, getUnsignedDoc, loanTermStore} from "src/api/apploan";
 import { selectBoxOptions } from "src/api/contact";
 import Loader from "src/components/loader";
-import {
-  AppLoanOnboardingStep1Request,
-  AppLoanRequest,
-  initLoanOnboardingStep1Value
-} from "src/interfaces/appLoanOnboarding";
+import {AppLoanOnboardingStep1Request, AppLoanRequest, initLoanOnboardingStep1Value} from "src/interfaces/appLoanOnboarding";
 import { store } from "src/store/store";
 import "./loan-app.scss";
+import {notifyError, notifySuccess, notifyWarning} from "../../utils/devExtremeUtils";
 
 export default function Step1Page() {
   const navigate = useNavigate();
@@ -68,19 +49,6 @@ export default function Step1Page() {
             checkAccess("0c0983ad-20b2-446d-8462-328aa64915f7").then((res) => {
               if (res) {
                 navigate(`/loan-app/create/step/2?id=${idData}`);
-              } else {
-                notify(
-                    {
-                      message: "Berhasil submit data",
-                      position: {
-                        my: "center top",
-                        at: "center top"
-                      }
-                    },
-                    "success",
-                    15000
-                );
-                navigate(`/loan-app`);
               }
             });
           }
@@ -162,17 +130,7 @@ export default function Step1Page() {
         link.click();
       })
       .catch((e) => {
-        notify(
-          {
-            message: e?.message,
-            position: {
-              my: "center top",
-              at: "center top"
-            }
-          },
-          "warning",
-          15000
-        );
+        notifyWarning(e?.message);
       })
       .finally(() => setLoadingDownloadBtn(false));
   };
@@ -191,38 +149,18 @@ export default function Step1Page() {
 
           handleCheckSigning(intervalId);
         } else {
-          checkAccess("0c0983ad-20b2-446d-8462-328aa64915f7").then((res) => {
-            if (res) {
-              navigate(`/loan-app/create/step/2?id=${id}`);
-            } else {
-              notify(
-                  {
-                    message: "Berhasil submit data",
-                    position: {
-                      my: "center top",
-                      at: "center top"
-                    }
-                  },
-                  "success",
-                  15000
-              );
-              navigate(`/loan-app`);
-            }
+          checkAccess('0c0983ad-20b2-446d-8462-328aa64915f7').then((res) => {
+              if (!res) {
+                  notifySuccess("Berhasil submit data");
+                  navigate(`/loan-app`);
+              } else {
+                  navigate(`/loan-app/create/step/2?id=${id}`);
+              }
           });
         }
       }, (error) => {
         setSubmitForm(false);
-        notify(
-          {
-            message: error,
-            position: {
-              my: "center top",
-              at: "center top"
-            }
-          },
-          "error",
-          15000
-        );
+        notifyError(error);
       }
     );
 
