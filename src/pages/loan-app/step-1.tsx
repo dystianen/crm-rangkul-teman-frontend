@@ -139,8 +139,8 @@ export default function Step1Page() {
     setSubmitForm(true);
     createAppLoanOnboardingStep1(id as string, onboardingLoan).then(
       (st1) => {
-        setAutoNext(true);
         if (st1.isWaitingSigning) {
+          setAutoNext(true);
           setShowWaitingPopup(true);
 
           const intervalId = setInterval(() => {
