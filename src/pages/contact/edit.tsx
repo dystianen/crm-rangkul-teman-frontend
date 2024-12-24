@@ -148,7 +148,8 @@ export default function EditPage() {
 
                 ktpImage: "",
                 typeOfGood: res?.typeOfGood,
-                salesChannelId: res?.salesChannelId
+                salesChannelId: res?.salesChannelId,
+                marketAddress: res.marketAddress
             };
             if (res?.contactAddressCountryId) {
                 setProvinceOptions(
@@ -209,7 +210,7 @@ export default function EditPage() {
                 }
                 if (!res.isEkycWaiting && res.appId != null) {
                     clearInterval(intervalId);
-                    navigate(`/loan-app/create/step/1/?id=${res.appId}`);
+                    navigate(`/loan-app/create/step/1/?id=${res.appId}&autoNext=false`);
                 }
             });
         };
@@ -426,8 +427,8 @@ export default function EditPage() {
                                     <PatternRule message="Only number on Mobile phone" pattern={/^[0-9]+$/}/>
                                 </SimpleItem>
                                 <SimpleItem
-                                    dataField="email" 
-                                    label={{text: "Email"}} 
+                                    dataField="email"
+                                    label={{text: "Email"}}
                                     editorOptions={{
                                         min: 0,
                                         maxLength: 32
@@ -559,6 +560,9 @@ export default function EditPage() {
                                     editorType={"dxSelectBox"}
                                     editorOptions={salesChannelOptions}
                                 />
+                                <SimpleItem dataField="marketAddress" label={{text: "Market Address"}}>
+                                    <RequiredRule message="Alamat pasar wajib diisi"/>
+                                </SimpleItem>
                             </GroupItem>
                         </GroupItem>
                         <GroupItem colSpan={2} cssClass={"dx-card responsive-paddings next-card"}>
