@@ -85,29 +85,6 @@ export default function Step1Page() {
   }, [idData, handleCheckSigning]);
 
   useEffect(() => {
-    detailAppLoan(idData).then((res) => {
-      const data = res as AppLoanRequest;
-      const map = {
-        amount: data.loanAmount,
-        termId: data.loanTermId,
-        bankId: data.bankId,
-        bankAccNumber: data.bankAccNumber,
-        purposeId: data.loanPurposeId,
-        monthlyIncome: data.monthlyIncome
-      };
-      setOnboardingLoan(map);
-    });
-
-    const intervalId = setInterval(() => {
-      handleCheckSigning(intervalId);
-    }, 5000);
-
-    handleCheckSigning(intervalId);
-
-    return () => clearInterval(intervalId);
-  }, [idData, handleCheckSigning]);
-
-  useEffect(() => {
     setOnboardingLoan({
       amount: loanapp.loanappStep1.amount,
       termId: loanapp.loanappStep1.termId,
