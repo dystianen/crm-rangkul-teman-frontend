@@ -49,6 +49,9 @@ export default function Step1Page() {
             checkAccess("0c0983ad-20b2-446d-8462-328aa64915f7").then((res) => {
               if (res) {
                 navigate(`/loan-app/create/step/2?id=${idData}`);
+              } else {
+                notifySuccess("Berhasil submit data");
+                navigate(`/loan-app`);
               }
             });
           }
