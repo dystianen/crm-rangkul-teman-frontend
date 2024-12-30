@@ -218,7 +218,7 @@ export default function Index() {
                             if (options.data.statusId == "f95a1ecc-2f6f-4553-bbbe-a5e976a78bef") {
                                 const id = options.data.id;
                                 dom.render(<OnClickLink
-                                    onClick={() => navigate(`/loan-app/create/step/1?id=${options.data.id}`)}>{options.data.seqId}</OnClickLink>);
+                                    onClick={() => navigate(`/loan-app/create/step/1?id=${options.data.id}&autoNext=false`)}>{options.data.seqId}</OnClickLink>);
 
                                 if(!options.data.isWaitingSigning) {
                                     detailAppStep(String(id)).then((res) => {
