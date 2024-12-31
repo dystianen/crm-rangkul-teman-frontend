@@ -52,7 +52,7 @@ const CreateEditContactLeads = () => {
   };
 
   const handleError = (error: any) => {
-    notifyError(error.options.error);
+    notifyError(error.message);
     setLoadingSave(false);
     setLoadingCreateContact(false);
   };
