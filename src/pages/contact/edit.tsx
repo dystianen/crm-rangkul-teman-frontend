@@ -47,6 +47,7 @@ import resizeImage from "src/utils/resizeImage.util";
 import ContactActivity from "../../components/contact/contact-activity";
 import {formatDate} from "../../utils/dateUtils";
 import { notifyError } from "src/utils/devExtremeUtils";
+import "./contact.scss";
 
 export default function EditPage() {
     const navigate = useNavigate();
@@ -754,9 +755,11 @@ export default function EditPage() {
             <Popup width={360} height={"auto"} visible={isShowPopupCheckEkyc} showTitle={false}>
                 <div className="wrapper-popup-waiting">
                     <Loader/>
-                    <h5 className="title" style={{ marginBottom: 0 }}>Mohon tunggu sedang dilakukan verifikasi data</h5>
+                    <h5 className="title" style={{ marginBottom: 0, marginTop: "1rem" }}>Mohon tunggu sedang dilakukan verifikasi data</h5>
                     {referenceNumber && (
-                        <p style={{ textAlign: "center", marginBottom: "1.5rem" }}>Reference number privy: <span style={{ fontWeight: 500 }}>{referenceNumber}</span></p>
+                        <div className="card-reference-number">
+                            <p style={{ textAlign: "center" }}>Privy reference number: <span style={{ fontWeight: 500 }}>{referenceNumber}</span></p>
+                        </div>
                     )}
                     <Button text="Kembali" type="normal" onClick={handleBack}/>
                 </div>
