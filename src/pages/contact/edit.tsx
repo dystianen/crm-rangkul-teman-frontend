@@ -60,6 +60,7 @@ export default function EditPage() {
     const [isShowPopupError, setShowPopupError] = useState(false);
     const [errorMessage, setErrorMessage] = useState([""]);
     const [isLoadingUpdate, setLoadingUpdate] = useState(false);
+    const [referenceNumber, setReferenceNumber] = useState("");
 
     const salesChannelOptions = selectBoxOptions(
         new DataSource(salesChannelStore),
@@ -202,6 +203,8 @@ export default function EditPage() {
             contactCheckEkyc(contactId).then((res) => {
                 setShowPopupCheckEkyc(res.isEkycWaiting);
                 setShowPopupError(res.isShowResult);
+                setReferenceNumber(res.referenceNumber);
+
                 if (res.message) {
                     setErrorMessage(res.message);
                 }
@@ -751,7 +754,10 @@ export default function EditPage() {
             <Popup width={360} height={"auto"} visible={isShowPopupCheckEkyc} showTitle={false}>
                 <div className="wrapper-popup-waiting">
                     <Loader/>
-                    <h5 className="title">Mohon tunggu sedang dilakukan verifikasi data</h5>
+                    <h5 className="title" style={{ marginBottom: 0 }}>Mohon tunggu sedang dilakukan verifikasi data</h5>
+                    {referenceNumber && (
+                        <p style={{ textAlign: "center", marginBottom: "1.5rem" }}>Reference number privy: <span style={{ fontWeight: 500 }}>{referenceNumber}</span></p>
+                    )}
                     <Button text="Kembali" type="normal" onClick={handleBack}/>
                 </div>
             </Popup>
