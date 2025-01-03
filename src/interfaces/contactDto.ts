@@ -80,6 +80,7 @@ export type TResCheckEkyc = {
   isResend: boolean;
   isShowResult: boolean;
   appId: string;
+  referenceNumber: string;
 };
 
 export type TReqCreateLeads = {
