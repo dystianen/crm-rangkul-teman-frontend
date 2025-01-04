@@ -20,7 +20,7 @@ import {
   validateIdNumber,
   validatePhone
 } from "src/api/contact";
-import ApplicationWorkflowTabs from "src/components/application-workflow-tabs";
+import ContactActivity from "src/components/contact/contact-activity";
 import { InitLeadsValue, type TReqCreateLeads } from "src/interfaces/contactDto";
 import { notifyError, notifySuccess } from "src/utils/devExtremeUtils";
 
@@ -196,7 +196,9 @@ const CreateEditContactLeads = () => {
         </GroupItem>
       </Form>
 
-      <ApplicationWorkflowTabs contactId={id as string} />
+      {!isCreate && (
+        <ContactActivity contactId={id as string} withTitle />
+      )}
     </div>
   );
 };

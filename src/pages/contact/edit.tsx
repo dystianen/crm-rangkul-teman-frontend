@@ -9,6 +9,8 @@ import Form, {
     PatternRule,
     RequiredRule,
     SimpleItem,
+    Tab,
+    TabbedItem,
 } from "devextreme-react/form";
 import * as Title from "devextreme-react/toolbar";
 import DataSource from "devextreme/data/data_source";
@@ -42,10 +44,10 @@ import {
 import Loader from "src/components/loader";
 import {ContactRelativeDto, ContactRequest, initContactValue} from "src/interfaces/contactDto";
 import resizeImage from "src/utils/resizeImage.util";
-import ApplicationWorkflowTabs from "src/components/application-workflow-tabs";
 import {formatDate} from "../../utils/dateUtils";
 import { notifyError } from "src/utils/devExtremeUtils";
 import "./contact.scss";
+import ContactActivity from "src/components/contact/contact-activity";
 
 export default function EditPage() {
     const navigate = useNavigate();
@@ -666,7 +668,89 @@ export default function EditPage() {
                     </Form>
                 </form>
                 
-                <ApplicationWorkflowTabs contactId={id as string} />
+                <div className="form__tabs dx-card responsive-paddings next-card">
+                    <Form>
+                        <TabbedItem
+                            tabPanelOptions={{
+                                scrollByContent: true,
+                                showNavButtons: true
+                            }}
+                        >
+                            <Tab title="Application">
+                                <DataGrid
+                                    dataSource={[]}
+                                    remoteOperations={true}
+                                    columnAutoWidth={true}
+                                    wordWrapEnabled={false}
+                                    showBorders={true}
+                                    dateSerializationFormat={"yyyy-MM-ddTHH:mm:ss.SSSxxx"}
+                                    repaintChangesOnly={true}
+                                >
+                                    <Scrolling showScrollbar={"always"}/>
+
+                                    <Column dataField={"no"} caption={"No."}/>
+                                    <Column dataField={"name"} caption={"Name"}/>
+                                    <Column dataField={"value"} caption={"Value"}/>
+                                    <Paging defaultPageSize={50}/>
+                                    <Pager
+                                        showPageSizeSelector={true}
+                                        showInfo={true}
+                                        allowedPageSizes={[10, 50, 100]}
+                                    />
+                                </DataGrid>
+                            </Tab>
+                            <Tab title="Disbursement">
+                                <DataGrid
+                                    dataSource={[]}
+                                    remoteOperations={true}
+                                    columnAutoWidth={true}
+                                    wordWrapEnabled={false}
+                                    showBorders={true}
+                                    dateSerializationFormat={"yyyy-MM-ddTHH:mm:ss.SSSxxx"}
+                                    repaintChangesOnly={true}
+                                >
+                                    <Scrolling showScrollbar={"always"}/>
+
+                                    <Column dataField={"no"} caption={"No."}/>
+                                    <Column dataField={"name"} caption={"Name"}/>
+                                    <Column dataField={"value"} caption={"Value"}/>
+                                    <Paging defaultPageSize={50}/>
+                                    <Pager
+                                        showPageSizeSelector={true}
+                                        showInfo={true}
+                                        allowedPageSizes={[10, 50, 100]}
+                                    />
+                                </DataGrid>
+                            </Tab>
+                            <Tab title="Repayment">
+                                <DataGrid
+                                    dataSource={[]}
+                                    remoteOperations={true}
+                                    columnAutoWidth={true}
+                                    wordWrapEnabled={false}
+                                    showBorders={true}
+                                    dateSerializationFormat={"yyyy-MM-ddTHH:mm:ss.SSSxxx"}
+                                    repaintChangesOnly={true}
+                                >
+                                    <Scrolling showScrollbar={"always"}/>
+
+                                    <Column dataField={"no"} caption={"No."}/>
+                                    <Column dataField={"name"} caption={"Name"}/>
+                                    <Column dataField={"value"} caption={"Value"}/>
+                                    <Paging defaultPageSize={50}/>
+                                    <Pager
+                                        showPageSizeSelector={true}
+                                        showInfo={true}
+                                        allowedPageSizes={[10, 50, 100]}
+                                    />
+                                </DataGrid>
+                            </Tab>
+                            <Tab title="Contact Activity">
+                                <ContactActivity contactId={id as string}/>
+                            </Tab>
+                        </TabbedItem>
+                    </Form>
+                </div>
             </div>
 
             <Popup width={360} height={"auto"} visible={isShowPopupCheckEkyc} showTitle={false}>

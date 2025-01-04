@@ -9,6 +9,7 @@ import moment from "moment-timezone";
 
 interface Iprops {
   contactId: string;
+  withTitle?: boolean;
 }
 
 interface Istate {
@@ -23,7 +24,7 @@ class ContactActivity extends React.PureComponent<Iprops, Istate> {
     this.state = {
       contactActivities: [],
       toolbar: [],
-      isCreateVisible: false
+      isCreateVisible: false,
     };
   }
 
@@ -59,6 +60,9 @@ class ContactActivity extends React.PureComponent<Iprops, Istate> {
 
     return (
       <div className={"dx-card responsive-paddings"}>
+        {this.props.withTitle && (
+          <h5 style={{ margin: 0 }}>Contact Activity</h5>
+        )}
         <DataGrid
           dataSource={contactActivityListStore(this.props.contactId)}
           remoteOperations={true}
