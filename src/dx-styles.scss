@@ -249,3 +249,7 @@ body {
 .dx-toast-content {
   justify-content: center !important;
 }
+
+.dx-datagrid .dx-row > td {
+  word-wrap: break-word;
+}

@@ -10,7 +10,7 @@ import Form, {
     RequiredRule,
     SimpleItem,
     Tab,
-    TabbedItem
+    TabbedItem,
 } from "devextreme-react/form";
 import * as Title from "devextreme-react/toolbar";
 import DataSource from "devextreme/data/data_source";
@@ -44,10 +44,10 @@ import {
 import Loader from "src/components/loader";
 import {ContactRelativeDto, ContactRequest, initContactValue} from "src/interfaces/contactDto";
 import resizeImage from "src/utils/resizeImage.util";
-import ContactActivity from "../../components/contact/contact-activity";
 import {formatDate} from "../../utils/dateUtils";
 import { notifyError } from "src/utils/devExtremeUtils";
 import "./contact.scss";
+import ContactActivity from "src/components/contact/contact-activity";
 
 export default function EditPage() {
     const navigate = useNavigate();
@@ -667,6 +667,7 @@ export default function EditPage() {
                         </ButtonItem>
                     </Form>
                 </form>
+                
                 <div className="form__tabs dx-card responsive-paddings next-card">
                     <Form>
                         <TabbedItem
