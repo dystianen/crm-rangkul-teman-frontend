@@ -60,7 +60,7 @@ export const initContactValue: ContactRequest = {
   ktpImage: "",
   typeOfGood: "",
   salesChannelId: "",
-  marketAddress: "",
+  marketAddress: ""
 };
 
 export interface ContactRelativeDto {
@@ -88,11 +88,13 @@ export type TReqCreateLeads = {
   mobileNumber: string;
   idNumber: string;
   marketAddress: string;
+  branchId: string;
 };
 
 export const InitLeadsValue: TReqCreateLeads = {
   name: "",
   mobileNumber: "",
   idNumber: "",
-  marketAddress: ""
+  marketAddress: "",
+  branchId: ""
 };
