@@ -103,7 +103,7 @@ export default function Index() {
                     if(res.isEkyc) {
                         setLoanAppOnboarding(initLoanOnboardingValue);
                         form.resetValues();
-                        navigate(`/loan-app/create/step/1/?id=${res.appId}`);
+                        navigate(`/loan-app/create/step/1/?id=${res.appId}&autoNext=false`);
                     } else {
                         navigate(`/contact/edit?id=${res.contactId}&ktp=${request.contactIdentity}&branchId=${request.branchId}&productId=${request.productId}&backTo=step1`);
                     }
