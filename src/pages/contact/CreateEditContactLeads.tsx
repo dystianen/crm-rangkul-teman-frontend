@@ -1,17 +1,26 @@
 import { LoadIndicator } from "devextreme-react";
-import Form, { ButtonItem, ButtonOptions, GroupItem, SimpleItem } from "devextreme-react/form";
+import Form, {
+  ButtonItem,
+  ButtonOptions,
+  GroupItem,
+  RequiredRule,
+  SimpleItem
+} from "devextreme-react/form";
 import { AsyncRule } from "devextreme-react/validator";
+import DataSource from "devextreme/data/data_source";
 import queryString from "query-string";
 import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { getActiveBranchByUserStore } from "src/api/apploan";
 import {
   contactDetailApi,
-  createContactLeads,
   createLeads,
+  selectBoxBranchOptions,
   updateLeads,
   validateIdNumber,
   validatePhone
 } from "src/api/contact";
+import ContactActivity from "src/components/contact/contact-activity";
 import { InitLeadsValue, type TReqCreateLeads } from "src/interfaces/contactDto";
 import { notifyError, notifySuccess } from "src/utils/devExtremeUtils";
 
@@ -24,7 +33,6 @@ const CreateEditContactLeads = () => {
   const isCreate = location.pathname.includes("create");
   const [leads, setLeads] = useState<TReqCreateLeads>(InitLeadsValue);
   const [isLoadingSave, setLoadingSave] = useState(false);
-  const [isLoadingCreateContact, setLoadingCreateContact] = useState(false);
 
   useEffect(() => {
     if (idData) {
@@ -33,7 +41,8 @@ const CreateEditContactLeads = () => {
           idNumber: res.idNumber,
           name: res.name,
           mobileNumber: res.contactPhone,
-          marketAddress: res.marketAddress
+          marketAddress: res.marketAddress,
+          branchId: res.branchId
         };
 
         setLeads(data);
@@ -46,15 +55,13 @@ const CreateEditContactLeads = () => {
     form.clear();
     setLeads(InitLeadsValue);
     setLoadingSave(false);
-    setLoadingCreateContact(false);
     notifySuccess("Berhasil submit data");
     navigate(-1);
   };
 
   const handleError = (error: any) => {
-    notifyError(error.options.error);
+    notifyError(error.message);
     setLoadingSave(false);
-    setLoadingCreateContact(false);
   };
 
   const handleSave = () => {
@@ -77,22 +84,10 @@ const CreateEditContactLeads = () => {
     }
   };
 
-  const handleCreateContact = async () => {
-    try {
-      const form = formRef.current!.instance;
-      const validate = form.validate();
-
-      validate.status === "pending" &&
-        validate.complete?.then((r) => {
-          if (r.status === "invalid") return;
-          setLoadingCreateContact(true);
-          createContactLeads(idData, leads).then(handleSuccess).catch(handleError);
-        });
-    } catch (error) {
-      setLoadingCreateContact(false);
-      notifyError("Gagal menyimpan data, coba lagi!");
-    }
-  };
+  const getBranchByUser = selectBoxBranchOptions(
+    new DataSource(getActiveBranchByUserStore as any),
+    "Select branch"
+  );
 
   const asyncValidationPhoneNumber = (params: any) => {
     const request = {
@@ -167,6 +162,14 @@ const CreateEditContactLeads = () => {
               />
             </SimpleItem>
             <SimpleItem dataField="marketAddress" label={{ text: "Market Address" }} />
+            <SimpleItem
+              dataField="branchId"
+              label={{ text: "Branch" }}
+              editorType="dxSelectBox"
+              editorOptions={getBranchByUser}
+            >
+              <RequiredRule message="Branch is required" />
+            </SimpleItem>
           </GroupItem>
 
           <GroupItem colCountByScreen={{ xs: 4, sm: 8, md: 12, lg: 12 }}>
@@ -189,22 +192,13 @@ const CreateEditContactLeads = () => {
                 </div>
               </ButtonOptions>
             </ButtonItem>
-
-            <ButtonItem visible={!isCreate} colSpan={2} horizontalAlignment="left">
-              <ButtonOptions
-                type="success"
-                disabled={isLoadingCreateContact}
-                onClick={handleCreateContact}
-              >
-                <div className="button-options">
-                  <LoadIndicator width="20px" height="20px" visible={isLoadingCreateContact} />
-                  <span className="dx-button-text">Buat Kontak</span>
-                </div>
-              </ButtonOptions>
-            </ButtonItem>
           </GroupItem>
         </GroupItem>
       </Form>
+
+      {!isCreate && (
+        <ContactActivity contactId={id as string} withTitle />
+      )}
     </div>
   );
 };

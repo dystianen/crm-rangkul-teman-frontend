@@ -10,7 +10,7 @@ import Form, {
     RequiredRule,
     SimpleItem,
     Tab,
-    TabbedItem
+    TabbedItem,
 } from "devextreme-react/form";
 import * as Title from "devextreme-react/toolbar";
 import DataSource from "devextreme/data/data_source";
@@ -44,9 +44,10 @@ import {
 import Loader from "src/components/loader";
 import {ContactRelativeDto, ContactRequest, initContactValue} from "src/interfaces/contactDto";
 import resizeImage from "src/utils/resizeImage.util";
-import ContactActivity from "../../components/contact/contact-activity";
 import {formatDate} from "../../utils/dateUtils";
 import { notifyError } from "src/utils/devExtremeUtils";
+import "./contact.scss";
+import ContactActivity from "src/components/contact/contact-activity";
 
 export default function EditPage() {
     const navigate = useNavigate();
@@ -60,6 +61,7 @@ export default function EditPage() {
     const [isShowPopupError, setShowPopupError] = useState(false);
     const [errorMessage, setErrorMessage] = useState([""]);
     const [isLoadingUpdate, setLoadingUpdate] = useState(false);
+    const [referenceNumber, setReferenceNumber] = useState("");
 
     const salesChannelOptions = selectBoxOptions(
         new DataSource(salesChannelStore),
@@ -202,6 +204,8 @@ export default function EditPage() {
             contactCheckEkyc(contactId).then((res) => {
                 setShowPopupCheckEkyc(res.isEkycWaiting);
                 setShowPopupError(res.isShowResult);
+                setReferenceNumber(res.referenceNumber);
+
                 if (res.message) {
                     setErrorMessage(res.message);
                 }
@@ -663,6 +667,7 @@ export default function EditPage() {
                         </ButtonItem>
                     </Form>
                 </form>
+                
                 <div className="form__tabs dx-card responsive-paddings next-card">
                     <Form>
                         <TabbedItem
@@ -751,7 +756,12 @@ export default function EditPage() {
             <Popup width={360} height={"auto"} visible={isShowPopupCheckEkyc} showTitle={false}>
                 <div className="wrapper-popup-waiting">
                     <Loader/>
-                    <h5 className="title">Mohon tunggu sedang dilakukan verifikasi data</h5>
+                    <h5 className="title" style={{ marginBottom: 0, marginTop: "1rem" }}>Mohon tunggu sedang dilakukan verifikasi data</h5>
+                    {referenceNumber && (
+                        <div className="card-reference-number">
+                            <p style={{ textAlign: "center" }}>Privy reference number: <span style={{ fontWeight: 500 }}>{referenceNumber}</span></p>
+                        </div>
+                    )}
                     <Button text="Kembali" type="normal" onClick={handleBack}/>
                 </div>
             </Popup>
