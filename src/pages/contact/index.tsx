@@ -222,6 +222,12 @@ export default function Index() {
               filterOperations={filterOperation.date}
             />
             <Column
+              dataField={"privyId"}
+              caption={"Privy Id"}
+              width={190}
+              filterOperations={filterOperation.string}
+            />
+            <Column
               dataField={"idNumber"}
               caption={"No.KTP"}
               width={190}
