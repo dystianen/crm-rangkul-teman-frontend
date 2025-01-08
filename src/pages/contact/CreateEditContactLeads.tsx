@@ -1,12 +1,5 @@
 import { LoadIndicator } from "devextreme-react";
-import Form, {
-  ButtonItem,
-  ButtonOptions,
-  GroupItem,
-  RequiredRule,
-  SimpleItem
-} from "devextreme-react/form";
-import { AsyncRule } from "devextreme-react/validator";
+import Form, { ButtonItem, ButtonOptions, GroupItem, SimpleItem } from "devextreme-react/form";
 import DataSource from "devextreme/data/data_source";
 import queryString from "query-string";
 import { useEffect, useRef, useState } from "react";
@@ -16,9 +9,7 @@ import {
   contactDetailApi,
   createLeads,
   selectBoxBranchOptions,
-  updateLeads,
-  validateIdNumber,
-  validatePhone
+  updateLeads
 } from "src/api/contact";
 import ContactActivity from "src/components/contact/contact-activity";
 import { InitLeadsValue, type TReqCreateLeads } from "src/interfaces/contactDto";
@@ -66,18 +57,12 @@ const CreateEditContactLeads = () => {
 
   const handleSave = () => {
     try {
-      const form = formRef.current!.instance;
-      const validate = form.validate();
-      validate.status === "pending" &&
-        validate.complete?.then((r) => {
-          if (r.status === "invalid") return;
-          setLoadingSave(true);
-          if (isCreate) {
-            createLeads(leads).then(handleSuccess).catch(handleError);
-          } else {
-            updateLeads(idData, leads).then(handleSuccess).catch(handleError);
-          }
-        });
+      setLoadingSave(true);
+      if (isCreate) {
+        createLeads(leads).then(handleSuccess).catch(handleError);
+      } else {
+        updateLeads(idData, leads).then(handleSuccess).catch(handleError);
+      }
     } catch (error) {
       setLoadingSave(false);
       notifyError("Gagal menyimpan data, coba lagi!");
@@ -88,22 +73,6 @@ const CreateEditContactLeads = () => {
     new DataSource(getActiveBranchByUserStore as any),
     "Select branch"
   );
-
-  const asyncValidationPhoneNumber = (params: any) => {
-    const request = {
-      phoneNumber: params.value,
-      contactId: idData
-    };
-    return validatePhone(request);
-  };
-
-  const asyncValidationIdNumber = (params: any) => {
-    const request = {
-      phoneNumber: params.value,
-      contactId: id
-    };
-    return validateIdNumber(request);
-  };
 
   const handleBack = () => {
     navigate(-1);
@@ -136,12 +105,7 @@ const CreateEditContactLeads = () => {
                     e.event.preventDefault();
                 }
               }}
-            >
-              <AsyncRule
-                message="Mobile Number is already registered"
-                validationCallback={asyncValidationPhoneNumber}
-              />
-            </SimpleItem>
+            />
             <SimpleItem
               dataField="idNumber"
               label={{ text: "No.KTP" }}
@@ -155,21 +119,14 @@ const CreateEditContactLeads = () => {
                     e.event.preventDefault();
                 }
               }}
-            >
-              <AsyncRule
-                message="No.KTP is already registered"
-                validationCallback={asyncValidationIdNumber}
-              />
-            </SimpleItem>
+            />
             <SimpleItem dataField="marketAddress" label={{ text: "Market Address" }} />
             <SimpleItem
               dataField="branchId"
               label={{ text: "Branch" }}
               editorType="dxSelectBox"
               editorOptions={getBranchByUser}
-            >
-              <RequiredRule message="Branch is required" />
-            </SimpleItem>
+            />
           </GroupItem>
 
           <GroupItem colCountByScreen={{ xs: 4, sm: 8, md: 12, lg: 12 }}>
@@ -196,9 +153,7 @@ const CreateEditContactLeads = () => {
         </GroupItem>
       </Form>
 
-      {!isCreate && (
-        <ContactActivity contactId={id as string} withTitle />
-      )}
+      {!isCreate && <ContactActivity contactId={id as string} withTitle />}
     </div>
   );
 };
