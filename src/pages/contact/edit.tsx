@@ -60,6 +60,7 @@ export default function EditPage() {
     const [contactRelatives, setContactRelatives] = useState<ContactRelativeDto[]>([]);
     const [isShowPopupCheckEkyc, setShowPopupCheckEkyc] = useState(false);
     const [isShowPopupError, setShowPopupError] = useState(false);
+    const [isProcessWithoutEkyc, setProcessWithoutEkyc] = useState(false);
     const [errorMessage, setErrorMessage] = useState([""]);
     const [isLoadingUpdate, setLoadingUpdate] = useState(false);
     const [referenceNumber, setReferenceNumber] = useState("");
@@ -206,6 +207,7 @@ export default function EditPage() {
                 setShowPopupCheckEkyc(res.isEkycWaiting);
                 setShowPopupError(res.isShowResult);
                 setReferenceNumber(res.referenceNumber);
+                setProcessWithoutEkyc(!res.isResend);
 
                 if (res.message) {
                     setErrorMessage(res.message);
@@ -796,7 +798,7 @@ export default function EditPage() {
                     </div>
                     <div style={{ display: "flex", gap: "10px" }}>
                         <Button text="Tutup" type="normal" onClick={() => setShowPopupError(false)}/>
-                        <Button text="Proses Tanpa EKYC" type="default" onClick={handleProcessWithoutEkyc}/>
+                        <Button visible={isProcessWithoutEkyc} text="Proses Tanpa EKYC" type="default" onClick={handleProcessWithoutEkyc}/>
                     </div>
                 </div>
             </Popup>
