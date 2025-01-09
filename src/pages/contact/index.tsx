@@ -1,4 +1,3 @@
-import { DropDownButton } from "devextreme-react";
 import { Button } from "devextreme-react/button";
 import DataGrid, {
   Column,
@@ -41,10 +40,6 @@ export default function Index() {
     contactIdentity: "",
     branchId: ""
   });
-
-  const showPopup = () => {
-    setPopupVisible(true);
-  };
 
   const hide = () => {
     setPopupVisible(false);
@@ -111,10 +106,14 @@ export default function Index() {
       .catch(console.error);
   };
 
-  const actions = [
-    { id: 1, name: "Add Contact", action: showPopup },
-    { id: 2, name: "Add Leads", action: () => navigate("/contact/leads/create") }
-  ];
+  // const actions = [
+  //   { id: 1, name: "Add Contact", action: showPopup },
+  //   { id: 2, name: "Add Leads", action: () => navigate("/contact/leads/create") }
+  // ];
+
+  const onClickCreateContact = () => {
+    navigate("/contact/leads/create");
+  };
 
   return (
     <>
@@ -143,7 +142,13 @@ export default function Index() {
                 />
               </Item>
               <Item location="after">
-                <DropDownButton
+                <Button
+                  text="Create Contact"
+                  type="default"
+                  stylingMode="contained"
+                  onClick={onClickCreateContact}
+                />
+                {/* <DropDownButton
                   stylingMode="contained"
                   type="default"
                   text="Add New"
@@ -153,7 +158,7 @@ export default function Index() {
                     const action = e.itemData.action;
                     action();
                   }}
-                />
+                /> */}
               </Item>
             </Toolbar>
             <Scrolling showScrollbar={"always"} />
@@ -220,6 +225,12 @@ export default function Index() {
                 );
               }}
               filterOperations={filterOperation.date}
+            />
+            <Column
+              dataField={"privyId"}
+              caption={"Privy Id"}
+              width={190}
+              filterOperations={filterOperation.string}
             />
             <Column
               dataField={"idNumber"}

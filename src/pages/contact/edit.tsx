@@ -31,6 +31,7 @@ import {
     genderStore,
     getFile,
     maritalStatusStore,
+    processWithoutEkyc,
     provinceStore,
     religionStore,
     salesChannelStore,
@@ -295,6 +296,23 @@ export default function EditPage() {
         };
         return validateEmail(request);
     };
+
+    const handleProcessWithoutEkyc = () => {
+        const contactId = String(id);
+        const payload = {
+            contactId
+        }
+        
+        processWithoutEkyc(payload)
+            .then(res => {
+                if (res.appId) {
+                    navigate(`/loan-app/create/step/1/?id=${res.appId}&autoNext=false`);
+                }
+            })
+            .catch(error => {
+                notifyError(error.message);
+            })
+    }
 
     const handleBack = () => {
         navigate(-1);
@@ -776,7 +794,10 @@ export default function EditPage() {
                             ))}
                         </ul>
                     </div>
-                    <Button text="Tutup" type="normal" onClick={() => setShowPopupError(false)}/>
+                    <div style={{ display: "flex", gap: "10px" }}>
+                        <Button text="Tutup" type="normal" onClick={() => setShowPopupError(false)}/>
+                        <Button text="Proses Tanpa EKYC" type="default" onClick={handleProcessWithoutEkyc}/>
+                    </div>
                 </div>
             </Popup>
         </>

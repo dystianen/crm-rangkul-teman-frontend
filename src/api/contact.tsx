@@ -144,6 +144,11 @@ export const validateEmail = async (payload: any) => {
   return resp?.data;
 };
 
+export const processWithoutEkyc = async (payload: { contactId: string }): Promise<TResCheckEkyc> => {
+  const resp = await ajaxPost(`/api/contact/without/ekyc`, payload);
+  return resp.data;
+};
+
 export const activityResultStore = dataRawCustomStore(`/api/contact/data/activityResult?`);
 export const contactActivityListStore = (id: string) =>
   new CustomStore({
