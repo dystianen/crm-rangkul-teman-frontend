@@ -24,6 +24,7 @@ import {
     cityStore,
     contactCheckEkyc,
     contactDetailApi,
+    contactEkycInfo,
     contactRelativeStore,
     countryStore,
     districtStore,
@@ -121,7 +122,7 @@ export default function EditPage() {
 
     useEffect(() => {
         const contactId = String(id);
-
+    
         contactDetailApi(contactId).then((res: any) => {
             const data: ContactRequest = {
                 contactId: contactId,
@@ -134,8 +135,8 @@ export default function EditPage() {
                 idEducation: res.educationId,
                 idMarital: res.maritalId,
                 motherMaidenName: res.motherMaidenName,
-                lengthOfJob: res?.workExperienceMonth ? res?.workExperienceMonth : 0,
-
+                lengthOfJob: res?.workExperienceMonth || 0,
+    
                 idCountry: res?.contactAddressCountryId,
                 idCity: res?.contactAddressCityId,
                 idProvince: res?.contactAddressProvinceId,
@@ -146,15 +147,18 @@ export default function EditPage() {
                 neighborhoodUnit: res?.contactAddressNeighborhoodUnit,
                 communityUnit: res?.contactAddressCommunityUnit,
                 livingAddressStatus: res?.contactAddressOwnershipId,
-
+    
                 mobilePhone: res?.contactPhone,
                 email: res?.contactEmail,
-
+    
                 ktpImage: "",
                 typeOfGood: res?.typeOfGood,
                 salesChannelId: res?.salesChannelId,
-                marketAddress: res.marketAddress
+                marketAddress: res.marketAddress,
             };
+    
+            setContact(prevContact => ({ ...prevContact, ...data }));
+    
             if (res?.contactAddressCountryId) {
                 setProvinceOptions(
                     selectBoxOptions(new DataSource(provinceStore(String(res?.contactAddressCountryId))), "")
@@ -177,38 +181,45 @@ export default function EditPage() {
             }
             if (res?.contactIdentFileUrlPath) {
                 getFile(res?.contactIdentFileUrlPath)
-                    .then(function (response) {
-                        setKtpSrc(response);
-                    })
-                    .catch((error: any) => {
-                        console.error("ERROR:: ", error);
-                    });
+                    .then(response => setKtpSrc(response))
+                    .catch(error => console.error("ERROR:: ", error));
             }
-
+    
             if (res?.contactIdentFileUrlSelfie) {
                 getFile(res.contactIdentFileUrlSelfie)
-                    .then(function (response) {
-                        setSelfie(response);
-                    })
-                    .catch((error: any) => {
-                        console.error("ERROR:: ", error);
-                    });
+                    .then(response => setSelfie(response))
+                    .catch(error => console.error("ERROR:: ", error));
             }
-
+    
             if (res?.contactRelatives) {
                 setContactRelatives(res?.contactRelatives);
             }
-
-            setContact(data);
         });
-
+    
+        const handleFetchEkycInfo = () => {
+            contactEkycInfo(contactId).then(res => {
+                const dataEkyc = {
+                    privyId: res.privyId,
+                    rejectReason: res.rejectReason,
+                    isResend: res.isResend?.toString(),
+                    referenceNumber: res.referenceNumber,
+                    createdOn: res.createdOn,
+                    completedOn: res.modifiedOn
+                };
+    
+                setContact(prevContact => ({ ...prevContact, ...dataEkyc }));
+            });
+        };
+    
+        handleFetchEkycInfo();
+    
         const handleCheckEkyc = (intervalId: NodeJS.Timeout) => {
             contactCheckEkyc(contactId).then((res) => {
                 setShowPopupCheckEkyc(res.isEkycWaiting);
                 setShowPopupError(res.isShowResult);
                 setReferenceNumber(res.referenceNumber);
                 setProcessWithoutEkyc(!res.isResend);
-
+    
                 if (res.message) {
                     setErrorMessage(res.message);
                 }
@@ -221,16 +232,16 @@ export default function EditPage() {
                 }
             });
         };
-
+    
         const intervalId = setInterval(() => {
             handleCheckEkyc(intervalId);
         }, 5000);
-
+    
         handleCheckEkyc(intervalId);
-
+    
         return () => clearInterval(intervalId);
     }, [id]);
-
+    
     const onFileChanged = async (e: any, type: "KTP" | "SELFIE") => {
         if (e.value.length > 0) {
             const uri = await resizeImage(e.value[0]);
@@ -480,6 +491,60 @@ export default function EditPage() {
                                     {ktpSrc && <img id="dropzone-ktp" src={ktpSrc} alt="ktp" width="240px"/>}
                                 </Item>
                                 <Item>{selfie && <img src={selfie} alt="selfie-photo" width="240px"/>}</Item>
+                            </GroupItem>
+                        </GroupItem>
+                        <GroupItem colSpan={2} cssClass={"dx-card responsive-paddings next-card"}>
+                            <GroupItem caption="EKYC Information" colCount={2}>
+                                <SimpleItem 
+                                    dataField="referenceNumber" 
+                                    label={{text: "Reference Number"}} 
+                                    editorOptions={{
+                                        readOnly: true,
+                                    }} 
+                                />
+                                <SimpleItem 
+                                    dataField="privyId" 
+                                    label={{text: "Privy Id"}} 
+                                    editorOptions={{
+                                        readOnly: true,
+                                    }} 
+                                />
+                                <SimpleItem 
+                                    dataField="createdOn" 
+                                    label={{text: "Created On"}} 
+                                    editorOptions={{
+                                        displayFormat: "dd MMM yyyy HH:mm:ss",
+                                        type: "datetime",
+                                        readOnly: true
+                                      }}
+                                    editorType="dxDateBox"
+                                />
+                                <SimpleItem 
+                                    dataField="completedOn" 
+                                    label={{text: "Completed On"}} 
+                                    editorOptions={{
+                                        displayFormat: "dd MMM yyyy HH:mm:ss",
+                                        type: "datetime",
+                                        readOnly: true
+                                    }}
+                                    editorType="dxDateBox"
+                                />
+                                <SimpleItem 
+                                    dataField="rejectReason" 
+                                    label={{text: "Reject Reason"}} 
+                                    cssClass="reject-reason"
+                                    editorOptions={{
+                                        readOnly: true,
+                                    }} 
+                                />
+                                <SimpleItem 
+                                    dataField="isResend" 
+                                    label={{text: "Retryable"}} 
+                                    editorOptions={{
+                                        readOnly: true,
+                                    }} 
+                                    editorType="dxTextBox"
+                                />
                             </GroupItem>
                         </GroupItem>
                         <GroupItem colSpan={2} cssClass={"dx-card responsive-paddings next-card"}>

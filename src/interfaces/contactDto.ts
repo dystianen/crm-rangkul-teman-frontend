@@ -31,7 +31,7 @@ export interface ContactRequest {
   marketAddress: string;
 }
 
-export const initContactValue: ContactRequest = {
+export const initContactValue: ContactRequest & TResInfoEkyc = {
   idNumber: "",
   nameBorrower: "",
   birthPlace: "",
@@ -97,4 +97,14 @@ export const InitLeadsValue: TReqCreateLeads = {
   idNumber: "",
   marketAddress: "",
   branchId: ""
+};
+
+export type TResInfoEkyc = {
+  createdOn?: Date;
+  modifiedOn?: Date;
+  privyId?: null;
+  email?: string;
+  rejectReason?: string;
+  isResend?: boolean;
+  referenceNumber?: string;
 };
