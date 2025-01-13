@@ -80,7 +80,7 @@ const CreateEditContactLeads = () => {
 
   return (
     <div className={"content-block"}>
-      <h2>{isCreate ? "Create" : "Edit"} Leads</h2>
+      <h2>Contact form</h2>
       <Form
         ref={formRef}
         id="form"
@@ -90,7 +90,7 @@ const CreateEditContactLeads = () => {
         validationGroup="leadsData"
       >
         <GroupItem cssClass={"dx-card responsive-paddings next-card"}>
-          <GroupItem caption="Leads Data" colCount={2}>
+          <GroupItem caption="Contact form" colCount={2}>
             <SimpleItem dataField="name" label={{ text: "Name" }} />
             <SimpleItem
               dataField="mobileNumber"
