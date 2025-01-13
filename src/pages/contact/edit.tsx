@@ -16,7 +16,7 @@ import * as Title from "devextreme-react/toolbar";
 import DataSource from "devextreme/data/data_source";
 import notify from "devextreme/ui/notify";
 import queryString from "query-string";
-import {useEffect, useState} from "react";
+import React, {useEffect, useRef, useState} from "react";
 import {useNavigate} from "react-router";
 import {useLocation} from "react-router-dom";
 import {
@@ -35,7 +35,7 @@ import {
     processWithoutEkyc,
     provinceStore,
     religionStore,
-    salesChannelStore,
+    salesChannelStore, selectBoxBranchOptions,
     selectBoxOptions,
     subDistrictStore,
     updateContact,
@@ -50,8 +50,17 @@ import {formatDate} from "../../utils/dateUtils";
 import { notifyError } from "src/utils/devExtremeUtils";
 import "./contact.scss";
 import ContactActivity from "src/components/contact/contact-activity";
+import {StringLengthRule} from "devextreme-react/validator";
+import {AppLoanOnboardingRequest, initLoanOnboardingValue} from "../../interfaces/appLoanOnboarding";
+import {getActiveBranchByUserStore, getActiveProductByBranch} from "../../api/apploan";
 
 export default function EditPage() {
+    const formAppRef = useRef<Form>(null);
+    const [productOptions, setProductOptions] = useState<any>(undefined);
+    const [productComboOptions, setComboProductOptions] = useState<any>({});
+    const [isPopupCreateApp, setPopupCreateApp] = React.useState(false);
+    const [loanAppOnboarding, setLoanAppOnboarding] =
+        useState<AppLoanOnboardingRequest>(initLoanOnboardingValue);
     const navigate = useNavigate();
     const location = useLocation();
     const {id} = queryString.parse(location.search);
@@ -65,6 +74,10 @@ export default function EditPage() {
     const [errorMessage, setErrorMessage] = useState([""]);
     const [isLoadingUpdate, setLoadingUpdate] = useState(false);
     const [referenceNumber, setReferenceNumber] = useState("");
+
+    const getBranchByUser = selectBoxBranchOptions(
+        new DataSource(getActiveBranchByUserStore as any),
+        "Select branch");
 
     const salesChannelOptions = selectBoxOptions(
         new DataSource(salesChannelStore),
@@ -310,21 +323,43 @@ export default function EditPage() {
         return validateEmail(request);
     };
 
-    const handleProcessWithoutEkyc = () => {
-        const contactId = String(id);
-        const payload = {
-            contactId
+
+    const onFieldAppDataChanged = (evt: any) => {
+        if (evt.dataField === "branchId" && evt.value != null) {
+            setComboProductOptions(selectBoxOptions(
+                new DataSource(getActiveProductByBranch(evt.value)),
+                "Select product"
+            ));
         }
-        
+
+        if (evt.dataField === "productId" && evt.value != null) {
+            setProductOptions(evt.value);
+        }
+        loanAppOnboarding[evt.dataField] = evt.value;
+    };
+
+    const handleProcessWithoutEkyc = (e: any) => {
+        const contactId = String(id);
+        const form = formAppRef.current!.instance;
+        const payload = {
+            contactId: contactId,
+            contactIdentity: contact.idNumber,
+            branchId: loanAppOnboarding.branchId,
+            productId: loanAppOnboarding.productId,
+        }
+
+        console.log('request create app ', payload);
         processWithoutEkyc(payload)
             .then(res => {
                 if (res.appId) {
+                    setPopupCreateApp(false);
                     navigate(`/loan-app/create/step/1/?id=${res.appId}&autoNext=false`);
                 }
             })
             .catch(error => {
                 notifyError(error.message);
-            })
+            });
+        e.preventDefault();
     }
 
     const handleBack = () => {
@@ -863,9 +898,90 @@ export default function EditPage() {
                     </div>
                     <div style={{ display: "flex", gap: "10px" }}>
                         <Button text="Tutup" type="normal" onClick={() => setShowPopupError(false)}/>
-                        <Button visible={isProcessWithoutEkyc} text="Proses Tanpa EKYC" type="default" onClick={handleProcessWithoutEkyc}/>
+                        <Button visible={isProcessWithoutEkyc} text="Proses Tanpa EKYC" type="default" onClick={()=>{
+                            setShowPopupError(false);
+                            setPopupCreateApp(true);}
+                        }/>
                     </div>
                 </div>
+            </Popup>
+
+            <Popup
+                width={360}
+                height={320}
+                visible={isPopupCreateApp}
+                title="Aplikasi baru"
+            >
+                <form onSubmit={handleProcessWithoutEkyc}>
+                    <Form
+                        ref={formAppRef}
+                        id="form"
+                        showColonAfterLabel={true}
+                        showValidationSummary={true}
+                        validationGroup="OnboardingApplicationData"
+                        onFieldDataChanged={onFieldAppDataChanged}
+                    >
+                        <SimpleItem
+                            dataField="branchId"
+                            label={{text: "Branch"}}
+                            editorType="dxSelectBox"
+                            editorOptions={getBranchByUser}
+                        >
+                            <RequiredRule message="Branch is required"/>
+                        </SimpleItem>
+                        <SimpleItem
+                            dataField="productId"
+                            label={{text: "Product"}}
+                            editorType="dxSelectBox"
+                            editorOptions={productComboOptions}
+                        >
+                            <RequiredRule message="Product is required"/>
+                        </SimpleItem>
+                        <SimpleItem
+                            dataField="contactIdentity"
+                            label={{text: "Nomor KTP"}}
+                            editorOptions={{
+                                min: 16,
+                                maxLength: 16,
+                                readOnly: true,
+                                value: (contact.idNumber || ""),
+                                onKeyDown: (e: any) => {
+                                    const key = e.event.key;
+                                    e.value = String.fromCharCode(e.event.keyCode);
+                                    if (
+                                        !/[0-9]/.test(e.value) &&
+                                        key !== "Control" && key !== "v" &&
+                                        key !== "Backspace" &&
+                                        key !== "Delete"
+                                    )
+                                        e.event.preventDefault();
+                                },
+                            }}
+                        >
+                            <RequiredRule message="KTP Number is required"/>
+                            <AsyncRule
+                                message="KTP Number is not registered"
+                                validationCallback={asyncValidationIdNumber}
+                            />
+                            <StringLengthRule
+                                min={16}
+                                message="KTP tidak kurang dar 16 karakter"
+                            />
+                            <PatternRule
+                                message="KTP hanya angka"
+                                pattern={/^[0-9]+$/}
+                            />
+                        </SimpleItem>
+                        <ButtonItem
+                            horizontalAlignment="left"
+                            buttonOptions={{
+                                text: "Submit",
+                                type: "success",
+                                useSubmitBehavior: true,
+                            }}
+                        />
+                    </Form>
+                </form>
             </Popup>
         </>
     );
