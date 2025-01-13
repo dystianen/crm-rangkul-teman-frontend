@@ -16,7 +16,7 @@ import * as Title from "devextreme-react/toolbar";
 import DataSource from "devextreme/data/data_source";
 import notify from "devextreme/ui/notify";
 import queryString from "query-string";
-import {useEffect, useState} from "react";
+import React, {useEffect, useRef, useState} from "react";
 import {useNavigate} from "react-router";
 import {useLocation} from "react-router-dom";
 import {
@@ -24,6 +24,7 @@ import {
     cityStore,
     contactCheckEkyc,
     contactDetailApi,
+    contactEkycInfo,
     contactRelativeStore,
     countryStore,
     districtStore,
@@ -34,7 +35,7 @@ import {
     processWithoutEkyc,
     provinceStore,
     religionStore,
-    salesChannelStore,
+    salesChannelStore, selectBoxBranchOptions,
     selectBoxOptions,
     subDistrictStore,
     updateContact,
@@ -49,8 +50,17 @@ import {formatDate} from "../../utils/dateUtils";
 import { notifyError } from "src/utils/devExtremeUtils";
 import "./contact.scss";
 import ContactActivity from "src/components/contact/contact-activity";
+import {StringLengthRule} from "devextreme-react/validator";
+import {AppLoanOnboardingRequest, initLoanOnboardingValue} from "../../interfaces/appLoanOnboarding";
+import {getActiveBranchByUserStore, getActiveProductByBranch} from "../../api/apploan";
 
 export default function EditPage() {
+    const formAppRef = useRef<Form>(null);
+    const [productOptions, setProductOptions] = useState<any>(undefined);
+    const [productComboOptions, setComboProductOptions] = useState<any>({});
+    const [isPopupCreateApp, setPopupCreateApp] = React.useState(false);
+    const [loanAppOnboarding, setLoanAppOnboarding] =
+        useState<AppLoanOnboardingRequest>(initLoanOnboardingValue);
     const navigate = useNavigate();
     const location = useLocation();
     const {id} = queryString.parse(location.search);
@@ -64,6 +74,10 @@ export default function EditPage() {
     const [errorMessage, setErrorMessage] = useState([""]);
     const [isLoadingUpdate, setLoadingUpdate] = useState(false);
     const [referenceNumber, setReferenceNumber] = useState("");
+
+    const getBranchByUser = selectBoxBranchOptions(
+        new DataSource(getActiveBranchByUserStore as any),
+        "Select branch");
 
     const salesChannelOptions = selectBoxOptions(
         new DataSource(salesChannelStore),
@@ -121,7 +135,7 @@ export default function EditPage() {
 
     useEffect(() => {
         const contactId = String(id);
-
+    
         contactDetailApi(contactId).then((res: any) => {
             const data: ContactRequest = {
                 contactId: contactId,
@@ -134,8 +148,8 @@ export default function EditPage() {
                 idEducation: res.educationId,
                 idMarital: res.maritalId,
                 motherMaidenName: res.motherMaidenName,
-                lengthOfJob: res?.workExperienceMonth ? res?.workExperienceMonth : 0,
-
+                lengthOfJob: res?.workExperienceMonth || 0,
+    
                 idCountry: res?.contactAddressCountryId,
                 idCity: res?.contactAddressCityId,
                 idProvince: res?.contactAddressProvinceId,
@@ -146,15 +160,18 @@ export default function EditPage() {
                 neighborhoodUnit: res?.contactAddressNeighborhoodUnit,
                 communityUnit: res?.contactAddressCommunityUnit,
                 livingAddressStatus: res?.contactAddressOwnershipId,
-
+    
                 mobilePhone: res?.contactPhone,
                 email: res?.contactEmail,
-
+    
                 ktpImage: "",
                 typeOfGood: res?.typeOfGood,
                 salesChannelId: res?.salesChannelId,
-                marketAddress: res.marketAddress
+                marketAddress: res.marketAddress,
             };
+    
+            setContact(prevContact => ({ ...prevContact, ...data }));
+    
             if (res?.contactAddressCountryId) {
                 setProvinceOptions(
                     selectBoxOptions(new DataSource(provinceStore(String(res?.contactAddressCountryId))), "")
@@ -177,38 +194,45 @@ export default function EditPage() {
             }
             if (res?.contactIdentFileUrlPath) {
                 getFile(res?.contactIdentFileUrlPath)
-                    .then(function (response) {
-                        setKtpSrc(response);
-                    })
-                    .catch((error: any) => {
-                        console.error("ERROR:: ", error);
-                    });
+                    .then(response => setKtpSrc(response))
+                    .catch(error => console.error("ERROR:: ", error));
             }
-
+    
             if (res?.contactIdentFileUrlSelfie) {
                 getFile(res.contactIdentFileUrlSelfie)
-                    .then(function (response) {
-                        setSelfie(response);
-                    })
-                    .catch((error: any) => {
-                        console.error("ERROR:: ", error);
-                    });
+                    .then(response => setSelfie(response))
+                    .catch(error => console.error("ERROR:: ", error));
             }
-
+    
             if (res?.contactRelatives) {
                 setContactRelatives(res?.contactRelatives);
             }
-
-            setContact(data);
         });
-
+    
+        const handleFetchEkycInfo = () => {
+            contactEkycInfo(contactId).then(res => {
+                const dataEkyc = {
+                    privyId: res.privyId,
+                    rejectReason: res.rejectReason,
+                    isResend: res.isResend?.toString(),
+                    referenceNumber: res.referenceNumber,
+                    createdOn: res.createdOn,
+                    completedOn: res.modifiedOn
+                };
+    
+                setContact(prevContact => ({ ...prevContact, ...dataEkyc }));
+            });
+        };
+    
+        handleFetchEkycInfo();
+    
         const handleCheckEkyc = (intervalId: NodeJS.Timeout) => {
             contactCheckEkyc(contactId).then((res) => {
                 setShowPopupCheckEkyc(res.isEkycWaiting);
                 setShowPopupError(res.isShowResult);
                 setReferenceNumber(res.referenceNumber);
                 setProcessWithoutEkyc(!res.isResend);
-
+    
                 if (res.message) {
                     setErrorMessage(res.message);
                 }
@@ -221,16 +245,16 @@ export default function EditPage() {
                 }
             });
         };
-
+    
         const intervalId = setInterval(() => {
             handleCheckEkyc(intervalId);
         }, 5000);
-
+    
         handleCheckEkyc(intervalId);
-
+    
         return () => clearInterval(intervalId);
     }, [id]);
-
+    
     const onFileChanged = async (e: any, type: "KTP" | "SELFIE") => {
         if (e.value.length > 0) {
             const uri = await resizeImage(e.value[0]);
@@ -299,21 +323,43 @@ export default function EditPage() {
         return validateEmail(request);
     };
 
-    const handleProcessWithoutEkyc = () => {
-        const contactId = String(id);
-        const payload = {
-            contactId
+
+    const onFieldAppDataChanged = (evt: any) => {
+        if (evt.dataField === "branchId" && evt.value != null) {
+            setComboProductOptions(selectBoxOptions(
+                new DataSource(getActiveProductByBranch(evt.value)),
+                "Select product"
+            ));
         }
-        
+
+        if (evt.dataField === "productId" && evt.value != null) {
+            setProductOptions(evt.value);
+        }
+        loanAppOnboarding[evt.dataField] = evt.value;
+    };
+
+    const handleProcessWithoutEkyc = (e: any) => {
+        const contactId = String(id);
+        const form = formAppRef.current!.instance;
+        const payload = {
+            contactId: contactId,
+            contactIdentity: contact.idNumber,
+            branchId: loanAppOnboarding.branchId,
+            productId: loanAppOnboarding.productId,
+        }
+
+        console.log('request create app ', payload);
         processWithoutEkyc(payload)
             .then(res => {
                 if (res.appId) {
+                    setPopupCreateApp(false);
                     navigate(`/loan-app/create/step/1/?id=${res.appId}&autoNext=false`);
                 }
             })
             .catch(error => {
                 notifyError(error.message);
-            })
+            });
+        e.preventDefault();
     }
 
     const handleBack = () => {
@@ -480,6 +526,60 @@ export default function EditPage() {
                                     {ktpSrc && <img id="dropzone-ktp" src={ktpSrc} alt="ktp" width="240px"/>}
                                 </Item>
                                 <Item>{selfie && <img src={selfie} alt="selfie-photo" width="240px"/>}</Item>
+                            </GroupItem>
+                        </GroupItem>
+                        <GroupItem colSpan={2} cssClass={"dx-card responsive-paddings next-card"}>
+                            <GroupItem caption="EKYC Information" colCount={2}>
+                                <SimpleItem 
+                                    dataField="referenceNumber" 
+                                    label={{text: "Reference Number"}} 
+                                    editorOptions={{
+                                        readOnly: true,
+                                    }} 
+                                />
+                                <SimpleItem 
+                                    dataField="privyId" 
+                                    label={{text: "Privy Id"}} 
+                                    editorOptions={{
+                                        readOnly: true,
+                                    }} 
+                                />
+                                <SimpleItem 
+                                    dataField="createdOn" 
+                                    label={{text: "Created On"}} 
+                                    editorOptions={{
+                                        displayFormat: "dd MMM yyyy HH:mm:ss",
+                                        type: "datetime",
+                                        readOnly: true
+                                      }}
+                                    editorType="dxDateBox"
+                                />
+                                <SimpleItem 
+                                    dataField="completedOn" 
+                                    label={{text: "Completed On"}} 
+                                    editorOptions={{
+                                        displayFormat: "dd MMM yyyy HH:mm:ss",
+                                        type: "datetime",
+                                        readOnly: true
+                                    }}
+                                    editorType="dxDateBox"
+                                />
+                                <SimpleItem 
+                                    dataField="rejectReason" 
+                                    label={{text: "Reject Reason"}} 
+                                    cssClass="reject-reason"
+                                    editorOptions={{
+                                        readOnly: true,
+                                    }} 
+                                />
+                                <SimpleItem 
+                                    dataField="isResend" 
+                                    label={{text: "Retryable"}} 
+                                    editorOptions={{
+                                        readOnly: true,
+                                    }} 
+                                    editorType="dxTextBox"
+                                />
                             </GroupItem>
                         </GroupItem>
                         <GroupItem colSpan={2} cssClass={"dx-card responsive-paddings next-card"}>
@@ -798,9 +898,90 @@ export default function EditPage() {
                     </div>
                     <div style={{ display: "flex", gap: "10px" }}>
                         <Button text="Tutup" type="normal" onClick={() => setShowPopupError(false)}/>
-                        <Button visible={isProcessWithoutEkyc} text="Proses Tanpa EKYC" type="default" onClick={handleProcessWithoutEkyc}/>
+                        <Button visible={isProcessWithoutEkyc} text="Proses Tanpa EKYC" type="default" onClick={()=>{
+                            setShowPopupError(false);
+                            setPopupCreateApp(true);}
+                        }/>
                     </div>
                 </div>
+            </Popup>
+
+            <Popup
+                width={360}
+                height={320}
+                visible={isPopupCreateApp}
+                title="Aplikasi baru"
+            >
+                <form onSubmit={handleProcessWithoutEkyc}>
+                    <Form
+                        ref={formAppRef}
+                        id="form"
+                        showColonAfterLabel={true}
+                        showValidationSummary={true}
+                        validationGroup="OnboardingApplicationData"
+                        onFieldDataChanged={onFieldAppDataChanged}
+                    >
+                        <SimpleItem
+                            dataField="branchId"
+                            label={{text: "Branch"}}
+                            editorType="dxSelectBox"
+                            editorOptions={getBranchByUser}
+                        >
+                            <RequiredRule message="Branch is required"/>
+                        </SimpleItem>
+                        <SimpleItem
+                            dataField="productId"
+                            label={{text: "Product"}}
+                            editorType="dxSelectBox"
+                            editorOptions={productComboOptions}
+                        >
+                            <RequiredRule message="Product is required"/>
+                        </SimpleItem>
+                        <SimpleItem
+                            dataField="contactIdentity"
+                            label={{text: "Nomor KTP"}}
+                            editorOptions={{
+                                min: 16,
+                                maxLength: 16,
+                                readOnly: true,
+                                value: (contact.idNumber || ""),
+                                onKeyDown: (e: any) => {
+                                    const key = e.event.key;
+                                    e.value = String.fromCharCode(e.event.keyCode);
+                                    if (
+                                        !/[0-9]/.test(e.value) &&
+                                        key !== "Control" && key !== "v" &&
+                                        key !== "Backspace" &&
+                                        key !== "Delete"
+                                    )
+                                        e.event.preventDefault();
+                                },
+                            }}
+                        >
+                            <RequiredRule message="KTP Number is required"/>
+                            <AsyncRule
+                                message="KTP Number is not registered"
+                                validationCallback={asyncValidationIdNumber}
+                            />
+                            <StringLengthRule
+                                min={16}
+                                message="KTP tidak kurang dar 16 karakter"
+                            />
+                            <PatternRule
+                                message="KTP hanya angka"
+                                pattern={/^[0-9]+$/}
+                            />
+                        </SimpleItem>
+                        <ButtonItem
+                            horizontalAlignment="left"
+                            buttonOptions={{
+                                text: "Submit",
+                                type: "success",
+                                useSubmitBehavior: true,
+                            }}
+                        />
+                    </Form>
+                </form>
             </Popup>
         </>
     );
