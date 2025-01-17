@@ -41,13 +41,18 @@ const CreateEditContactLeads = () => {
     }
   }, [idData]);
 
-  const handleSuccess = () => {
+  const handleSuccess = (e: any) => {
     const form = formRef.current!.instance;
     form.clear();
     setLeads(InitLeadsValue);
     setLoadingSave(false);
     notifySuccess("Berhasil submit data");
-    navigate(-1);
+    console.log("contact leads handleSuccess", e);
+    if (typeof e.contactId !== "undefined" && e.contactId !== "") {
+      navigate(`/contact/edit?id=${e.contactId}`);
+    } else {
+      navigate(-1);
+    }
   };
 
   const handleError = (error: any) => {
