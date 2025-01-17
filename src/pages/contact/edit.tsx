@@ -363,7 +363,7 @@ export default function EditPage() {
     }
 
     const handleBack = () => {
-        navigate(-1);
+        navigate(`/contact`);
     };
 
     const backButtonOptions = {
