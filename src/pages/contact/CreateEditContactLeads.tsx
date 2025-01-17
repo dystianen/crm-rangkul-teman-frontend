@@ -48,10 +48,14 @@ const CreateEditContactLeads = () => {
     setLoadingSave(false);
     notifySuccess("Berhasil submit data");
     console.log("contact leads handleSuccess", e);
-    if (typeof e.contactId !== "undefined" && e.contactId !== "") {
-      navigate(`/contact/edit?id=${e.contactId}`);
+    if (typeof e.contactId !== "undefined") {
+      if(e.contactId !== null) {
+        navigate(`/contact/edit?id=${e.contactId}`);
+      }else {
+        navigate('/contact');
+      }
     } else {
-      navigate(-1);
+      navigate('/contact');
     }
   };
 
