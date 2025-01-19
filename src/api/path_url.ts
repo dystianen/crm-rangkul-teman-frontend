@@ -3,6 +3,7 @@ export enum API_PATH {
   CHANGE_PASSWORD = '/api/auth/reset/password',
   LOGOUT = '/api/auth/signout',
   PROFILE_SESSION = '/api/profile/session',
+  PROFILE_ACCESS = '/api/profile/check/access',
   USER_MENU = '/api/bo/general/mainmenu',
   APPLICATION = "/api/trx/application",
   APPROVAL = '/api/trx/approval',

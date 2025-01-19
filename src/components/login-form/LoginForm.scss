@@ -16,3 +16,7 @@
     color: rgba($base-text-color, alpha($base-text-color) * 0.7);
   }
 }
+
+.dx-card {
+  flex-grow: 0 !important;
+}

@@ -6,21 +6,25 @@
   z-index: 1;
   border-bottom: 1px solid #c0c0c0;
 
-  .dx-toolbar .dx-toolbar-item.menu-button>.dx-toolbar-item-content .dx-icon {
+  .dx-toolbar .dx-toolbar-item.menu-button > .dx-toolbar-item-content .dx-icon {
     color: $base-accent;
   }
 }
 
-.dx-toolbar.header-toolbar .dx-toolbar-items-container .dx-toolbar-after {
-  padding: 0 40px;
-
-  .screen-x-small & {
-    padding: 0 20px;
-  }
+.header-component .dx-toolbar .dx-toolbar-items-container {
+  height: 60px !important;
 }
 
+// .dx-toolbar.header-toolbar .dx-toolbar-items-container .dx-toolbar-after {
+//   padding: 0 40px;
+
+//   .screen-x-small & {
+//     padding: 0 20px;
+//   }
+// }
+
 .dx-toolbar .dx-toolbar-item.dx-toolbar-button.menu-button {
-  width: $side-panel-min-width;
+  width: 60px;
   text-align: center;
   padding: 0;
 }
@@ -28,6 +32,8 @@
 .header-title .dx-item-content {
   padding: 0;
   margin: 0;
+  font-size: 22px;
+  width: auto;
 }
 
 .dx-theme-generic {
@@ -35,7 +41,12 @@
     padding: 10px 0;
   }
 
-  .user-button>.dx-button-content {
+  .user-button > .dx-button-content {
     padding: 3px;
+    font-size: 32px;
   }
+}
+
+.header-component .dx-toolbar .dx-toolbar-item.menu-button > .dx-toolbar-item-content .dx-icon {
+  font-size: 24px;
 }

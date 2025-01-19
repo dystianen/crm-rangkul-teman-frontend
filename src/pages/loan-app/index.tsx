@@ -1,4 +1,4 @@
-import React, {useRef, useState} from "react";
+import React, {useEffect, useRef, useState} from "react";
 import "devextreme/data/odata/store";
 import DataGrid, {
     Column,
@@ -23,8 +23,8 @@ import {Popup} from "devextreme-react/popup";
 import {RequiredRule, AsyncRule, StringLengthRule} from "devextreme-react/validator";
 import DataSource from "devextreme/data/data_source";
 import {
-    appLoanListStore,
-    createAppLoanOnboarding, getActiveBranchByUserStore, getActiveProductByBranch,
+    appLoanListStore, checkAccess,
+    createAppLoanOnboarding, detailAppStep, getActiveBranchByUserStore, getActiveProductByBranch,
     getActiveProductStore,
 } from "src/api/apploan";
 
@@ -39,8 +39,10 @@ import {ApplicationStatus} from "../../components/application-status";
 import {downloadExcel} from "../../api/http.api";
 // @ts-ignore
 import * as downloadFile from "save-file";
+import {useAuth} from "../../contexts/auth";
 
 export default function Index() {
+    const {user} = useAuth();
     const navigate = useNavigate();
     const formRef = useRef<Form>(null);
     const [popupVisible, setPopupVisible] = React.useState(false);
@@ -48,10 +50,17 @@ export default function Index() {
     const [productComboOptions, setComboProductOptions] = useState<any>({});
     const [loanAppOnboarding, setLoanAppOnboarding] =
         useState<AppLoanOnboardingRequest>(initLoanOnboardingValue);
+    const [isPengajuanVisible, setPengajuanVisible] = useState<boolean>(false);
+
+    useEffect(() => {
+        checkAccess('800e5c98-4a29-47e1-b1e7-1ff1d5ea0737').then((res) => {
+            setPengajuanVisible(res);
+        });
+    }, []);
 
     const getBranchByUser = selectBoxBranchOptions(
         new DataSource(getActiveBranchByUserStore as any),
-    "Select branch");
+        "Select branch");
 
     const getProductList = selectBoxOptions(
         new DataSource(getActiveProductStore as any),
@@ -90,9 +99,14 @@ export default function Index() {
         createAppLoanOnboarding(request).then(
             (res) => {
                 if (res) {
-                    setLoanAppOnboarding(initLoanOnboardingValue);
-                    form.resetValues();
-                    navigate(`/loan-app/create/step/1/?id=${res.appId}`);
+                    console.log("app create ", res);
+                    if(res.isEkyc) {
+                        setLoanAppOnboarding(initLoanOnboardingValue);
+                        form.resetValues();
+                        navigate(`/loan-app/create/step/1/?id=${res.appId}&autoNext=false`);
+                    } else {
+                        navigate(`/contact/edit?id=${res.contactId}&ktp=${request.contactIdentity}&branchId=${request.branchId}&productId=${request.productId}&backTo=step1`);
+                    }
                 }
             }, (error) => {
                 const {status} = error.options;
@@ -149,7 +163,32 @@ export default function Index() {
             .catch(console.error);
         console.log(paramSearch);
     }
-
+    const onToolbarPreparing = (e: any, visible: boolean) => {
+        const items = e.toolbarOptions.items;
+        items.unshift({
+            location: 'after',
+            widget: 'dxButton',
+            options: {
+                text: "Download",
+                type: "success",
+                stylingMode: "contained",
+                onClick: onClickDownload
+            },
+        });
+        // console.log("isPengajuanVisible :",isPengajuanVisible);
+        if (isPengajuanVisible) {
+            items.push({
+                location: 'after',
+                widget: 'dxButton',
+                options: {
+                    text: "Pengajuan Baru",
+                    type: "default",
+                    stylingMode: "contained",
+                    onClick: showPopup
+                },
+            });
+        }
+    }
     return (<React.Fragment>
         <h2 className={"content-block"}>Pengajuan</h2>
         <div className={"content-block"}>
@@ -164,25 +203,8 @@ export default function Index() {
                     showBorders={true}
                     dateSerializationFormat={"yyyy-MM-ddTHH:mm:ss.SSSxxx"}
                     repaintChangesOnly={true}
+                    onToolbarPreparing={(e)=>onToolbarPreparing(e,isPengajuanVisible)}
                 >
-                    <Toolbar>
-                        <Item location="after">
-                            <Button
-                                text="Download"
-                                type="success"
-                                stylingMode="contained"
-                                onClick={onClickDownload}
-                            />
-                        </Item>
-                        <Item location="after">
-                            <Button
-                                text="Pengajuan Baru"
-                                type="default"
-                                stylingMode="contained"
-                                onClick={showPopup}
-                            />
-                        </Item>
-                    </Toolbar>
                     <Scrolling showScrollbar={"always"}/>
                     <FilterRow visible={true}/>
                     <Column
@@ -191,9 +213,34 @@ export default function Index() {
                         caption={"#No"}
                         width={90}
                         cellTemplate={function (container: any, options: any) {
+                            console.log("options : ", options);
                             const dom = ReactDOM.createRoot(container);
-                            dom.render(<OnClickLink
-                                onClick={() => navigate(`/loan-app/detail?id=${options.data.id}`)}>{options.data.seqId}</OnClickLink>);
+                            if (options.data.statusId == "f95a1ecc-2f6f-4553-bbbe-a5e976a78bef") {
+                                const id = options.data.id;
+                                dom.render(<OnClickLink
+                                    onClick={() => navigate(`/loan-app/create/step/1?id=${options.data.id}&autoNext=false`)}>{options.data.seqId}</OnClickLink>);
+
+                                if(!options.data.isWaitingSigning) {
+                                    detailAppStep(String(id)).then((res) => {
+                                        const step = res?.steps;
+                                        if (typeof res?.allowed !== "undefined") {
+                                            if(res?.allowed) {
+                                                if (step == 1) {
+                                                    dom.render(<OnClickLink
+                                                        onClick={() => navigate(`/loan-app/create/step/2?id=${options.data.id}`)}>{options.data.seqId}</OnClickLink>);
+                                                } else if (step <= 2 && step > 1) {
+                                                    dom.render(<OnClickLink
+                                                        onClick={() => navigate(`/loan-app/create/preview?id=${options.data.id}`)}>{options.data.seqId}</OnClickLink>);
+                                                }
+                                            }
+                                        }
+                                    });
+                                }
+                            } else {
+                                dom.render(<OnClickLink
+                                    onClick={() => navigate(`/loan-app/detail?id=${options.data.id}`)}>{options.data.seqId}</OnClickLink>);
+                            }
+
                         }}
                         filterOperations={filterOperation.numeric}
                     />
@@ -202,11 +249,11 @@ export default function Index() {
                         caption={"Tanggal Dibuat"}
                         dataType={"date"}
                         format={"dd MMM yyyy HH:mm:ss"}
-                        calculateFilterExpression={function (
+                        calculateFilterExpression={(
                             value: any,
                             selectedFilterOperations: any,
                             target: any
-                        ) {
+                        ) => {
                             const column = this as any;
                             return column.defaultCalculateFilterExpression.apply(this, [
                                 new Date(value),

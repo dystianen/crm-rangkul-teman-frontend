@@ -1,59 +1,96 @@
-import React, {useEffect, useState} from "react";
+import {Button, DataGrid, LoadIndicator, Popup} from "devextreme-react";
+import {Column, Lookup, Pager, Paging, Scrolling} from "devextreme-react/data-grid";
 import Form, {
+    AsyncRule,
     ButtonItem,
+    ButtonOptions,
     GroupItem,
-    Tab,
-    TabbedItem,
-    Tab as HistoryTab,
-    TabbedItem as HistoryTabbedItem,
-    Tab as LogTab,
-    TabbedItem as LogTabbedItem,
     Item,
     PatternRule,
     RequiredRule,
     SimpleItem,
-    AsyncRule
+    Tab,
+    TabbedItem,
 } from "devextreme-react/form";
-import TabPanel from "devextreme-react/tab-panel";
+import * as Title from "devextreme-react/toolbar";
+import DataSource from "devextreme/data/data_source";
+import notify from "devextreme/ui/notify";
+import queryString from "query-string";
+import React, {useEffect, useRef, useState} from "react";
+import {useNavigate} from "react-router";
+import {useLocation} from "react-router-dom";
 import {
     addressOwnershipStore,
     cityStore,
+    contactCheckEkyc,
     contactDetailApi,
+    contactEkycInfo,
+    contactRelativeStore,
     countryStore,
     districtStore,
     educationStore,
     genderStore,
     getFile,
     maritalStatusStore,
+    processWithoutEkyc,
     provinceStore,
     religionStore,
+    salesChannelStore, selectBoxBranchOptions,
     selectBoxOptions,
-    subDistrictStore, updateContact, validateEmail, validateIdNumber, validatePhone
+    subDistrictStore,
+    updateContact,
+    validateEmail,
+    validateIdNumber,
+    validatePhone
 } from "src/api/contact";
-import {useLocation} from "react-router-dom";
-import queryString from 'query-string';
-import {ContactRequest, initContactValue} from "src/interfaces/contactDto";
-import DataSource from "devextreme/data/data_source";
+import Loader from "src/components/loader";
+import {ContactRelativeDto, ContactRequest, initContactValue} from "src/interfaces/contactDto";
+import resizeImage from "src/utils/resizeImage.util";
 import {formatDate} from "../../utils/dateUtils";
-import notify from "devextreme/ui/notify";
-import Resizer from "react-image-file-resizer";
-import {useNavigate} from "react-router";
-import * as Title from "devextreme-react/toolbar";
-import {Column, Pager, Paging, Scrolling} from "devextreme-react/data-grid";
-import {DataGrid} from "devextreme-react";
+import { notifyError } from "src/utils/devExtremeUtils";
+import "./contact.scss";
+import ContactActivity from "src/components/contact/contact-activity";
+import {StringLengthRule} from "devextreme-react/validator";
+import {AppLoanOnboardingRequest, initLoanOnboardingValue} from "../../interfaces/appLoanOnboarding";
+import {getActiveBranchByUserStore, getActiveProductByBranch} from "../../api/apploan";
 
 export default function EditPage() {
+    const formAppRef = useRef<Form>(null);
+    const [productOptions, setProductOptions] = useState<any>(undefined);
+    const [productComboOptions, setComboProductOptions] = useState<any>({});
+    const [isPopupCreateApp, setPopupCreateApp] = React.useState(false);
+    const [loanAppOnboarding, setLoanAppOnboarding] =
+        useState<AppLoanOnboardingRequest>(initLoanOnboardingValue);
     const navigate = useNavigate();
     const location = useLocation();
     const {id} = queryString.parse(location.search);
-    const [selectedIndex, setSelectedIndex] = useState(0);
     const [contact, setContact] = useState<ContactRequest>(initContactValue);
-    const [ktpSrc, setKtpSrc] = useState<any>(undefined);
+    const [ktpSrc, setKtpSrc] = useState("");
+    const [selfie, setSelfie] = useState("");
+    const [contactRelatives, setContactRelatives] = useState<ContactRelativeDto[]>([]);
+    const [isShowPopupCheckEkyc, setShowPopupCheckEkyc] = useState(false);
+    const [isShowPopupError, setShowPopupError] = useState(false);
+    const [isProcessWithoutEkyc, setProcessWithoutEkyc] = useState(false);
+    const [errorMessage, setErrorMessage] = useState([""]);
+    const [isLoadingUpdate, setLoadingUpdate] = useState(false);
+    const [referenceNumber, setReferenceNumber] = useState("");
 
+    const getBranchByUser = selectBoxBranchOptions(
+        new DataSource(getActiveBranchByUserStore as any),
+        "Select branch");
+
+    const salesChannelOptions = selectBoxOptions(
+        new DataSource(salesChannelStore),
+        "Select Sales channel"
+    );
+    const relativeOptions = selectBoxOptions(new DataSource(contactRelativeStore), "Select Relation");
     const genderOptions = selectBoxOptions(new DataSource(genderStore), "Select gender");
     const religionOptions = selectBoxOptions(new DataSource(religionStore), "Select religion");
     const educationOptions = selectBoxOptions(new DataSource(educationStore), "Select education");
-    const maritalStatusOptions = selectBoxOptions(new DataSource(maritalStatusStore), "Select marital status");
+    const maritalStatusOptions = selectBoxOptions(
+        new DataSource(maritalStatusStore),
+        "Select marital status"
+    );
     const ownerStatusOptions = selectBoxOptions(new DataSource(addressOwnershipStore), "");
     const countryOptions = selectBoxOptions(new DataSource(countryStore), "");
 
@@ -65,27 +102,43 @@ export default function EditPage() {
     const handleSubmit = (e: any) => {
         const request = {
             ...contact,
+            contactId: id,
             birthDate: formatDate(contact.birthDate),
-            ktpImage: ktpSrc
-        }
-        updateContact(id, request).then(() => {
-            notify({
-                message: 'Success submitted the form',
-                position: {
-                    my: 'center top',
-                    at: 'center top',
-                },
-            }, 'success', 3000);
-            navigate("/contact");
-        });
-        console.log("ex", request);
+            ktpImage: ktpSrc,
+            selfie,
+            contactRelatives: contactRelatives
+        };
+
+        setLoadingUpdate(true);
+        updateContact(id, request)
+            .then(() => {
+                setLoadingUpdate(false);
+                notify(
+                    {
+                        message: "Success submitted contact",
+                        position: {
+                            my: "center top",
+                            at: "center top"
+                        }
+                    },
+                    "success",
+                    15000
+                );
+                navigate("/contact");
+            })
+            .catch(error => {
+                setLoadingUpdate(false);
+                notifyError(error.message);
+            });
         e.preventDefault();
-    }
+    };
 
     useEffect(() => {
-        contactDetailApi(String(id)).then((res: any) => {
-
+        const contactId = String(id);
+    
+        contactDetailApi(contactId).then((res: any) => {
             const data: ContactRequest = {
+                contactId: contactId,
                 idNumber: res.idNumber,
                 nameBorrower: res.name,
                 birthPlace: res.birthPlace,
@@ -95,8 +148,8 @@ export default function EditPage() {
                 idEducation: res.educationId,
                 idMarital: res.maritalId,
                 motherMaidenName: res.motherMaidenName,
-                lengthOfJob: res?.workExperienceMonth ? res?.workExperienceMonth : 0,
-
+                lengthOfJob: res?.workExperienceMonth || 0,
+    
                 idCountry: res?.contactAddressCountryId,
                 idCity: res?.contactAddressCityId,
                 idProvince: res?.contactAddressProvinceId,
@@ -107,73 +160,127 @@ export default function EditPage() {
                 neighborhoodUnit: res?.contactAddressNeighborhoodUnit,
                 communityUnit: res?.contactAddressCommunityUnit,
                 livingAddressStatus: res?.contactAddressOwnershipId,
-
+    
                 mobilePhone: res?.contactPhone,
                 email: res?.contactEmail,
-
+    
                 ktpImage: "",
-            }
+                typeOfGood: res?.typeOfGood,
+                salesChannelId: res?.salesChannelId,
+                marketAddress: res.marketAddress,
+            };
+    
+            setContact(prevContact => ({ ...prevContact, ...data }));
+    
             if (res?.contactAddressCountryId) {
-                setProvinceOptions(selectBoxOptions(new DataSource(provinceStore(String(res?.contactAddressCountryId))), ""));
+                setProvinceOptions(
+                    selectBoxOptions(new DataSource(provinceStore(String(res?.contactAddressCountryId))), "")
+                );
             }
             if (res?.contactAddressProvinceId) {
-                setCityOptions(selectBoxOptions(new DataSource(cityStore(res?.contactAddressProvinceId)), ""));
+                setCityOptions(
+                    selectBoxOptions(new DataSource(cityStore(res?.contactAddressProvinceId)), "")
+                );
             }
             if (res?.contactAddressCityId) {
-                setDistrictOptions(selectBoxOptions(new DataSource(districtStore(res?.contactAddressCityId)), ""));
+                setDistrictOptions(
+                    selectBoxOptions(new DataSource(districtStore(res?.contactAddressCityId)), "")
+                );
             }
             if (res?.contactAddressDistrictId) {
-                setSubDistrictOptions(selectBoxOptions(new DataSource(subDistrictStore(res?.contactAddressDistrictId)), ""));
+                setSubDistrictOptions(
+                    selectBoxOptions(new DataSource(subDistrictStore(res?.contactAddressDistrictId)), "")
+                );
             }
             if (res?.contactIdentFileUrlPath) {
                 getFile(res?.contactIdentFileUrlPath)
-                    .then(function (response) {
-                        setKtpSrc(response);
-                    })
-                    .catch((error: any) => {
-                        console.error('ERROR:: ', error);
-                    });
+                    .then(response => setKtpSrc(response))
+                    .catch(error => console.error("ERROR:: ", error));
             }
-
-            setContact(data);
+    
+            if (res?.contactIdentFileUrlSelfie) {
+                getFile(res.contactIdentFileUrlSelfie)
+                    .then(response => setSelfie(response))
+                    .catch(error => console.error("ERROR:: ", error));
+            }
+    
+            if (res?.contactRelatives) {
+                setContactRelatives(res?.contactRelatives);
+            }
         });
+    
+        const handleFetchEkycInfo = () => {
+            contactEkycInfo(contactId).then(res => {
+                const dataEkyc = {
+                    privyId: res.privyId,
+                    rejectReason: res.rejectReason,
+                    isResend: res.isResend?.toString(),
+                    referenceNumber: res.referenceNumber,
+                    createdOn: res.createdOn,
+                    completedOn: res.modifiedOn
+                };
+    
+                setContact(prevContact => ({ ...prevContact, ...dataEkyc }));
+            });
+        };
+    
+        handleFetchEkycInfo();
+    
+        const handleCheckEkyc = (intervalId: NodeJS.Timeout) => {
+            contactCheckEkyc(contactId).then((res) => {
+                setShowPopupCheckEkyc(res.isEkycWaiting);
+                setShowPopupError(res.isShowResult);
+                setReferenceNumber(res.referenceNumber);
+                setProcessWithoutEkyc(!res.isResend);
+    
+                if (res.message) {
+                    setErrorMessage(res.message);
+                }
+                if (!res.isEkycWaiting || res.isShowResult) {
+                    clearInterval(intervalId);
+                }
+                if (!res.isEkycWaiting && res.appId != null) {
+                    clearInterval(intervalId);
+                    navigate(`/loan-app/create/step/1/?id=${res.appId}&autoNext=false`);
+                }
+            });
+        };
+    
+        const intervalId = setInterval(() => {
+            handleCheckEkyc(intervalId);
+        }, 5000);
+    
+        handleCheckEkyc(intervalId);
+    
+        return () => clearInterval(intervalId);
     }, [id]);
-
-    const onFileChanged = (e: any) => {
+    
+    const onFileChanged = async (e: any, type: "KTP" | "SELFIE") => {
         if (e.value.length > 0) {
-            // const fileReader = new FileReader();
-            // fileReader.onload = () => {
-            //     setKtpSrc(fileReader.result);
-            // };
-            // fileReader.readAsDataURL(e.value[0]);
-            try {
-                Resizer.imageFileResizer(
-                    e.value[0],
-                    1772,
-                    1181,
-                    "JPEG",
-                    100,
-                    0,
-                    (uri) => {
-                        setKtpSrc(uri);
-                    },
-                    "base64",
-                    900,
-                    400
-                );
-            } catch (err) {
-                console.log(err);
+            const uri = await resizeImage(e.value[0]);
+            if (type === "KTP") {
+                setKtpSrc(uri);
+            } else {
+                setSelfie(uri);
             }
         }
-    }
+    };
 
-    const uploadKtpOptions = {
+    const commonPropsUpload = {
         selectButtonText: "Select photo",
         accept: "image/*",
-        uploadMode: "useForm",
-        onValueChanged: onFileChanged
-    }
+        uploadMode: "useForm"
+    };
 
+    const uploadKtpOptions = {
+        ...commonPropsUpload,
+        onValueChanged: (e: any) => onFileChanged(e, "KTP")
+    };
+
+    const uploadPhotoSelfieOptions = {
+        ...commonPropsUpload,
+        onValueChanged: (e: any) => onFileChanged(e, "SELFIE")
+    };
 
     const onFieldDataChanged = (evt: any) => {
         if (evt.dataField === "idCountry" && evt.value != null) {
@@ -188,50 +295,92 @@ export default function EditPage() {
         if (evt.dataField === "districtId" && evt.value != null) {
             setSubDistrictOptions(selectBoxOptions(new DataSource(subDistrictStore(evt.value)), ""));
         }
+
         contact[evt.dataField] = evt.value;
-    }
+    };
 
     const asyncValidationIdNumber = (params: any) => {
         const request = {
             phoneNumber: params.value,
-            contactId: id,
+            contactId: id
         };
         return validateIdNumber(request);
-    }
+    };
 
     const asyncValidationPhoneNumber = (params: any) => {
         const request = {
             phoneNumber: params.value,
-            contactId: id,
+            contactId: id
         };
         return validatePhone(request);
-    }
+    };
 
     const asyncValidationEmail = (params: any) => {
         const request = {
             email: params.value,
-            contactId: id,
+            contactId: id
         };
         return validateEmail(request);
+    };
+
+
+    const onFieldAppDataChanged = (evt: any) => {
+        if (evt.dataField === "branchId" && evt.value != null) {
+            setComboProductOptions(selectBoxOptions(
+                new DataSource(getActiveProductByBranch(evt.value)),
+                "Select product"
+            ));
+        }
+
+        if (evt.dataField === "productId" && evt.value != null) {
+            setProductOptions(evt.value);
+        }
+        loanAppOnboarding[evt.dataField] = evt.value;
+    };
+
+    const handleProcessWithoutEkyc = (e: any) => {
+        const contactId = String(id);
+        const form = formAppRef.current!.instance;
+        const payload = {
+            contactId: contactId,
+            contactIdentity: contact.idNumber,
+            branchId: loanAppOnboarding.branchId,
+            productId: loanAppOnboarding.productId,
+        }
+
+        console.log('request create app ', payload);
+        processWithoutEkyc(payload)
+            .then(res => {
+                if (res.appId) {
+                    setPopupCreateApp(false);
+                    navigate(`/loan-app/create/step/1/?id=${res.appId}&autoNext=false`);
+                }
+            })
+            .catch(error => {
+                notifyError(error.message);
+            });
+        e.preventDefault();
     }
 
-    const backButtonOptions = {
-        icon: 'back',
-        text: "Kembali",
-        onClick: () => {
-            navigate(-1);
-        },
+    const handleBack = () => {
+        navigate(`/contact`);
     };
-    return (<>
-        <h2 className={'content-block'}>Detail Contact</h2>
-        <div className={'content-block'}>
-            <Title.Toolbar className={'dx-card'}>
-                <Title.Item location="before"
-                            widget="dxButton"
-                            options={backButtonOptions}/>
-            </Title.Toolbar>
-            <div className={'dx-card responsive-paddings'}>
-                <form action="update=register" onSubmit={handleSubmit}>
+
+    const backButtonOptions = {
+        icon: "back",
+        text: "Kembali",
+        onClick: handleBack
+    };
+
+    return (
+        <>
+            <div className={"content-block"}>
+                <h2>Detail Contact</h2>
+                <Title.Toolbar className={"dx-card"}>
+                    <Title.Item location="before" widget="dxButton" options={backButtonOptions}/>
+                </Title.Toolbar>
+
+                <form className="form__tabs" action="update=register" onSubmit={handleSubmit}>
                     <Form
                         colCount={2}
                         id="form"
@@ -241,188 +390,415 @@ export default function EditPage() {
                         validationGroup="contactData"
                         onFieldDataChanged={onFieldDataChanged}
                     >
-
-                        <GroupItem colSpan={2}>
+                        <GroupItem colSpan={2} cssClass={"dx-card responsive-paddings next-card"}>
                             <GroupItem caption="Personal Data" colCount={2}>
-                                <SimpleItem dataField="idNumber" label={{text: "KTP Number"}}
-                                            editorOptions={{
-                                                min: 0,
-                                                maxLength: 20,
-                                                onKeyDown: (e: any) => {
-                                                    const key = e.event.key;
-                                                    e.value = String.fromCharCode(e.event.keyCode);
-                                                    if (!/[0-9]/.test(e.value) && key !== "Backspace" && key !== "Delete") e.event.preventDefault();
-                                                },
-                                            }}>
+                                <SimpleItem
+                                    dataField="idNumber"
+                                    label={{text: "KTP Number"}}
+                                    editorOptions={{
+                                        min: 16,
+                                        maxLength: 16,
+                                        onKeyDown: (e: any) => {
+                                            const key = e.event.key;
+                                            e.value = String.fromCharCode(e.event.keyCode);
+                                            if (!/[0-9]/.test(e.value) && key !== "Backspace" && key !== "Delete")
+                                                e.event.preventDefault();
+                                        }
+                                    }}
+                                >
                                     <RequiredRule message="KTP Number is required"/>
                                     <AsyncRule
                                         message="KTP Number is already registered"
-                                        validationCallback={asyncValidationIdNumber}/>
-                                    <PatternRule
-                                        message="Only number on KTP Number"
-                                        pattern={/^[0-9]+$/}
+                                        validationCallback={asyncValidationIdNumber}
                                     />
+                                    <PatternRule message="Only number on KTP Number" pattern={/^[0-9]+$/}/>
                                 </SimpleItem>
                                 <SimpleItem dataField="nameBorrower" label={{text: "Name"}}>
                                     <RequiredRule message="Name is required"/>
-                                    <PatternRule message="Do not use digits in the Name"
-                                                 pattern={/^[^0-9]+$/}/>
+                                    <PatternRule message="Do not use digits in the Name" pattern={/^[^0-9]+$/}/>
                                 </SimpleItem>
                                 <SimpleItem dataField="birthPlace" label={{text: "Place of Birth"}}>
                                     <RequiredRule message="Place of birth is required"/>
                                 </SimpleItem>
-                                <SimpleItem dataField="birthDate" label={{text: "Date of Birth"}}
-                                            editorType="dxDateBox" editorOptions={{
-                                    type: "date",
-                                    pickerType: "calender",
-                                    displayFormat: "dd/MM/yyyy",
-                                }}>
+                                <SimpleItem
+                                    dataField="birthDate"
+                                    label={{text: "Date of Birth"}}
+                                    editorType="dxDateBox"
+                                    editorOptions={{
+                                        type: "date",
+                                        pickerType: "calender",
+                                        displayFormat: "dd/MM/yyyy"
+                                    }}
+                                >
                                     <RequiredRule message="Date of birth is required"/>
                                 </SimpleItem>
-                                <SimpleItem dataField="idGender"
-                                            label={{text: "Gender"}}
-                                            editorType="dxSelectBox" editorOptions={genderOptions}
+                                <SimpleItem
+                                    dataField="idGender"
+                                    label={{text: "Gender"}}
+                                    editorType="dxSelectBox"
+                                    editorOptions={genderOptions}
                                 >
                                     <RequiredRule message="Gender is required"/>
                                 </SimpleItem>
-                                <SimpleItem dataField="idReligion"
-                                            editorType="dxSelectBox" editorOptions={religionOptions}
-                                            label={{text: "Religion"}}>
+                                <SimpleItem
+                                    dataField="idReligion"
+                                    editorType="dxSelectBox"
+                                    editorOptions={religionOptions}
+                                    label={{text: "Religion"}}
+                                >
                                     <RequiredRule message="Religion is required"/>
                                 </SimpleItem>
-                                <SimpleItem dataField="idEducation"
-                                            editorType="dxSelectBox" editorOptions={educationOptions}
-                                            label={{text: "Last Education"}}>
+                                <SimpleItem
+                                    dataField="idEducation"
+                                    editorType="dxSelectBox"
+                                    editorOptions={educationOptions}
+                                    label={{text: "Last Education"}}
+                                >
                                     <RequiredRule message="Last education is required"/>
                                 </SimpleItem>
-                                <SimpleItem dataField="idMarital"
-                                            editorType="dxSelectBox" editorOptions={maritalStatusOptions}
-                                            label={{text: "Marital Status"}}>
+                                <SimpleItem
+                                    dataField="idMarital"
+                                    editorType="dxSelectBox"
+                                    editorOptions={maritalStatusOptions}
+                                    label={{text: "Marital Status"}}
+                                >
                                     <RequiredRule message="Marital status is required"/>
                                 </SimpleItem>
                                 <SimpleItem dataField="motherMaidenName" label={{text: "Mother Maiden Name"}}>
                                     <RequiredRule message="Mother maiden name is required"/>
                                 </SimpleItem>
-                                <SimpleItem dataField="lengthOfJob" editorType="dxNumberBox" editorOptions={{min: 0}}
-                                            label={{text: "Length of Job"}}>
+                                <SimpleItem
+                                    dataField="lengthOfJob"
+                                    editorType="dxNumberBox"
+                                    editorOptions={{min: 0}}
+                                    label={{text: "Length of Job"}}
+                                >
                                     <RequiredRule message="Length of job is required"/>
                                 </SimpleItem>
-                                <SimpleItem dataField="mobilePhone" label={{text: "Mobile Phone Number"}}
-                                            editorOptions={{
-                                                min: 0,
-                                                maxLength: 15,
-                                                onKeyDown: (e: any) => {
-                                                    const key = e.event.key;
-                                                    e.value = String.fromCharCode(e.event.keyCode);
-                                                    if (!/[0-9]/.test(e.value) && key !== "Backspace" && key !== "Delete") e.event.preventDefault();
-                                                }
-                                            }}>
+                                <SimpleItem
+                                    dataField="mobilePhone"
+                                    label={{text: "Mobile Phone Number"}}
+                                    editorOptions={{
+                                        min: 0,
+                                        maxLength: 14,
+                                        onKeyDown: (e: any) => {
+                                            const key = e.event.key;
+                                            e.value = String.fromCharCode(e.event.keyCode);
+                                            if (!/[0-9]/.test(e.value) && key !== "Backspace" && key !== "Delete")
+                                                e.event.preventDefault();
+                                        }
+                                    }}
+                                >
                                     <RequiredRule message="Mobile phone is required"/>
                                     <AsyncRule
                                         message="Mobile phone is already registered"
-                                        validationCallback={asyncValidationPhoneNumber}/>
-                                    <PatternRule
-                                        message="Only number on Mobile phone"
-                                        pattern={/^[0-9]+$/}
+                                        validationCallback={asyncValidationPhoneNumber}
                                     />
+                                    <PatternRule message="Only number on Mobile phone" pattern={/^[0-9]+$/}/>
                                 </SimpleItem>
-                                <SimpleItem dataField="email" label={{text: "Email Address"}}>
+                                <SimpleItem
+                                    dataField="email"
+                                    label={{text: "Email"}}
+                                    editorOptions={{
+                                        min: 0,
+                                        maxLength: 32
+                                    }}
+                                >
                                     <AsyncRule
                                         message="Email is already registered"
-                                        validationCallback={asyncValidationEmail}/>
+                                        validationCallback={asyncValidationEmail}
+                                    />
                                 </SimpleItem>
-                                <SimpleItem dataField="ktpImage" editorType="dxFileUploader"
-                                            editorOptions={uploadKtpOptions} label={{text: "KTP Image"}}>
-                                </SimpleItem>
-                            </GroupItem>
-                            <GroupItem colSpan={2}>
-                                {ktpSrc && <Item><img id="dropzone-ktp" src={ktpSrc} alt="ktp" width={"240px"}/></Item>}
+                                <SimpleItem
+                                    dataField="ktpImage"
+                                    editorType={"dxFileUploader" as any}
+                                    editorOptions={uploadKtpOptions}
+                                    label={{text: "KTP Image"}}
+                                ></SimpleItem>
+                                <SimpleItem
+                                    dataField="selfie"
+                                    editorType={"dxFileUploader" as any}
+                                    editorOptions={uploadPhotoSelfieOptions}
+                                    label={{text: "Selfie Photo"}}
+                                ></SimpleItem>
+
+                                <Item>
+                                    {ktpSrc && <img id="dropzone-ktp" src={ktpSrc} alt="ktp" width="240px"/>}
+                                </Item>
+                                <Item>{selfie && <img src={selfie} alt="selfie-photo" width="240px"/>}</Item>
                             </GroupItem>
                         </GroupItem>
-                        <GroupItem colSpan={2}>
-                            <GroupItem caption="Home Address"
-                                       name="HomeAddress" colCount={2}>
-                                <SimpleItem dataField="livingAddressStatus"
-                                            editorType="dxSelectBox" editorOptions={ownerStatusOptions}
-                                            label={{text: "Living Address Status"}}>
+                        <GroupItem colSpan={2} cssClass={"dx-card responsive-paddings next-card"}>
+                            <GroupItem caption="EKYC Information" colCount={2}>
+                                <SimpleItem 
+                                    dataField="referenceNumber" 
+                                    label={{text: "Reference Number"}} 
+                                    editorOptions={{
+                                        readOnly: true,
+                                    }} 
+                                />
+                                <SimpleItem 
+                                    dataField="privyId" 
+                                    label={{text: "Privy Id"}} 
+                                    editorOptions={{
+                                        readOnly: true,
+                                    }} 
+                                />
+                                <SimpleItem 
+                                    dataField="createdOn" 
+                                    label={{text: "Created On"}} 
+                                    editorOptions={{
+                                        displayFormat: "dd MMM yyyy HH:mm:ss",
+                                        type: "datetime",
+                                        readOnly: true
+                                      }}
+                                    editorType="dxDateBox"
+                                />
+                                <SimpleItem 
+                                    dataField="completedOn" 
+                                    label={{text: "Completed On"}} 
+                                    editorOptions={{
+                                        displayFormat: "dd MMM yyyy HH:mm:ss",
+                                        type: "datetime",
+                                        readOnly: true
+                                    }}
+                                    editorType="dxDateBox"
+                                />
+                                <SimpleItem 
+                                    dataField="rejectReason" 
+                                    label={{text: "Reject Reason"}} 
+                                    cssClass="reject-reason"
+                                    editorOptions={{
+                                        readOnly: true,
+                                    }} 
+                                />
+                                <SimpleItem 
+                                    dataField="isResend" 
+                                    label={{text: "Retryable"}} 
+                                    editorOptions={{
+                                        readOnly: true,
+                                    }} 
+                                    editorType="dxTextBox"
+                                />
+                            </GroupItem>
+                        </GroupItem>
+                        <GroupItem colSpan={2} cssClass={"dx-card responsive-paddings next-card"}>
+                            <GroupItem caption="Home Address" name="HomeAddress" colCount={2}>
+                                <SimpleItem
+                                    dataField="livingAddressStatus"
+                                    editorType="dxSelectBox"
+                                    editorOptions={ownerStatusOptions}
+                                    label={{text: "Living Address Status"}}
+                                >
                                     <RequiredRule message="Living address status is required"/>
                                 </SimpleItem>
-                                <SimpleItem dataField="idCountry"
-                                            editorType="dxSelectBox" editorOptions={countryOptions}
-                                            label={{text: "Country"}}/>
-                                <SimpleItem dataField="idProvince"
-                                            editorType="dxSelectBox" editorOptions={proviceOptions}
-                                            label={{text: "Province"}}>
+                                <SimpleItem
+                                    dataField="idCountry"
+                                    editorType="dxSelectBox"
+                                    editorOptions={countryOptions}
+                                    label={{text: "Country"}}
+                                />
+                                <SimpleItem
+                                    dataField="idProvince"
+                                    editorType="dxSelectBox"
+                                    editorOptions={proviceOptions}
+                                    label={{text: "Province"}}
+                                >
                                     <RequiredRule message="Province is required"/>
                                 </SimpleItem>
-                                <SimpleItem dataField="idCity"
-                                            editorType="dxSelectBox" editorOptions={cityOptions}
-                                            label={{text: "City"}}>
+                                <SimpleItem
+                                    dataField="idCity"
+                                    editorType="dxSelectBox"
+                                    editorOptions={cityOptions}
+                                    label={{text: "City"}}
+                                >
                                     <RequiredRule message="City is required"/>
                                 </SimpleItem>
                                 <SimpleItem dataField="address" editorType="dxTextArea" label={{text: "Address"}}>
                                     <RequiredRule message="Address is required"/>
                                 </SimpleItem>
-                                <SimpleItem dataField="districtId"
-                                            editorType="dxSelectBox" editorOptions={districtOptions}
-                                            label={{text: "District"}}/>
-                                <SimpleItem dataField="subdistrictId"
-                                            editorType="dxSelectBox" editorOptions={subDistrictOptions}
-                                            label={{text: "Sub District"}}/>
-                                <SimpleItem dataField="postalCode" editorOptions={{
-                                    min: 0,
-                                    maxLength: 5,
-                                    onKeyDown: (e: any) => {
-                                        const key = e.event.key;
-                                        e.value = String.fromCharCode(e.event.keyCode);
-                                        if (!/[0-9]/.test(e.value) && key !== "Backspace" && key !== "Delete") e.event.preventDefault();
-                                    }
-                                }}
-                                            label={{text: "Postal Code"}}/>
-                                <SimpleItem dataField="neighborhoodUnit"
-                                            editorOptions={{
-                                                min: 0,
-                                                maxLength: 4,
-                                                onKeyDown: (e: any) => {
-                                                    const key = e.event.key;
-                                                    e.value = String.fromCharCode(e.event.keyCode);
-                                                    if (!/[0-9]/.test(e.value) && key !== "Backspace" && key !== "Delete") e.event.preventDefault();
-                                                }
-                                            }} label={{text: "RT"}}/>
-                                <SimpleItem dataField="communityUnit"
-                                            editorOptions={{
-                                                min: 0,
-                                                maxLength: 4,
-                                                onKeyDown: (e: any) => {
-                                                    const key = e.event.key;
-                                                    e.value = String.fromCharCode(e.event.keyCode);
-                                                    if (!/[0-9]/.test(e.value) && key !== "Backspace" && key !== "Delete") e.event.preventDefault();
-                                                }
-                                            }}
-                                            label={{text: "RW"}}/>
+                                <SimpleItem
+                                    dataField="districtId"
+                                    editorType="dxSelectBox"
+                                    editorOptions={districtOptions}
+                                    label={{text: "District"}}
+                                />
+                                <SimpleItem
+                                    dataField="subdistrictId"
+                                    editorType="dxSelectBox"
+                                    editorOptions={subDistrictOptions}
+                                    label={{text: "Sub District"}}
+                                />
+                                <SimpleItem
+                                    dataField="postalCode"
+                                    editorOptions={{
+                                        min: 0,
+                                        maxLength: 5,
+                                        onKeyDown: (e: any) => {
+                                            const key = e.event.key;
+                                            e.value = String.fromCharCode(e.event.keyCode);
+                                            if (!/[0-9]/.test(e.value) && key !== "Backspace" && key !== "Delete")
+                                                e.event.preventDefault();
+                                        }
+                                    }}
+                                    label={{text: "Postal Code"}}
+                                />
+                                <SimpleItem
+                                    dataField="neighborhoodUnit"
+                                    editorOptions={{
+                                        min: 0,
+                                        maxLength: 4,
+                                        onKeyDown: (e: any) => {
+                                            const key = e.event.key;
+                                            e.value = String.fromCharCode(e.event.keyCode);
+                                            if (!/[0-9]/.test(e.value) && key !== "Backspace" && key !== "Delete")
+                                                e.event.preventDefault();
+                                        }
+                                    }}
+                                    label={{text: "RT"}}
+                                />
+                                <SimpleItem
+                                    dataField="communityUnit"
+                                    editorOptions={{
+                                        min: 0,
+                                        maxLength: 4,
+                                        onKeyDown: (e: any) => {
+                                            const key = e.event.key;
+                                            e.value = String.fromCharCode(e.event.keyCode);
+                                            if (!/[0-9]/.test(e.value) && key !== "Backspace" && key !== "Delete")
+                                                e.event.preventDefault();
+                                        }
+                                    }}
+                                    label={{text: "RW"}}
+                                />
                             </GroupItem>
                         </GroupItem>
-                        <ButtonItem horizontalAlignment="left"
-                                    buttonOptions={{
-                                        text: 'Update Contact',
-                                        type: 'success',
-                                        useSubmitBehavior: true,
+                        <GroupItem colSpan={2} cssClass={"dx-card responsive-paddings next-card"}>
+                            <GroupItem caption="Additional Information" name="AdditionalInformation" colCount={2}>
+                                <SimpleItem dataField="typeOfGood" label={{text: "Jenis Barang"}}>
+                                    <RequiredRule message="Jenis Barang wajib diisi"/>
+                                </SimpleItem>
+                                <SimpleItem
+                                    dataField="salesChannelId"
+                                    label={{text: "Sales Channel"}}
+                                    editorType={"dxSelectBox"}
+                                    editorOptions={salesChannelOptions}
+                                />
+                                <SimpleItem dataField="marketAddress" label={{text: "Market Address"}}>
+                                    <RequiredRule message="Alamat pasar wajib diisi"/>
+                                </SimpleItem>
+                            </GroupItem>
+                        </GroupItem>
+                        <GroupItem colSpan={2} cssClass={"dx-card responsive-paddings next-card"}>
+                            <GroupItem caption="Contact Relative" name="ContactRelative" colCount={2}>
+                                <DataGrid
+                                    dataSource={contactRelatives}
+                                    remoteOperations={true}
+                                    columnAutoWidth={true}
+                                    wordWrapEnabled={false}
+                                    showBorders={true}
+                                    dateSerializationFormat={"yyyy-MM-ddTHH:mm:ss.SSSxxx"}
+                                    repaintChangesOnly={true}
+                                    editing={{
+                                        mode: "popup",
+                                        allowUpdating: true,
+                                        allowAdding: true,
+                                        allowDeleting: true,
+                                        popup: {
+                                            title: "Relative Contact",
+                                            showTitle: true,
+                                            width: "40%",
+                                            height: 360
+                                        },
+                                        form: {
+                                            colCount: 1,
+                                            items: [
+                                                {
+                                                    dataField: "typeId",
+                                                    editorType: "dxSelectBox",
+                                                    editorOptions: relativeOptions,
+                                                    isRequired: true
+                                                },
+                                                {
+                                                    dataField: "name",
+                                                    editorOptions: {
+                                                        min: 0,
+                                                        maxLength: 150,
+                                                        onKeyDown: (e: any) => {
+                                                            const key = e.event.key;
+                                                            e.value = String.fromCharCode(e.event.keyCode);
+                                                            if (
+                                                                !/[A-Za-z]/.test(e.value) &&
+                                                                key !== " " &&
+                                                                key !== "Backspace" &&
+                                                                key !== "Delete"
+                                                            )
+                                                                e.event.preventDefault();
+                                                        }
+                                                    },
+                                                    isRequired: true
+                                                },
+                                                {
+                                                    dataField: "phone",
+                                                    editorOptions: {
+                                                        min: 0,
+                                                        maxLength: 14,
+                                                        onKeyDown: (e: any) => {
+                                                            const key = e.event.key;
+                                                            e.value = String.fromCharCode(e.event.keyCode);
+                                                            if (
+                                                                !/[0-9]/.test(e.value) &&
+                                                                key !== "Backspace" &&
+                                                                key !== "Delete"
+                                                            ) {
+                                                                e.event.preventDefault();
+                                                            }
+                                                        }
+                                                    },
+                                                    isRequired: true
+                                                }
+                                            ]
+                                        }
                                     }}
-                        />
+                                >
+                                    <Scrolling showScrollbar={"always"}/>
+
+                                    <Column dataField={"typeId"} caption={"Relation"}>
+                                        <Lookup dataSource={contactRelativeStore} displayExpr="name" valueExpr="id"/>
+                                    </Column>
+                                    <Column dataField={"name"} caption={"Nama"}/>
+                                    <Column dataField={"phone"} caption={"Telepon No."} />
+                                    <Paging defaultPageSize={50}/>
+                                    <Pager
+                                        showPageSizeSelector={true}
+                                        showInfo={true}
+                                        allowedPageSizes={[10, 50, 100]}
+                                    />
+                                </DataGrid>
+                            </GroupItem>
+                        </GroupItem>
+                        <ButtonItem horizontalAlignment="left">
+                            <ButtonOptions type="success" disabled={isLoadingUpdate} useSubmitBehavior>
+                                <div className="button-options">
+                                    <LoadIndicator width="20px" height="20px" visible={isLoadingUpdate}/>
+                                    <span className="dx-button-text">Update Contact</span>
+                                </div>
+                            </ButtonOptions>
+                        </ButtonItem>
                     </Form>
                 </form>
-                <div className="form__tabs">
+                
+                <div className="form__tabs dx-card responsive-paddings next-card">
                     <Form>
                         <TabbedItem
                             tabPanelOptions={{
                                 scrollByContent: true,
-                                showNavButtons: true,
+                                showNavButtons: true
                             }}
                         >
                             <Tab title="Application">
                                 <DataGrid
                                     dataSource={[]}
-                                    // focusedRowEnabled={true}
                                     remoteOperations={true}
                                     columnAutoWidth={true}
                                     wordWrapEnabled={false}
@@ -446,7 +822,6 @@ export default function EditPage() {
                             <Tab title="Disbursement">
                                 <DataGrid
                                     dataSource={[]}
-                                    // focusedRowEnabled={true}
                                     remoteOperations={true}
                                     columnAutoWidth={true}
                                     wordWrapEnabled={false}
@@ -470,7 +845,6 @@ export default function EditPage() {
                             <Tab title="Repayment">
                                 <DataGrid
                                     dataSource={[]}
-                                    // focusedRowEnabled={true}
                                     remoteOperations={true}
                                     columnAutoWidth={true}
                                     wordWrapEnabled={false}
@@ -491,10 +865,124 @@ export default function EditPage() {
                                     />
                                 </DataGrid>
                             </Tab>
+                            <Tab title="Contact Activity">
+                                <ContactActivity contactId={id as string}/>
+                            </Tab>
                         </TabbedItem>
                     </Form>
                 </div>
             </div>
-        </div>
-    </>)
+
+            <Popup width={360} height={"auto"} visible={isShowPopupCheckEkyc} showTitle={false}>
+                <div className="wrapper-popup-waiting">
+                    <Loader/>
+                    <h5 className="title" style={{ marginBottom: 0, marginTop: "1rem" }}>Mohon tunggu sedang dilakukan verifikasi data</h5>
+                    {referenceNumber && (
+                        <div className="card-reference-number">
+                            <p style={{ textAlign: "center" }}>Privy reference number: <span style={{ fontWeight: 500 }}>{referenceNumber}</span></p>
+                        </div>
+                    )}
+                    <Button text="Kembali" type="normal" onClick={handleBack}/>
+                </div>
+            </Popup>
+
+            <Popup width={360} height={"auto"} visible={isShowPopupError} showTitle={false}>
+                <div className="popup-error">
+                    <img src="/assets/images/ic_error.png" width={80} height={80} alt="Error"/>
+                    <div className="card">
+                        <ul>
+                            {errorMessage.map((item, index) => (
+                                <li key={index}>{item}</li>
+                            ))}
+                        </ul>
+                    </div>
+                    <div style={{ display: "flex", gap: "10px" }}>
+                        <Button text="Tutup" type="normal" onClick={() => setShowPopupError(false)}/>
+                        <Button visible={isProcessWithoutEkyc} text="Proses Tanpa EKYC" type="default" onClick={()=>{
+                            setShowPopupError(false);
+                            setPopupCreateApp(true);}
+                        }/>
+                    </div>
+                </div>
+            </Popup>
+
+            <Popup
+                width={360}
+                height={320}
+                visible={isPopupCreateApp}
+                title="Aplikasi baru"
+            >
+                <form onSubmit={handleProcessWithoutEkyc}>
+                    <Form
+                        ref={formAppRef}
+                        id="form"
+                        showColonAfterLabel={true}
+                        showValidationSummary={true}
+                        validationGroup="OnboardingApplicationData"
+                        onFieldDataChanged={onFieldAppDataChanged}
+                    >
+                        <SimpleItem
+                            dataField="branchId"
+                            label={{text: "Branch"}}
+                            editorType="dxSelectBox"
+                            editorOptions={getBranchByUser}
+                        >
+                            <RequiredRule message="Branch is required"/>
+                        </SimpleItem>
+                        <SimpleItem
+                            dataField="productId"
+                            label={{text: "Product"}}
+                            editorType="dxSelectBox"
+                            editorOptions={productComboOptions}
+                        >
+                            <RequiredRule message="Product is required"/>
+                        </SimpleItem>
+                        <SimpleItem
+                            dataField="contactIdentity"
+                            label={{text: "Nomor KTP"}}
+                            editorOptions={{
+                                min: 16,
+                                maxLength: 16,
+                                readOnly: true,
+                                value: (contact.idNumber || ""),
+                                onKeyDown: (e: any) => {
+                                    const key = e.event.key;
+                                    e.value = String.fromCharCode(e.event.keyCode);
+                                    if (
+                                        !/[0-9]/.test(e.value) &&
+                                        key !== "Control" && key !== "v" &&
+                                        key !== "Backspace" &&
+                                        key !== "Delete"
+                                    )
+                                        e.event.preventDefault();
+                                },
+                            }}
+                        >
+                            <RequiredRule message="KTP Number is required"/>
+                            <AsyncRule
+                                message="KTP Number is not registered"
+                                validationCallback={asyncValidationIdNumber}
+                            />
+                            <StringLengthRule
+                                min={16}
+                                message="KTP tidak kurang dar 16 karakter"
+                            />
+                            <PatternRule
+                                message="KTP hanya angka"
+                                pattern={/^[0-9]+$/}
+                            />
+                        </SimpleItem>
+                        <ButtonItem
+                            horizontalAlignment="left"
+                            buttonOptions={{
+                                text: "Submit",
+                                type: "success",
+                                useSubmitBehavior: true,
+                            }}
+                        />
+                    </Form>
+                </form>
+            </Popup>
+        </>
+    );
 }

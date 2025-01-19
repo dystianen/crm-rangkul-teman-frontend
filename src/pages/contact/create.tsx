@@ -1,16 +1,28 @@
-import React, {useEffect, useRef, useState} from "react";
+import {DataGrid, LoadIndicator} from "devextreme-react";
+import {Column, Lookup, Pager, Paging, Scrolling} from "devextreme-react/data-grid";
+import "devextreme-react/date-box";
+import "devextreme-react/file-uploader";
 import Form, {
+    AsyncRule,
     ButtonItem,
+    ButtonOptions,
     GroupItem,
     Item,
     PatternRule,
     RequiredRule,
-    SimpleItem,
-    AsyncRule,
+    SimpleItem
 } from "devextreme-react/form";
+import * as Title from "devextreme-react/toolbar";
+import DataSource from "devextreme/data/data_source";
+import notify from "devextreme/ui/notify";
+import queryString from "query-string";
+import {useEffect, useRef, useState} from "react";
+import {useNavigate} from "react-router";
+import {useLocation} from "react-router-dom";
 import {
     addressOwnershipStore,
     cityStore,
+    contactRelativeStore,
     countryStore,
     createContact,
     districtStore,
@@ -19,56 +31,46 @@ import {
     maritalStatusStore,
     provinceStore,
     religionStore,
+    salesChannelStore,
     selectBoxOptions,
     subDistrictStore,
     validateEmail,
     validateIdNumber,
-    validatePhone,
+    validatePhone
 } from "src/api/contact";
-import DataSource from "devextreme/data/data_source";
-import "devextreme-react/file-uploader";
-import "./contact.scss";
-import {ContactRequest, initContactValue} from "src/interfaces/contactDto";
+import {ContactRelativeDto, ContactRequest, initContactValue} from "src/interfaces/contactDto";
 import {formatDate} from "src/utils/dateUtils";
-import notify from "devextreme/ui/notify";
-import Resizer from "react-image-file-resizer";
-import {useNavigate} from "react-router";
-import {useLocation} from "react-router-dom";
-import queryString from "query-string";
-import * as Title from "devextreme-react/toolbar";
-import "devextreme-react/date-box";
-import {createAppLoanOnboarding} from "../../api/apploan";
+import resizeImage from "src/utils/resizeImage.util";
+import {createAppTemp} from "../../api/apploan";
+import "./contact.scss";
+import { notifyError } from "src/utils/devExtremeUtils";
 
 export default function Create() {
     const navigate = useNavigate();
     const location = useLocation();
     const {ktp, branchId, productId, backTo} = queryString.parse(location.search);
     const [contact, setContact] = useState<ContactRequest>(initContactValue);
-    const [ktpSrc, setKtpSrc] = useState<any>(undefined);
+    const [ktpSrc, setKtpSrc] = useState("");
+    const [selfie, setSelfie] = useState("");
     const formRef = useRef<Form>(null);
     const [birthDate, setBirthDate] = useState(new Date(1989, 12, 1));
-    const [isLoading, setLoading] = useState(false);
+    const [contactRelatives] = useState<ContactRelativeDto[]>([]);
+    const [isLoadingCreate, setLoadingCreate] = useState(false);
 
-    const genderOptions = selectBoxOptions(
-        new DataSource(genderStore),
-        "Select gender"
+    const salesChannelOptions = selectBoxOptions(
+        new DataSource(salesChannelStore),
+        "Select Sales channel"
     );
-    const religionOptions = selectBoxOptions(
-        new DataSource(religionStore),
-        "Select religion"
-    );
-    const educationOptions = selectBoxOptions(
-        new DataSource(educationStore),
-        "Select education"
-    );
+    const relativeOptions = selectBoxOptions(new DataSource(contactRelativeStore), "Select Relation");
+
+    const genderOptions = selectBoxOptions(new DataSource(genderStore), "Select gender");
+    const religionOptions = selectBoxOptions(new DataSource(religionStore), "Select religion");
+    const educationOptions = selectBoxOptions(new DataSource(educationStore), "Select education");
     const maritalStatusOptions = selectBoxOptions(
         new DataSource(maritalStatusStore),
         "Select marital status"
     );
-    const ownerStatusOptions = selectBoxOptions(
-        new DataSource(addressOwnershipStore),
-        ""
-    );
+    const ownerStatusOptions = selectBoxOptions(new DataSource(addressOwnershipStore), "");
     const countryOptions = selectBoxOptions(new DataSource(countryStore), "");
 
     const [proviceOptions, setProvinceOptions] = useState({});
@@ -80,99 +82,106 @@ export default function Create() {
             navigate("/contact");
         }
     }, [ktp, navigate]);
-    const onFileChanged = (e: any) => {
+
+    const onFileChanged = async (e: any, type: "KTP" | "SELFIE") => {
         if (e.value.length > 0) {
-            try {
-                Resizer.imageFileResizer(
-                    e.value[0],
-                    1772,
-                    1181,
-                    "JPEG",
-                    100,
-                    0,
-                    (uri) => {
-                        setKtpSrc(uri);
-                    },
-                    "base64",
-                    900,
-                    400
-                );
-            } catch (err) {
-                console.log(err);
+            const uri = await resizeImage(e.value[0]);
+            if (type === "KTP") {
+                setKtpSrc(uri);
+            } else {
+                setSelfie(uri);
             }
         }
     };
 
-    const uploadKtpOptions = {
+    const commonPropsUpload = {
         selectButtonText: "Select photo",
         accept: "image/*",
-        uploadMode: "useForm",
-        onValueChanged: onFileChanged,
+        uploadMode: "useForm"
+    };
+
+    const uploadKtpOptions = {
+        ...commonPropsUpload,
+        onValueChanged: (e: any) => onFileChanged(e, "KTP")
+    };
+
+    const uploadPhotoSelfieOptions = {
+        ...commonPropsUpload,
+        onValueChanged: (e: any) => onFileChanged(e, "SELFIE")
     };
 
     const handleSubmit = (e: any) => {
+        setLoadingCreate(true);
         const form = formRef.current!.instance;
-        const request = {
+        let request = {
             ...contact,
             birthDate: formatDate(birthDate),
             ktpImage: ktpSrc,
+            selfie,
             idNumber: ktp,
-            branchId: branchId
+            branchId: branchId,
+            contactRelatives: contactRelatives
         };
-        console.log("ex", request, ktp);
-        createContact(request).then(() => {
+
+        createContact(request).then((rest) => {
+            setLoadingCreate(false);
             setContact(initContactValue);
-            form.resetValues();
-            notify({
-                message: "Berhasil submit data",
-                position: {
-                    my: "center top",
-                    at: "center top",
+            form.clear();
+            notify(
+                {
+                    message: "Berhasil submit data",
+                    position: {
+                        my: "center top",
+                        at: "center top"
+                    }
                 },
-            }, "success", 3000);
+                "success",
+                15000
+            );
+
             if (backTo) {
-                createAppLoanOnboarding({
-                    branchId: branchId,
-                    productId: productId,
-                    contactIdentity: ktp,
-                }).then((res) => {
-                    navigate(`/loan-app/create/step/1/?id=${res.appId}`);
+                createAppTemp({
+                    branchId,
+                    productId,
+                    ktp,
+                    contactId: rest.id
+                }).then(() => {
+                    navigate(`/contact/edit?id=${rest.id}&ktp=${ktp}&branchId=${branchId}&productId=${productId}&backTo=step1`);
+                }).catch((error) => {
+                    notifyError(error.message)
                 });
             } else {
                 navigate("/contact");
             }
-        });
+        })
+            .catch((error) => {
+                setLoadingCreate(false);
+                notifyError(error.message)
+            });
         e.preventDefault();
     };
 
     const onFieldDataChanged = (evt: any) => {
         if (evt.dataField === "idCountry" && evt.value != null) {
-            setProvinceOptions(
-                selectBoxOptions(new DataSource(provinceStore(evt.value)), "")
-            );
+            setProvinceOptions(selectBoxOptions(new DataSource(provinceStore(evt.value)), ""));
         }
         if (evt.dataField === "idProvince" && evt.value != null) {
-            setCityOptions(
-                selectBoxOptions(new DataSource(cityStore(evt.value)), "")
-            );
+            setCityOptions(selectBoxOptions(new DataSource(cityStore(evt.value)), ""));
         }
         if (evt.dataField === "idCity" && evt.value != null) {
-            setDistrictOptions(
-                selectBoxOptions(new DataSource(districtStore(evt.value)), "")
-            );
+            setDistrictOptions(selectBoxOptions(new DataSource(districtStore(evt.value)), ""));
         }
         if (evt.dataField === "districtId" && evt.value != null) {
-            setSubDistrictOptions(
-                selectBoxOptions(new DataSource(subDistrictStore(evt.value)), "")
-            );
+            setSubDistrictOptions(selectBoxOptions(new DataSource(subDistrictStore(evt.value)), ""));
         }
+
         contact[evt.dataField] = evt.value;
     };
 
     const asyncValidationIdNumber = (params: any) => {
         const request = {
             idNumber: params.value,
-            contactId: "",
+            contactId: ""
         };
         return validateIdNumber(request);
     };
@@ -180,7 +189,7 @@ export default function Create() {
     const asyncValidationPhoneNumber = (params: any) => {
         const request = {
             phoneNumber: params.value,
-            contactId: "",
+            contactId: ""
         };
         return validatePhone(request);
     };
@@ -188,7 +197,7 @@ export default function Create() {
     const asyncValidationEmail = (params: any) => {
         const request = {
             email: params.value,
-            contactId: "",
+            contactId: ""
         };
         return validateEmail(request);
     };
@@ -198,350 +207,402 @@ export default function Create() {
         text: "Back",
         onClick: () => {
             navigate("/contact");
-        },
+        }
     };
     const onValueChanged = (e: any) => {
         setBirthDate(e.value);
     };
 
     return (
-        <>
-            <h2 className={"content-block"}>Create Contact</h2>
-            <div className={"content-block"}>
-                <Title.Toolbar>
-                    <Title.Item
-                        location="before"
-                        widget="dxButton"
-                        options={backButtonOptions}
-                    />
-                </Title.Toolbar>
-                <div className={"dx-card responsive-paddings"}>
-                    <form action="register" onSubmit={handleSubmit}>
-                        <Form
-                            ref={formRef}
-                            colCount={2}
-                            id="form"
-                            formData={contact}
-                            showColonAfterLabel={true}
-                            showValidationSummary={true}
-                            validationGroup="contactData"
-                            onFieldDataChanged={onFieldDataChanged}
-                        >
-                            <GroupItem colSpan={2}>
-                                <GroupItem caption="Personal Data" colCount={2}>
-                                    <SimpleItem
-                                        dataField="idNumber"
-                                        label={{text: "No.KTP"}}
-                                        editorOptions={{
-                                            min: 0,
-                                            maxLength: 20,
-                                            onKeyDown: (e: any) => {
-                                                const key = e.event.key;
-                                                e.value = String.fromCharCode(e.event.keyCode);
-                                                if (
-                                                    !/[0-9]/.test(e.value) &&
-                                                    key !== "Backspace" &&
-                                                    key !== "Delete"
-                                                )
-                                                    e.event.preventDefault();
-                                            },
-                                            value: ktp,
-                                            disabled: true,
-                                        }}
-                                    >
-                                        <RequiredRule message="No.KTP wajib diisi"/>
-                                        <AsyncRule
-                                            message="No.KTP sudah terdaftar"
-                                            validationCallback={asyncValidationIdNumber}
-                                        />
-                                        <PatternRule
-                                            message="Hanya boleh angka"
-                                            pattern={/^[0-9]+$/}
-                                        />
-                                    </SimpleItem>
-                                    <SimpleItem dataField="nameBorrower" label={{text: "Nama"}}
-                                    editorOptions={{
-                                        min: 0,
-                                        maxLength: 150,
-                                        onKeyDown: (e: any) => {
-                                            const key = e.event.key;
-                                            e.value = String.fromCharCode(e.event.keyCode);
-                                            if (
-                                                !/[A-Za-z]/.test(e.value) &&
-                                                key !== " " &&
-                                                key !== "Backspace" &&
-                                                key !== "Delete"
-                                            )
-                                                e.event.preventDefault();
-                                        },
-                                    }}
-                                    >
-                                        <RequiredRule message="Nama wajib diisi"/>
-                                        <PatternRule
-                                            message="Tidak boleh angka"
-                                            pattern={/^[^0-9]+$/}
-                                        />
-                                    </SimpleItem>
-                                    <SimpleItem
-                                        dataField="birthPlace"
-                                        label={{text: "Tempat lahir"}}
-                                    >
-                                        <RequiredRule message="Tempat lahir wajib diisi"/>
-                                    </SimpleItem>
-                                    <SimpleItem
-                                        dataField="birthDate"
-                                        label={{text: "Tanggal lahir"}}
-                                        editorType="dxDateBox"
-                                        editorOptions={{
-                                            value: birthDate,
-                                            type: "date",
-                                            pickerType: "calender",
-                                            displayFormat: "dd/MM/yyyy",
-                                            onValueChanged: onValueChanged,
-                                        }}
-                                    >
-                                        <RequiredRule message="Tanggal wajib diisi"/>
-                                    </SimpleItem>
-                                    <SimpleItem
-                                        dataField="idGender"
-                                        label={{text: "Jenis kelamin"}}
-                                        editorType="dxSelectBox"
-                                        editorOptions={genderOptions}
-                                    >
-                                        <RequiredRule message="Jenis kelamin wajib diisi"/>
-                                    </SimpleItem>
-                                    <SimpleItem
-                                        dataField="idReligion"
-                                        editorType="dxSelectBox"
-                                        editorOptions={religionOptions}
-                                        label={{text: "Agama"}}
-                                    >
-                                        <RequiredRule message="Agama wajib diisi"/>
-                                    </SimpleItem>
-                                    <SimpleItem
-                                        dataField="idEducation"
-                                        editorType="dxSelectBox"
-                                        editorOptions={educationOptions}
-                                        label={{text: "Pendidikan terakhir"}}
-                                    >
-                                        <RequiredRule message="Pendidikan terakhir wajib diisi"/>
-                                    </SimpleItem>
-                                    <SimpleItem
-                                        dataField="idMarital"
-                                        editorType="dxSelectBox"
-                                        editorOptions={maritalStatusOptions}
-                                        label={{text: "Status pernikahan"}}
-                                    >
-                                        <RequiredRule message="Status pernikahan wajib diisi"/>
-                                    </SimpleItem>
-                                    <SimpleItem
-                                        dataField="motherMaidenName"
-                                        label={{text: "Ibu kandung"}}
-                                    >
-                                        <RequiredRule message="Ibu kandung wajib diisi"/>
-                                    </SimpleItem>
-                                    <SimpleItem
-                                        dataField="lengthOfJob"
-                                        editorOptions={{
-                                            min: 0,
-                                            maxLength: 15,
-                                            onKeyDown: (e: any) => {
-                                                const key = e.event.key;
-                                                e.value = String.fromCharCode(e.event.keyCode);
-                                                if (
-                                                    !/[0-9]/.test(e.value) &&
-                                                    key !== "Backspace" &&
-                                                    key !== "Delete"
-                                                )
-                                                    e.event.preventDefault();
-                                            }
-                                        }}
-                                        label={{text: "Lama bekerja"}}
-                                    >
-                                        <RequiredRule message="Lama bekerja wajib diisi"/>
-                                    </SimpleItem>
-                                    <SimpleItem
-                                        dataField="mobilePhone"
-                                        label={{text: "No.HP"}}
-                                        editorOptions={{
-                                            min: 0,
-                                            maxLength: 15,
-                                            onKeyDown: (e: any) => {
-                                                const key = e.event.key;
-                                                e.value = String.fromCharCode(e.event.keyCode);
-                                                if (
-                                                    !/[0-9]/.test(e.value) &&
-                                                    key !== "Backspace" &&
-                                                    key !== "Delete"
-                                                )
-                                                    e.event.preventDefault();
-                                            },
-                                        }}
-                                    >
-                                        <RequiredRule message="No.HP wajib diisi"/>
-                                        <AsyncRule
-                                            message="No.HP sudah terdaftar"
-                                            validationCallback={asyncValidationPhoneNumber}
-                                        />
-                                        <PatternRule
-                                            message="No.HP hanya angka"
-                                            pattern={/^[0-9]+$/}
-                                        />
-                                    </SimpleItem>
-                                    <SimpleItem
-                                        dataField="email"
-                                        label={{text: "Email"}}
-                                    >
-                                        <AsyncRule
-                                            message="Email sudah terdaftar"
-                                            validationCallback={asyncValidationEmail}
-                                        />
-                                    </SimpleItem>
-                                    <SimpleItem
-                                        dataField="ktpImage"
-                                        editorType="dxFileUploader"
-                                        editorOptions={uploadKtpOptions}
-                                        label={{text: "Foto KTP"}}
-                                    >
-                                        <RequiredRule message="Foto KTP wajib diisi"/>
-                                    </SimpleItem>
-                                </GroupItem>
-                                <GroupItem colSpan={2}>
-                                    {ktpSrc && (
-                                        <Item>
-                                            <img
-                                                id="dropzone-ktp"
-                                                src={ktpSrc}
-                                                alt="ktp"
-                                                width={"240px"}
-                                            />
-                                        </Item>
-                                    )}
-                                </GroupItem>
-                            </GroupItem>
-                            <GroupItem colSpan={2}>
-                                <GroupItem
-                                    caption="Alamat Tinggal"
-                                    name="HomeAddress"
-                                    colCount={2}
-                                >
-                                    <SimpleItem
-                                        dataField="livingAddressStatus"
-                                        editorType="dxSelectBox"
-                                        editorOptions={ownerStatusOptions}
-                                        label={{text: "Status Kepemilikan Rumah"}}
-                                    >
-                                        <RequiredRule message="Status kepemilikan runah wajib diisi"/>
-                                    </SimpleItem>
-                                    <SimpleItem
-                                        dataField="idCountry"
-                                        editorType="dxSelectBox"
-                                        editorOptions={countryOptions}
-                                        label={{text: "Negara"}}
-                                    />
-                                    <SimpleItem
-                                        dataField="idProvince"
-                                        editorType="dxSelectBox"
-                                        editorOptions={proviceOptions}
-                                        label={{text: "Provinsi"}}
-                                    >
-                                        <RequiredRule message="Provinsi wajib diisi"/>
-                                    </SimpleItem>
-                                    <SimpleItem
-                                        dataField="idCity"
-                                        editorType="dxSelectBox"
-                                        editorOptions={cityOptions}
-                                        label={{text: "Kota"}}
-                                    >
-                                        <RequiredRule message="Kota wajib diisi"/>
-                                    </SimpleItem>
-                                    <SimpleItem
-                                        dataField="address"
-                                        editorType="dxTextArea"
-                                        label={{text: "Alamat "}}
-                                    >
-                                        <RequiredRule message="Alamat wajib diisi"/>
-                                    </SimpleItem>
-                                    <SimpleItem
-                                        dataField="districtId"
-                                        editorType="dxSelectBox"
-                                        editorOptions={districtOptions}
-                                        label={{text: "Kecamatan"}}
-                                    />
-                                    <SimpleItem
-                                        dataField="subdistrictId"
-                                        editorType="dxSelectBox"
-                                        editorOptions={subDistrictOptions}
-                                        label={{text: "Kelurahan"}}
-                                    />
-                                    <SimpleItem
-                                        dataField="postalCode"
-                                        editorOptions={{
-                                            min: 0,
-                                            maxLength: 5,
-                                            onKeyDown: (e: any) => {
-                                                const key = e.event.key;
-                                                e.value = String.fromCharCode(e.event.keyCode);
-                                                if (
-                                                    !/[0-9]/.test(e.value) &&
-                                                    key !== "Backspace" &&
-                                                    key !== "Delete"
-                                                )
-                                                    e.event.preventDefault();
-                                            },
-                                        }}
-                                        label={{text: "Kodepos"}}
-                                    />
-                                    <SimpleItem
-                                        dataField="neighborhoodUnit"
-                                        editorOptions={{
-                                            min: 0,
-                                            maxLength: 4,
-                                            onKeyDown: (e: any) => {
-                                                const key = e.event.key;
-                                                e.value = String.fromCharCode(e.event.keyCode);
-                                                if (
-                                                    !/[0-9]/.test(e.value) &&
-                                                    key !== "Backspace" &&
-                                                    key !== "Delete"
-                                                )
-                                                    e.event.preventDefault();
-                                            },
-                                        }}
-                                        label={{text: "RT"}}
-                                    />
-                                    <SimpleItem
-                                        dataField="communityUnit"
-                                        editorOptions={{
-                                            min: 0,
-                                            maxLength: 4,
-                                            onKeyDown: (e: any) => {
-                                                const key = e.event.key;
-                                                e.value = String.fromCharCode(e.event.keyCode);
-                                                if (
-                                                    !/[0-9]/.test(e.value) &&
-                                                    key !== "Backspace" &&
-                                                    key !== "Delete"
-                                                )
-                                                    e.event.preventDefault();
-                                            },
-                                        }}
-                                        label={{text: "RW"}}
-                                    />
-                                </GroupItem>
-                            </GroupItem>
-                            <ButtonItem
-                                horizontalAlignment="left"
-                                buttonOptions={{
-                                    text: "Register",
-                                    type: "success",
-                                    useSubmitBehavior: true,
+        <div className={"content-block"}>
+            <h2>Create Contact</h2>
+            <Title.Toolbar className={"dx-card"}>
+                <Title.Item location="before" widget="dxButton" options={backButtonOptions}/>
+            </Title.Toolbar>
+            <form className="form__tabs" action="register" onSubmit={handleSubmit}>
+                <Form
+                    ref={formRef}
+                    colCount={2}
+                    id="form"
+                    formData={contact}
+                    showColonAfterLabel={true}
+                    showValidationSummary={true}
+                    validationGroup="contactData"
+                    onFieldDataChanged={onFieldDataChanged}
+                >
+                    <GroupItem colSpan={2} cssClass={"dx-card responsive-paddings next-card"}>
+                        <GroupItem caption="Personal Data" colCount={2}>
+                            <SimpleItem
+                                dataField="idNumber"
+                                label={{text: "No.KTP"}}
+                                editorOptions={{
+                                    min: 16,
+                                    maxLength: 16,
+                                    onKeyDown: (e: any) => {
+                                        const key = e.event.key;
+                                        e.value = String.fromCharCode(e.event.keyCode);
+                                        if (!/[0-9]/.test(e.value) && key !== "Backspace" && key !== "Delete")
+                                            e.event.preventDefault();
+                                    },
+                                    value: ktp,
+                                    disabled: true
                                 }}
+                            >
+                                <RequiredRule message="No.KTP wajib diisi"/>
+                                <AsyncRule
+                                    message="No.KTP sudah terdaftar"
+                                    validationCallback={asyncValidationIdNumber}
+                                />
+                                <PatternRule message="Hanya boleh angka" pattern={/^[0-9]+$/}/>
+                            </SimpleItem>
+                            <SimpleItem
+                                dataField="nameBorrower"
+                                label={{text: "Nama"}}
+                                editorOptions={{
+                                    min: 0,
+                                    maxLength: 150,
+                                    onKeyDown: (e: any) => {
+                                        const key = e.event.key;
+                                        e.value = String.fromCharCode(e.event.keyCode);
+                                        if (
+                                            !/[A-Za-z]/.test(e.value) &&
+                                            key !== " " &&
+                                            key !== "Backspace" &&
+                                            key !== "Delete"
+                                        )
+                                            e.event.preventDefault();
+                                    }
+                                }}
+                            >
+                                <RequiredRule message="Nama wajib diisi"/>
+                                <PatternRule message="Tidak boleh angka" pattern={/^[^0-9]+$/}/>
+                            </SimpleItem>
+                            <SimpleItem dataField="birthPlace" label={{text: "Tempat lahir"}}>
+                                <RequiredRule message="Tempat lahir wajib diisi"/>
+                            </SimpleItem>
+                            <SimpleItem
+                                dataField="birthDate"
+                                label={{text: "Tanggal lahir"}}
+                                editorType="dxDateBox"
+                                editorOptions={{
+                                    value: birthDate,
+                                    type: "date",
+                                    pickerType: "calender",
+                                    displayFormat: "dd/MM/yyyy",
+                                    onValueChanged: onValueChanged
+                                }}
+                            >
+                                <RequiredRule message="Tanggal wajib diisi"/>
+                            </SimpleItem>
+                            <SimpleItem
+                                dataField="idGender"
+                                label={{text: "Jenis kelamin"}}
+                                editorType="dxSelectBox"
+                                editorOptions={genderOptions}
+                            >
+                                <RequiredRule message="Jenis kelamin wajib diisi"/>
+                            </SimpleItem>
+                            <SimpleItem
+                                dataField="idReligion"
+                                editorType="dxSelectBox"
+                                editorOptions={religionOptions}
+                                label={{text: "Agama"}}
+                            >
+                                <RequiredRule message="Agama wajib diisi"/>
+                            </SimpleItem>
+                            <SimpleItem
+                                dataField="idEducation"
+                                editorType="dxSelectBox"
+                                editorOptions={educationOptions}
+                                label={{text: "Pendidikan terakhir"}}
+                            >
+                                <RequiredRule message="Pendidikan terakhir wajib diisi"/>
+                            </SimpleItem>
+                            <SimpleItem
+                                dataField="idMarital"
+                                editorType="dxSelectBox"
+                                editorOptions={maritalStatusOptions}
+                                label={{text: "Status pernikahan"}}
+                            >
+                                <RequiredRule message="Status pernikahan wajib diisi"/>
+                            </SimpleItem>
+                            <SimpleItem dataField="motherMaidenName" label={{text: "Ibu kandung"}}>
+                                <RequiredRule message="Ibu kandung wajib diisi"/>
+                            </SimpleItem>
+                            <SimpleItem
+                                dataField="lengthOfJob"
+                                editorOptions={{
+                                    min: 0,
+                                    maxLength: 15,
+                                    onKeyDown: (e: any) => {
+                                        const key = e.event.key;
+                                        e.value = String.fromCharCode(e.event.keyCode);
+                                        if (!/[0-9]/.test(e.value) && key !== "Backspace" && key !== "Delete")
+                                            e.event.preventDefault();
+                                    }
+                                }}
+                                label={{text: "Lama bekerja"}}
+                            >
+                                <RequiredRule message="Lama bekerja wajib diisi"/>
+                            </SimpleItem>
+                            <SimpleItem
+                                dataField="mobilePhone"
+                                label={{text: "No.HP"}}
+                                editorOptions={{
+                                    min: 0,
+                                    maxLength: 14,
+                                    onKeyDown: (e: any) => {
+                                        const key = e.event.key;
+                                        e.value = String.fromCharCode(e.event.keyCode);
+                                        if (!/[0-9]/.test(e.value) && key !== "Backspace" && key !== "Delete")
+                                            e.event.preventDefault();
+                                    }
+                                }}
+                            >
+                                <RequiredRule message="No.HP wajib diisi"/>
+                                <AsyncRule
+                                    message="No.HP sudah terdaftar"
+                                    validationCallback={asyncValidationPhoneNumber}
+                                />
+                                <PatternRule message="No.HP hanya angka" pattern={/^[0-9]+$/}/>
+                            </SimpleItem>
+                            <SimpleItem 
+                                dataField="email" 
+                                label={{text: "Email"}} 
+                                editorOptions={{
+                                    min: 0,
+                                    maxLength: 32
+                                }}
+                            >
+                                <AsyncRule
+                                    message="Email sudah terdaftar"
+                                    validationCallback={asyncValidationEmail}
+                                />
+                            </SimpleItem>
+                            <SimpleItem
+                                dataField="ktpImage"
+                                editorType={"dxFileUploader" as any}
+                                editorOptions={uploadKtpOptions}
+                                label={{text: "Foto KTP"}}
+                            >
+                                <RequiredRule message="Foto KTP wajib diisi"/>
+                            </SimpleItem>
+                            <SimpleItem
+                                dataField="selfie"
+                                editorType={"dxFileUploader" as any}
+                                editorOptions={uploadPhotoSelfieOptions}
+                                label={{text: "Selfie Photo"}}
+                            >
+                                <RequiredRule message="Selfie Photo wajib diisi"/>
+                            </SimpleItem>
+                            <Item>
+                                {ktpSrc && <img id="dropzone-ktp" src={ktpSrc} alt="ktp" width="240px"/>}
+                            </Item>
+                            <Item>{selfie && <img src={selfie} alt="selfie-photo" width="240px"/>}</Item>
+                        </GroupItem>
+                    </GroupItem>
+                    <GroupItem colSpan={2} cssClass={"dx-card responsive-paddings next-card"}>
+                        <GroupItem caption="Alamat Tinggal" name="HomeAddress" colCount={2}>
+                            <SimpleItem
+                                dataField="livingAddressStatus"
+                                editorType="dxSelectBox"
+                                editorOptions={ownerStatusOptions}
+                                label={{text: "Status Kepemilikan Rumah"}}
+                            >
+                                <RequiredRule message="Status kepemilikan runah wajib diisi"/>
+                            </SimpleItem>
+                            <SimpleItem
+                                dataField="idCountry"
+                                editorType="dxSelectBox"
+                                editorOptions={countryOptions}
+                                label={{text: "Negara"}}
                             />
-                        </Form>
-                    </form>
-                </div>
-            </div>
-        </>
+                            <SimpleItem
+                                dataField="idProvince"
+                                editorType="dxSelectBox"
+                                editorOptions={proviceOptions}
+                                label={{text: "Provinsi"}}
+                            >
+                                <RequiredRule message="Provinsi wajib diisi"/>
+                            </SimpleItem>
+                            <SimpleItem
+                                dataField="idCity"
+                                editorType="dxSelectBox"
+                                editorOptions={cityOptions}
+                                label={{text: "Kota"}}
+                            >
+                                <RequiredRule message="Kota wajib diisi"/>
+                            </SimpleItem>
+                            <SimpleItem dataField="address" editorType="dxTextArea" label={{text: "Alamat "}}>
+                                <RequiredRule message="Alamat wajib diisi"/>
+                            </SimpleItem>
+                            <SimpleItem
+                                dataField="districtId"
+                                editorType="dxSelectBox"
+                                editorOptions={districtOptions}
+                                label={{text: "Kecamatan"}}
+                            />
+                            <SimpleItem
+                                dataField="subdistrictId"
+                                editorType="dxSelectBox"
+                                editorOptions={subDistrictOptions}
+                                label={{text: "Kelurahan"}}
+                            />
+                            <SimpleItem
+                                dataField="postalCode"
+                                editorOptions={{
+                                    min: 0,
+                                    maxLength: 5,
+                                    onKeyDown: (e: any) => {
+                                        const key = e.event.key;
+                                        e.value = String.fromCharCode(e.event.keyCode);
+                                        if (!/[0-9]/.test(e.value) && key !== "Backspace" && key !== "Delete")
+                                            e.event.preventDefault();
+                                    }
+                                }}
+                                label={{text: "Kodepos"}}
+                            />
+                            <SimpleItem
+                                dataField="neighborhoodUnit"
+                                editorOptions={{
+                                    min: 0,
+                                    maxLength: 4,
+                                    onKeyDown: (e: any) => {
+                                        const key = e.event.key;
+                                        e.value = String.fromCharCode(e.event.keyCode);
+                                        if (!/[0-9]/.test(e.value) && key !== "Backspace" && key !== "Delete")
+                                            e.event.preventDefault();
+                                    }
+                                }}
+                                label={{text: "RT"}}
+                            />
+                            <SimpleItem
+                                dataField="communityUnit"
+                                editorOptions={{
+                                    min: 0,
+                                    maxLength: 4,
+                                    onKeyDown: (e: any) => {
+                                        const key = e.event.key;
+                                        e.value = String.fromCharCode(e.event.keyCode);
+                                        if (!/[0-9]/.test(e.value) && key !== "Backspace" && key !== "Delete")
+                                            e.event.preventDefault();
+                                    }
+                                }}
+                                label={{text: "RW"}}
+                            />
+                        </GroupItem>
+                        <GroupItem colSpan={2} cssClass={"dx-card responsive-paddings next-card"}>
+                            <GroupItem caption="Additional Information" name="AdditionalInformation" colCount={2}>
+                                <SimpleItem dataField="typeOfGood" label={{text: "Jenis Barang"}}>
+                                    <RequiredRule message="Jenis Barang wajib diisi"/>
+                                </SimpleItem>
+                                <SimpleItem
+                                    dataField="salesChannelId"
+                                    label={{text: "Sales Channel"}}
+                                    editorType={"dxSelectBox"}
+                                    editorOptions={salesChannelOptions}
+                                />
+                                <SimpleItem dataField="marketAddress" label={{text: "Market Address"}}>
+                                    <RequiredRule message="Alamat pasar wajib diisi"/>
+                                </SimpleItem>
+                            </GroupItem>
+                        </GroupItem>
+                    </GroupItem>
+                    <GroupItem colSpan={2} cssClass={"dx-card responsive-paddings next-card"}>
+                        <GroupItem caption="Contact Relative" name="ContactRelative" colCount={2}>
+                            <DataGrid
+                                dataSource={contactRelatives}
+                                // focusedRowEnabled={true}
+                                remoteOperations={true}
+                                columnAutoWidth={true}
+                                wordWrapEnabled={false}
+                                showBorders={true}
+                                dateSerializationFormat={"yyyy-MM-ddTHH:mm:ss.SSSxxx"}
+                                repaintChangesOnly={true}
+                                editing={{
+                                    mode: "popup",
+                                    allowUpdating: true,
+                                    allowAdding: true,
+                                    allowDeleting: true,
+                                    popup: {
+                                        title: "Relative Contact",
+                                        showTitle: true,
+                                        width: "40%",
+                                        height: 360
+                                    },
+                                    form: {
+                                        colCount: 1,
+                                        items: [
+                                            {
+                                                dataField: "typeId",
+                                                editorType: "dxSelectBox",
+                                                editorOptions: relativeOptions,
+                                                isRequired: true
+                                            },
+                                            {
+                                                dataField: "name",
+                                                editorOptions: {
+                                                    min: 0,
+                                                    maxLength: 150,
+                                                    onKeyDown: (e: any) => {
+                                                        const key = e.event.key;
+                                                        e.value = String.fromCharCode(e.event.keyCode);
+                                                        if (
+                                                            !/[A-Za-z]/.test(e.value) &&
+                                                            key !== " " &&
+                                                            key !== "Backspace" &&
+                                                            key !== "Delete"
+                                                        )
+                                                            e.event.preventDefault();
+                                                    }
+                                                },
+                                                isRequired: true
+                                            },
+                                            {
+                                                dataField: "phone",
+                                                editorOptions: {
+                                                    min: 0,
+                                                    maxLength: 14,
+                                                    onKeyDown: (e: any) => {
+                                                        const key = e.event.key;
+                                                        e.value = String.fromCharCode(e.event.keyCode);
+                                                        if (!/[0-9]/.test(e.value) && key !== "Backspace" && key !== "Delete") {
+                                                            e.event.preventDefault();
+                                                        }
+                                                    }
+                                                },
+                                                isRequired: true
+                                            }
+                                        ]
+                                    }
+                                }}
+                            >
+                                <Scrolling showScrollbar={"always"}/>
+
+                                <Column dataField={"typeId"} caption={"Relation"}>
+                                    <Lookup dataSource={contactRelativeStore} displayExpr="name" valueExpr="id"/>
+                                </Column>
+                                <Column dataField={"name"} caption={"Nama"}/>
+                                <Column dataField={"phone"} caption={"Telepon No."}/>
+                                <Paging defaultPageSize={50}/>
+                                <Pager
+                                    showPageSizeSelector={true}
+                                    showInfo={true}
+                                    allowedPageSizes={[10, 50, 100]}
+                                />
+                            </DataGrid>
+                        </GroupItem>
+                    </GroupItem>
+                    <ButtonItem horizontalAlignment="left">
+                        <ButtonOptions type="success" disabled={isLoadingCreate} useSubmitBehavior>
+                            <div className="button-options">
+                                <LoadIndicator width="20px" height="20px" visible={isLoadingCreate}/>
+                                <span className="dx-button-text">Register</span>
+                            </div>
+                        </ButtonOptions>
+                    </ButtonItem>
+                </Form>
+            </form>
+        </div>
     );
 }

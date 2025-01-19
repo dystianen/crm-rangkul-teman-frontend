@@ -1,107 +1,100 @@
-import Drawer from 'devextreme-react/drawer';
-import ScrollView from 'devextreme-react/scroll-view';
-import React, { useState, useCallback, useRef } from 'react';
-import { useNavigate } from 'react-router';
-import { Header, SideNavigationMenu, Footer } from '../../components';
-import './side-nav-outer-toolbar.scss';
-import { useScreenSize } from '../../utils/media-query';
-import { Template } from 'devextreme-react/core/template';
-import { useMenuPatch } from '../../utils/patches';
-import { ButtonTypes } from 'devextreme-react/button';
-import { TreeViewTypes } from 'devextreme-react/tree-view';
-import type { SideNavToolbarProps } from '../../types';
+import { ButtonTypes } from "devextreme-react/button";
+import { Template } from "devextreme-react/core/template";
+import Drawer from "devextreme-react/drawer";
+import ScrollView from "devextreme-react/scroll-view";
+import { TreeViewTypes } from "devextreme-react/tree-view";
+import React, { useCallback, useRef, useState } from "react";
+import { useNavigate } from "react-router";
+import { Footer, Header, SideNavigationMenu } from "../../components";
+import type { SideNavToolbarProps } from "../../types";
+import { useScreenSize } from "../../utils/media-query";
+import { useMenuPatch } from "../../utils/patches";
+import "./side-nav-outer-toolbar.scss";
 
-export default function SideNavOuterToolbar({ title, children }: React.PropsWithChildren<SideNavToolbarProps>) {
+export default function SideNavOuterToolbar({
+  title,
+  children
+}: React.PropsWithChildren<SideNavToolbarProps>) {
   const scrollViewRef = useRef<ScrollView>(null);
   const navigate = useNavigate();
   const { isXSmall, isLarge } = useScreenSize();
   const [patchCssClass, onMenuReady] = useMenuPatch();
-  const [menuStatus, setMenuStatus] = useState(
-    isLarge ? MenuStatus.Opened : MenuStatus.Closed
-  );
+  const [menuStatus, setMenuStatus] = useState(isLarge ? MenuStatus.Opened : MenuStatus.Closed);
 
   const toggleMenu = useCallback(({ event }: ButtonTypes.ClickEvent) => {
-    setMenuStatus(
-      prevMenuStatus => prevMenuStatus === MenuStatus.Closed
-        ? MenuStatus.Opened
-        : MenuStatus.Closed
+    setMenuStatus((prevMenuStatus) =>
+      prevMenuStatus === MenuStatus.Closed ? MenuStatus.Opened : MenuStatus.Closed
     );
     event?.stopPropagation();
   }, []);
 
   const temporaryOpenMenu = useCallback(() => {
-    setMenuStatus(
-      prevMenuStatus => prevMenuStatus === MenuStatus.Closed
-        ? MenuStatus.TemporaryOpened
-        : prevMenuStatus
+    setMenuStatus((prevMenuStatus) =>
+      prevMenuStatus === MenuStatus.Closed ? MenuStatus.TemporaryOpened : prevMenuStatus
     );
   }, []);
 
   const onOutsideClick = useCallback(() => {
-    setMenuStatus(
-      prevMenuStatus => prevMenuStatus !== MenuStatus.Closed && !isLarge
-        ? MenuStatus.Closed
-        : prevMenuStatus
+    setMenuStatus((prevMenuStatus) =>
+      prevMenuStatus !== MenuStatus.Closed && !isLarge ? MenuStatus.Closed : prevMenuStatus
     );
     return menuStatus === MenuStatus.Closed ? true : false;
   }, [menuStatus, isLarge]);
 
-  const onNavigationChanged = useCallback(({ itemData, event, node }: TreeViewTypes.ItemClickEvent) => {
-    if (menuStatus === MenuStatus.Closed || !itemData?.path || node?.selected) {
-      event?.preventDefault();
-      return;
-    }
+  const onNavigationChanged = useCallback(
+    ({ itemData, event, node }: TreeViewTypes.ItemClickEvent) => {
+      if (menuStatus === MenuStatus.Closed || !itemData?.path || node?.selected) {
+        event?.preventDefault();
+        return;
+      }
 
-    navigate(itemData.path);
-    scrollViewRef.current?.instance.scrollTo(0);
+      navigate(itemData.path);
+      scrollViewRef.current?.instance.scrollTo(0);
 
-    if (!isLarge || menuStatus === MenuStatus.TemporaryOpened) {
-      setMenuStatus(MenuStatus.Closed);
-      event?.stopPropagation();
-    }
-  }, [navigate, menuStatus, isLarge]);
+      if (!isLarge || menuStatus === MenuStatus.TemporaryOpened) {
+        setMenuStatus(MenuStatus.Closed);
+        event?.stopPropagation();
+      }
+    },
+    [navigate, menuStatus, isLarge]
+  );
 
   return (
-    <div className={'side-nav-outer-toolbar'}>
-      <Header
-        menuToggleEnabled
-        toggleMenu={toggleMenu}
-        title={title}
-      />
+    <div className={"side-nav-outer-toolbar"}>
+      <Header menuToggleEnabled toggleMenu={toggleMenu} title={title} />
       <Drawer
-        className={['drawer', patchCssClass].join(' ')}
-        position={'before'}
+        className={["drawer", patchCssClass].join(" ")}
+        position={"before"}
         closeOnOutsideClick={onOutsideClick}
-        openedStateMode={isLarge ? 'shrink' : 'overlap'}
-        revealMode={isXSmall ? 'slide' : 'expand'}
-        minSize={isXSmall ? 0 : 60}
+        openedStateMode={isLarge ? "shrink" : "overlap"}
+        revealMode={isXSmall ? "slide" : "expand"}
+        minSize={0}
         maxSize={250}
         shading={isLarge ? false : true}
         opened={menuStatus === MenuStatus.Closed ? false : true}
-        template={'menu'}
+        template={"menu"}
       >
-        <div className={'container'}>
-          <ScrollView ref={scrollViewRef} className={'layout-body with-footer'}>
-            <div className={'content'}>
+        <div className={"container"}>
+          <ScrollView ref={scrollViewRef} className={"layout-body with-footer"}>
+            <div className={"content"}>
               {React.Children.map(children, (item: any) => {
                 return item.type !== Footer && item;
               })}
             </div>
-            <div className={'content-block'}>
+            <div className={"content-block"}>
               {React.Children.map(children, (item: any) => {
                 return item.type === Footer && item;
               })}
             </div>
           </ScrollView>
         </div>
-        <Template name={'menu'}>
+        <Template name={"menu"}>
           <SideNavigationMenu
             compactMode={menuStatus === MenuStatus.Closed}
             selectedItemChanged={onNavigationChanged}
             openMenu={temporaryOpenMenu}
             onMenuReady={onMenuReady}
-          >
-          </SideNavigationMenu>
+          ></SideNavigationMenu>
         </Template>
       </Drawer>
     </div>

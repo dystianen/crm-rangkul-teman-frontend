@@ -22,6 +22,25 @@ export interface UserPanelProps {
 export interface User {
     email: string;
     avatarUrl: string;
+    id?: string
+    createdOn?: string
+    modifiedOn?: string
+    createdBy?: string
+    modifiedBy?: string
+    userId?: string
+    startOn?: string
+    finishOn?: string
+    userName?: string
+    userPassword?: string
+    contactName?: string
+    contactId?: string
+    branches?: string[]
+    steps?: Step[]
+}
+
+export interface Step {
+    id: string
+    name: string
 }
 
 export type AuthContextType = {

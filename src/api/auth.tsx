@@ -57,7 +57,7 @@ export async function getUser() {
         if (res?.data?.contactName) {
             return {
                 isOk: true,
-                data: {...defaultUser, email: res?.data?.contactName}
+                data: {...defaultUser, email: res?.data?.contactName, ...res?.data}
             };
         }
         return {

@@ -1,232 +1,284 @@
-import React, {useEffect, useRef, useState} from "react";
-import Form, {
-    ButtonItem,
-    GroupItem,
-    PatternRule,
-    RequiredRule,
-    SimpleItem,
-} from "devextreme-react/form";
-import {selectBoxOptions} from "src/api/contact";
-import DataSource from "devextreme/data/data_source";
-import "devextreme-react/file-uploader";
-import "./loan-app.scss";
-import {useNavigate} from "react-router";
-import {useLocation} from "react-router-dom";
-import queryString from "query-string";
+import { Popup } from "devextreme-react";
+import { Button } from "devextreme-react/button";
 import "devextreme-react/date-box";
-import {
-    appLoanDetailApi,
-    createAppLoanOnboardingStep1, detailAppLoan,
-    getListBank,
-    getLoanPurpose,
-    loanTermStore,
-} from "src/api/apploan";
-import {
-    AppLoanDetailRequest,
-    AppLoanOnboardingStep1Request, AppLoanRequest,
-    initLoanOnboardingStep1Value,
-} from "src/interfaces/appLoanOnboarding";
-import {store} from "src/store/store";
-import {LoadPanel} from "devextreme-react/load-panel";
-import notify from "devextreme/ui/notify";
+import "devextreme-react/file-uploader";
+import Form, {ButtonItem, GroupItem, PatternRule, RequiredRule, SimpleItem} from "devextreme-react/form";
+import { LoadPanel } from "devextreme-react/load-panel";
+import DataSource from "devextreme/data/data_source";
+import { FieldDataChangedEvent } from "devextreme/ui/form";
+import queryString from "query-string";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router";
+import { useLocation } from "react-router-dom";
+import {checkAccess, checkStatusSigning, createAppLoanOnboardingStep1, detailAppLoan, getListBank, getLoanPurpose, getUnsignedDoc, loanTermStore} from "src/api/apploan";
+import { selectBoxOptions } from "src/api/contact";
+import Loader from "src/components/loader";
+import {AppLoanOnboardingStep1Request, AppLoanRequest, initLoanOnboardingStep1Value} from "src/interfaces/appLoanOnboarding";
+import { store } from "src/store/store";
+import "./loan-app.scss";
+import {notifyError, notifySuccess, notifyWarning} from "../../utils/devExtremeUtils";
 
 export default function Step1Page() {
-    const navigate = useNavigate();
-    const {loanapp} = store.getState();
-    const location = useLocation();
-    const {id} = queryString.parse(location.search);
-    const [onboardingLoan, setOnboardingLoan] =
-        useState<AppLoanOnboardingStep1Request>(initLoanOnboardingStep1Value);
-    const [submitForm, setSubmitForm] = useState(false);
+  const navigate = useNavigate();
+  const { loanapp } = store.getState();
+  const location = useLocation();
+  const { id, autoNext } = queryString.parse(location.search);
+  const autoNextVal = autoNext === "false" ? false : true;
+  const [isAutoNext, setAutoNext] = useState(autoNextVal);
+  const idData = id as string;
+  const [onboardingLoan, setOnboardingLoan] = useState<AppLoanOnboardingStep1Request>(
+    initLoanOnboardingStep1Value
+  );
+  const [submitForm, setSubmitForm] = useState(false);
+  const [loadingDownloadBtn, setLoadingDownloadBtn] = useState(false);
+  const [isShowWaitingPopup, setShowWaitingPopup] = useState(false);
+  const [isDisableButtonNext, setDisableButtonNext] = useState(false);
 
-    const formRef = useRef<Form>(null);
+  const formRef = useRef<Form>(null);
 
-    useEffect(() => {
-        detailAppLoan(String(id)).then((res) => {
-            const data = res as AppLoanRequest;
-            const map = {
-                amount: data.loanAmount,
-                termId: data.loanTermId,
-                bankId: data.bankId,
-                bankAccNumber: data.bankAccNumber,
-                purposeId: data.loanPurposeId,
-                monthlyIncome: data.monthlyIncome,
-            };
-            setOnboardingLoan(map);
-        });
-    }, [id]);
+  const handleCheckSigning = useCallback(
+    (intervalId: NodeJS.Timeout) => {
+      checkStatusSigning(idData).then((res) => {
+        setShowWaitingPopup(res);
+        setDisableButtonNext(res);
 
-    useEffect(() => {
-        setOnboardingLoan({
-            amount: loanapp.loanappStep1.amount,
-            termId: loanapp.loanappStep1.termId,
-            bankId: loanapp.loanappStep1.bankId,
-            bankAccNumber: loanapp.loanappStep1.bankAccNumber,
-            purposeId: loanapp.loanappStep1.purposeId,
-            monthlyIncome: loanapp.loanappStep1.monthlyIncome,
-        });
-    }, [loanapp]);
+        if (!res) {
+          clearInterval(intervalId);
 
-    const loanTerm = selectBoxOptions(
-        new DataSource(loanTermStore(id as string)),
-        "Pilih term"
+          if (isAutoNext) {
+            checkAccess("0c0983ad-20b2-446d-8462-328aa64915f7").then((res) => {
+              if (res) {
+                navigate(`/loan-app/create/step/2?id=${idData}`);
+              } else {
+                notifySuccess("Berhasil submit data");
+                navigate(`/loan-app`);
+              }
+            });
+          }
+        }
+      });
+    },
+    [idData, navigate, isAutoNext]
+  );
+
+  useEffect(() => {
+    detailAppLoan(idData).then((res) => {
+      const data = res as AppLoanRequest;
+      const map = {
+        amount: data.loanAmount,
+        termId: data.loanTermId,
+        bankId: data.bankId,
+        bankAccNumber: data.bankAccNumber,
+        purposeId: data.loanPurposeId,
+        monthlyIncome: data.monthlyIncome
+      };
+      setOnboardingLoan(map);
+    });
+
+    const intervalId = setInterval(() => {
+      handleCheckSigning(intervalId);
+    }, 5000);
+
+    handleCheckSigning(intervalId);
+
+    return () => clearInterval(intervalId);
+  }, [idData, handleCheckSigning]);
+
+  useEffect(() => {
+    setOnboardingLoan({
+      amount: loanapp.loanappStep1.amount,
+      termId: loanapp.loanappStep1.termId,
+      bankId: loanapp.loanappStep1.bankId,
+      bankAccNumber: loanapp.loanappStep1.bankAccNumber,
+      purposeId: loanapp.loanappStep1.purposeId,
+      monthlyIncome: loanapp.loanappStep1.monthlyIncome
+    });
+  }, [loanapp]);
+
+  const loanTerm = selectBoxOptions(new DataSource(loanTermStore(id as string)), "Pilih term");
+  const listBank = selectBoxOptions(new DataSource(getListBank), "Pilih bank");
+  const listLoanPurpose = selectBoxOptions(new DataSource(getLoanPurpose), "Pilih tujuan pinjaman");
+
+  const downloadUnsigned = () => {
+    setLoadingDownloadBtn(true);
+    getUnsignedDoc(id as any)
+      .then((dt) => {
+        const link = document.createElement("a");
+        link.href = `data:${dt.fileType};base64,${dt.fileContent}`;
+        link.target = "_blank";
+        link.download = dt.fileName;
+        link.click();
+      })
+      .catch((e) => {
+        notifyWarning(e?.message);
+      })
+      .finally(() => setLoadingDownloadBtn(false));
+  };
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    setSubmitForm(true);
+    createAppLoanOnboardingStep1(id as string, onboardingLoan).then(
+      (st1) => {
+        if (st1.isWaitingSigning) {
+          setAutoNext(true);
+          setShowWaitingPopup(true);
+
+          const intervalId = setInterval(() => {
+            handleCheckSigning(intervalId);
+          }, 5000);
+
+          handleCheckSigning(intervalId);
+        } else {
+          checkAccess('0c0983ad-20b2-446d-8462-328aa64915f7').then((res) => {
+              if (!res) {
+                  notifySuccess("Berhasil submit data");
+                  navigate(`/loan-app`);
+              } else {
+                  navigate(`/loan-app/create/step/2?id=${id}`);
+              }
+          });
+        }
+      }, (error) => {
+        setSubmitForm(false);
+        notifyError(error);
+      }
     );
 
-    const listBank = selectBoxOptions(new DataSource(getListBank), "Pilih bank");
-    const listLoanPurpose = selectBoxOptions(
-        new DataSource(getLoanPurpose),
-        "Pilih tujuan pinjaman"
-    );
+    e.preventDefault();
+  };
 
-    const handleSubmit = (e: any) => {
-        setSubmitForm(true);
-        const form = formRef.current!.instance;
-        createAppLoanOnboardingStep1(id as string, onboardingLoan).then(
-            (res) => {
-                setOnboardingLoan(initLoanOnboardingStep1Value);
-                form.resetValues();
+  const onFieldDataChanged = (evt: FieldDataChangedEvent) => {
+    const { dataField, value } = evt;
+    if (dataField) {
+      if (dataField in onboardingLoan) {
+        setOnboardingLoan((prevState) => ({
+          ...prevState,
+          [dataField]: value
+        }));
+      }
+    }
+  };
 
-                navigate(`/loan-app/create/step/2?id=${id}`);
-            }, (error) => {
-                setSubmitForm(false);
-                notify(
-                    {
-                        message: error,
-                        position: {
-                            my: "center top",
-                            at: "center top",
-                        },
-                    },
-                    "error",
-                    3000
-                );
-            }
-        );
+  return (
+    <>
+      <LoadPanel
+        shadingColor="rgba(0,0,0,0.4)"
+        visible={submitForm}
+        showIndicator={true}
+        shading={true}
+        showPane={true}
+        hideOnOutsideClick={false}
+      />
 
-        e.preventDefault();
-    };
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          margin: "0 15px 0"
+        }}
+      >
+        <h2>Step 1</h2>
+        <Button
+          text="Download Unsigned Contract"
+          type="success"
+          stylingMode="contained"
+          disabled={loadingDownloadBtn}
+          onClick={downloadUnsigned}
+        />
+      </div>
+      <div className={"content-block"}>
+        <form action="step1" onSubmit={handleSubmit}>
+          <Form
+            ref={formRef}
+            colCount={1}
+            id="form"
+            formData={onboardingLoan}
+            showColonAfterLabel={true}
+            showValidationSummary={true}
+            validationGroup="loanAppStep1"
+            onFieldDataChanged={onFieldDataChanged}
+          >
+            <GroupItem colSpan={2} cssClass={"dx-card responsive-paddings next-card"}>
+              <GroupItem caption="Pengajuan" colCount={2}>
+                <SimpleItem
+                  dataField="amount"
+                  label={{ text: "Jumlah Pinjaman" }}
+                  editorType="dxNumberBox"
+                  editorOptions={{ format: "Rp #,##0.00" }}
+                >
+                  <RequiredRule message="Jumlah Pinjaman is required" />
+                  <PatternRule message="hanya angka" pattern={/^[0-9]+$/} />
+                </SimpleItem>
+                <SimpleItem
+                  dataField="termId"
+                  editorType="dxSelectBox"
+                  editorOptions={loanTerm}
+                  label={{ text: "Jangka waktu" }}
+                >
+                  <RequiredRule message="Jangka waktu wajib diisi" />
+                </SimpleItem>
+              </GroupItem>
 
-    const onFieldDataChanged = (evt: any) => {
-        onboardingLoan[evt.dataField] = evt.value;
-    };
+              <GroupItem caption="Pencairan" colCount={2}>
+                <SimpleItem
+                  dataField="bankId"
+                  editorType="dxSelectBox"
+                  editorOptions={listBank}
+                  label={{ text: "Bank" }}
+                >
+                  <RequiredRule message="Bank wajib diisi" />
+                </SimpleItem>
+                <SimpleItem dataField="bankAccNumber" label={{ text: "Nomor Rekening" }}>
+                  <RequiredRule message="Nomor rekening wajib diisi" />
+                </SimpleItem>
+              </GroupItem>
 
-    return (
-        <>
-            <LoadPanel
-                shadingColor="rgba(0,0,0,0.4)"
-                visible={submitForm}
-                showIndicator={true}
-                shading={true}
-                showPane={true}
-                hideOnOutsideClick={false}
-            />
+              <GroupItem caption="Informasi tambahan" colCount={2}>
+                <SimpleItem
+                  dataField="purposeId"
+                  editorType="dxSelectBox"
+                  editorOptions={listLoanPurpose}
+                  label={{ text: "Tujuan pinjaman" }}
+                >
+                  <RequiredRule message="Tujuan pinjaman wajib diisi" />
+                </SimpleItem>
+              </GroupItem>
+            </GroupItem>
+            <GroupItem colSpan={2}>
+              <GroupItem colCount={2}>
+                <ButtonItem
+                  horizontalAlignment="left"
+                  buttonOptions={{
+                    text: "Kembali",
+                    type: "normal",
+                    onClick: () => {
+                      navigate("/loan-app");
+                    }
+                  }}
+                />
+                <ButtonItem
+                  horizontalAlignment="right"
+                  buttonOptions={{
+                    text: "Lanjutkan",
+                    type: "default",
+                    useSubmitBehavior: true,
+                    disabled: isDisableButtonNext
+                  }}
+                />
+              </GroupItem>
+            </GroupItem>
+          </Form>
+        </form>
+      </div>
 
-            <h2 className={"content-block"}>Step 1</h2>
-            <div className={"content-block"}>
-                <div className={"dx-card responsive-paddings"}>
-                    <form action="step1" onSubmit={handleSubmit}>
-                        <Form
-                            ref={formRef}
-                            colCount={1}
-                            id="form"
-                            formData={onboardingLoan}
-                            showColonAfterLabel={true}
-                            showValidationSummary={true}
-                            validationGroup="loanAppStep1"
-                            onFieldDataChanged={onFieldDataChanged}
-                        >
-                            <GroupItem colSpan={2}>
-                                <GroupItem caption="Pengajuan" colCount={2}>
-                                    <SimpleItem
-                                        dataField="amount"
-                                        label={{text: "Jumlah Pinjaman"}}
-                                        editorType="dxNumberBox"
-                                        editorOptions={{format: "Rp #,##0.00"}}
-                                    >
-                                        <RequiredRule message="Jumlah Pinjaman is required"/>
-                                        <PatternRule
-                                            message="hanya angka"
-                                            pattern={/^[0-9]+$/}
-                                        />
-                                    </SimpleItem>
-                                    <SimpleItem
-                                        dataField="termId"
-                                        editorType="dxSelectBox"
-                                        editorOptions={loanTerm}
-                                        label={{text: "Jangka waktu"}}
-                                    >
-                                        <RequiredRule message="Jangka waktu wajib diisi"/>
-                                    </SimpleItem>
-                                </GroupItem>
-                            </GroupItem>
-                            <GroupItem colSpan={2}>
-                                <GroupItem caption="Pencairan" colCount={2}>
-                                    <SimpleItem
-                                        dataField="bankId"
-                                        editorType="dxSelectBox"
-                                        editorOptions={listBank}
-                                        label={{text: "Bank"}}
-                                    >
-                                        <RequiredRule message="Bank wajib diisi"/>
-                                    </SimpleItem>
-                                    <SimpleItem
-                                        dataField="bankAccNumber"
-                                        label={{text: "Nomor Rekening"}}
-                                    >
-                                        <RequiredRule message="Nomor rekening wajib diisi"/>
-                                    </SimpleItem>
-                                </GroupItem>
-                            </GroupItem>
-                            <GroupItem colSpan={2}>
-                                <GroupItem caption="Informasi tambahan" colCount={2}>
-                                    <SimpleItem
-                                        dataField="purposeId"
-                                        editorType="dxSelectBox"
-                                        editorOptions={listLoanPurpose}
-                                        label={{text: "Tujuan pinjaman"}}
-                                    >
-                                        <RequiredRule message="Tujuan pinjaman wajib diisi"/>
-                                    </SimpleItem>
-                                    <SimpleItem
-                                        dataField="monthlyIncome"
-                                        label={{text: "Penghasilan perbulan"}}
-                                        editorType="dxNumberBox"
-                                        editorOptions={{format: "Rp #,##0.00"}}
-                                    >
-                                        <RequiredRule message="Penghasilan perbulan wajib diisi"/>
-                                        <PatternRule
-                                            message="hanya boleh angka"
-                                            pattern={/^[0-9]+$/}
-                                        />
-                                    </SimpleItem>
-                                </GroupItem>
-                            </GroupItem>
-                            <GroupItem colSpan={2}>
-                                <GroupItem colCount={2}>
-                                    <ButtonItem
-                                        horizontalAlignment="left"
-                                        buttonOptions={{
-                                            text: "Batal",
-                                            type: "normal",
-                                            onClick: () => {
-                                                navigate("/loan-app");
-                                            },
-                                        }}
-                                    />
-                                    <ButtonItem
-                                        horizontalAlignment="right"
-                                        buttonOptions={{
-                                            text: "Lanjutkan",
-                                            type: "default",
-                                            useSubmitBehavior: true,
-                                        }}
-                                    />
-                                </GroupItem>
-                            </GroupItem>
-                        </Form>
-                    </form>
-                </div>
-            </div>
-        </>
-    );
+      <Popup width={360} height={"auto"} visible={isShowWaitingPopup} showTitle={false}>
+        <div className="wrapper-popup-waiting">
+          <Loader />
+          <h5 className="title">Mohon tunggu penandatanganan perjanjian sedang diproses</h5>
+          <Button text="Kembali" type="normal" onClick={() => navigate(-1)} />
+        </div>
+      </Popup>
+    </>
+  );
 }

@@ -1,8 +1,8 @@
-import React, { useEffect, useRef, useCallback, useState } from "react";
 import TreeView from "devextreme-react/tree-view";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigation } from "../../contexts/navigation";
-import "./SideNavigationMenu.scss";
 import type { SideNavigationMenuProps } from "../../types";
+import "./SideNavigationMenu.scss";
 
 import * as events from "devextreme/events";
 import { getUserMenu } from "src/api/menu";
@@ -10,18 +10,15 @@ import { getUserMenu } from "src/api/menu";
 export default function SideNavigationMenu(
   props: React.PropsWithChildren<SideNavigationMenuProps>
 ) {
-  const { children, selectedItemChanged, openMenu, compactMode, onMenuReady } =
-    props;
+  const { children, selectedItemChanged, openMenu, compactMode, onMenuReady } = props;
   const [menus, setMenus] = useState<any[]>([]);
-  // const {isLarge} = useScreenSize();
   useEffect(() => {
     getUserMenu().then((value) => {
-      console.log("value",value)
       setMenus(value);
     });
   }, []);
   const {
-    navigationData: { currentPath },
+    navigationData: { currentPath }
   } = useNavigation();
 
   const treeViewRef = useRef<TreeView>(null);
@@ -58,10 +55,7 @@ export default function SideNavigationMenu(
   }, [currentPath, compactMode]);
 
   return (
-    <div
-      className={"dx-swatch-additional side-navigation-menu"}
-      ref={getWrapperRef}
-    >
+    <div className={"dx-swatch-additional side-navigation-menu"} ref={getWrapperRef}>
       {children}
       <div className={"menu-container"}>
         <TreeView
