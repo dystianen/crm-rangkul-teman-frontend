@@ -26,6 +26,7 @@ import {
     contactCheckEkyc,
     contactDetailApi,
     contactEkycInfo,
+    contactOCR,
     contactRelativeStore,
     countryStore,
     districtStore,
@@ -75,6 +76,8 @@ export default function EditPage() {
     const [errorMessage, setErrorMessage] = useState([""]);
     const [isLoadingUpdate, setLoadingUpdate] = useState(false);
     const [referenceNumber, setReferenceNumber] = useState("");
+    const [isShowPopupOCR, setShowPopupOCR] = useState(false);
+    const [isShowLoadingOCR, setShowLoadingOCR] = useState(false);
 
     const getBranchByUser = selectBoxBranchOptions(
         new DataSource(getActiveBranchByUserStore as any),
@@ -261,6 +264,7 @@ export default function EditPage() {
             const uri = await resizeImage(e.value[0]);
             if (type === "KTP") {
                 setKtpSrc(uri);
+                setShowPopupOCR(true);
             } else {
                 setSelfie(uri);
             }
@@ -349,7 +353,6 @@ export default function EditPage() {
             productId: loanAppOnboarding.productId,
         }
 
-        console.log('request create app ', payload);
         processWithoutEkyc(payload)
             .then(res => {
                 if (res.appId) {
@@ -361,6 +364,43 @@ export default function EditPage() {
                 notifyError(error.message);
             });
         e.preventDefault();
+    }
+
+    const handleSubmitOCR = () => {
+        const contactId = String(id);
+        const payload = {
+            contactId,
+            ktp: ktpSrc
+        }
+        setShowLoadingOCR(true);
+        contactOCR(payload)
+            .then(res => {
+                const data = {
+                    idNumber: res.identity,
+                    nameBorrower: res.name,
+                    birthPlace: res.placeOfBirth,
+                    birthDate: res.dateOfBirth,
+                    idGender: res.genderId,
+                    idReligion: res.religionId,
+                    idMarital: res.maritalStatusId,
+                    idCountry: res.countryId,
+                    idProvince: res.provinceId,
+                    idCity: res.cityId,
+                    districtId: res.districtId,
+                    subdistrictId: res.subDistrictId,
+                    address: res.address,
+                    neighborhoodUnit: res.rt,
+                    communityUnit: res.rw,
+                };
+        
+                setContact(prevContact => ({ ...prevContact, ...data }));
+                setShowLoadingOCR(false);
+            })
+            .catch(err => {
+                console.log('err: ', err);
+                notifyError(err.message);
+                setShowLoadingOCR(false);
+            })
     }
 
     const handleBack = () => {
@@ -984,6 +1024,20 @@ export default function EditPage() {
                         />
                     </Form>
                 </form>
+            </Popup>
+
+
+            <Popup id="popup-ocr" width={360} height={"auto"} visible={isShowPopupOCR} showTitle={false}>
+                <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", gap: "20px" }}>
+                    <h3 className="title" style={{ marginBottom: 0, marginTop: "1rem" }}>Lanjutkan dengan OCR?</h3>
+                    <div style={{ display: "flex", gap: "10px" }}>
+                        <Button text="Tidak" type="normal" onClick={() => setShowPopupError(false)}/>
+                        <Button text="Lanjutkan" type="default" onClick={handleSubmitOCR}>
+                            <LoadIndicator height={16} width={16} className="button-indicator" visible={isShowLoadingOCR} />
+                            <span className="dx-button-text" style={{ marginLeft: "8px" }}>Lanjutkan</span>
+                        </Button>
+                    </div>
+                </div>
             </Popup>
         </>
     );
