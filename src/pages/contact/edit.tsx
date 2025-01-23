@@ -4,6 +4,7 @@ import Form, {
     AsyncRule,
     ButtonItem,
     ButtonOptions,
+    EmailRule,
     GroupItem,
     Item,
     PatternRule,
@@ -508,6 +509,7 @@ export default function EditPage() {
                                         message="Email is already registered"
                                         validationCallback={asyncValidationEmail}
                                     />
+                                    <EmailRule message="Email is invalid" />
                                 </SimpleItem>
                                 <SimpleItem
                                     dataField="ktpImage"
