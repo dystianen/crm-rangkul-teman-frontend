@@ -19,8 +19,16 @@ const CreateEditContactLeads = () => {
   const formRef = useRef<Form>(null);
   const navigate = useNavigate();
   const location = useLocation();
-  const { id } = queryString.parse(location.search);
-  const idData = id as string;
+  const { id, ktp, branchId } = queryString.parse(location.search) as {
+    id?: string;
+    ktp?: string;
+    branchId?: string;
+  };
+  
+  const idData = id || "";
+  const idNumber = ktp || "";
+  const branchID = branchId || "";
+  
   const isCreate = location.pathname.includes("create");
   const [leads, setLeads] = useState<TReqCreateLeads>(InitLeadsValue);
   const [isLoadingSave, setLoadingSave] = useState(false);
@@ -40,6 +48,17 @@ const CreateEditContactLeads = () => {
       });
     }
   }, [idData]);
+
+  useEffect(() => {
+    if (idNumber && branchID) {
+      const data: { idNumber: string, branchId: string } = {
+        idNumber,
+        branchId: branchID,
+      };
+  
+      setLeads({...leads, ...data});
+    }
+  }, [idNumber, branchID]);
 
   const handleSuccess = (e: any) => {
     const form = formRef.current!.instance;
