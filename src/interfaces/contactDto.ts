@@ -79,6 +79,7 @@ export type TResCheckEkyc = {
   message: string[];
   isResend: boolean;
   isShowResult: boolean;
+  isCancel: boolean;
   appId: string;
   referenceNumber: string;
 };
