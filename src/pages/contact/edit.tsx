@@ -264,7 +264,6 @@ export default function EditPage() {
             const uri = await resizeImage(e.value[0]);
             if (type === "KTP") {
                 setKtpSrc(uri);
-                setShowPopupOCR(true);
             } else {
                 setSelfie(uri);
             }
@@ -299,6 +298,10 @@ export default function EditPage() {
         }
         if (evt.dataField === "districtId" && evt.value != null) {
             setSubDistrictOptions(selectBoxOptions(new DataSource(subDistrictStore(evt.value)), ""));
+        }
+
+        if (evt.dataField === "ktpImage" && evt.value != null) {
+            setShowPopupOCR(true)
         }
 
         contact[evt.dataField] = evt.value;
@@ -367,14 +370,16 @@ export default function EditPage() {
     }
 
     const handleSubmitOCR = () => {
+        setShowLoadingOCR(true);
         const contactId = String(id);
         const payload = {
             contactId,
             ktp: ktpSrc
         }
-        setShowLoadingOCR(true);
         contactOCR(payload)
             .then(res => {
+                setShowLoadingOCR(false);
+                setShowPopupOCR(false);
                 const data = {
                     idNumber: res.identity,
                     nameBorrower: res.name,
@@ -394,10 +399,29 @@ export default function EditPage() {
                 };
         
                 setContact(prevContact => ({ ...prevContact, ...data }));
-                setShowLoadingOCR(false);
+
+                if (res.countryId) {
+                    setProvinceOptions(
+                        selectBoxOptions(new DataSource(provinceStore(String(res.countryId))), "")
+                    );
+                }
+                if (res.provinceId) {
+                    setCityOptions(
+                        selectBoxOptions(new DataSource(cityStore(res.provinceId)), "")
+                    );
+                }
+                if (res.cityId) {
+                    setDistrictOptions(
+                        selectBoxOptions(new DataSource(districtStore(res.cityId)), "")
+                    );
+                }
+                if (res.districtId) {
+                    setSubDistrictOptions(
+                        selectBoxOptions(new DataSource(subDistrictStore(res.districtId)), "")
+                    );
+                }
             })
             .catch(err => {
-                console.log('err: ', err);
                 notifyError(err.message);
                 setShowLoadingOCR(false);
             })
@@ -1031,8 +1055,8 @@ export default function EditPage() {
                 <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", gap: "20px" }}>
                     <h3 className="title" style={{ marginBottom: 0, marginTop: "1rem" }}>Lanjutkan dengan OCR?</h3>
                     <div style={{ display: "flex", gap: "10px" }}>
-                        <Button text="Tidak" type="normal" onClick={() => setShowPopupError(false)}/>
-                        <Button text="Lanjutkan" type="default" onClick={handleSubmitOCR}>
+                        <Button text="Tidak" type="normal" onClick={() => setShowPopupOCR(false)}/>
+                        <Button text="Lanjutkan" type="default" onClick={handleSubmitOCR} disabled={isShowLoadingOCR}>
                             <LoadIndicator height={16} width={16} className="button-indicator" visible={isShowLoadingOCR} />
                             <span className="dx-button-text" style={{ marginLeft: "8px" }}>Lanjutkan</span>
                         </Button>
