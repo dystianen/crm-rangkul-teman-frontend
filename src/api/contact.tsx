@@ -157,6 +157,11 @@ export const processWithoutEkyc = async (payload: { contactId: string }): Promis
 export const contactOCR = async (payload: { contactId: string, ktp: string }): Promise<TResContactOCR> => {
   const resp = await ajaxPost(`/api/contact/ocr`, payload);
   return resp.data;
+}
+
+export const processCancel = async (contactId: string): Promise<any> => {
+  const resp = await ajaxGet(`/api/contact/ekyc/cancel/${contactId}`);
+  return resp.data;
 };
 
 export const activityResultStore = dataRawCustomStore(`/api/contact/data/activityResult?`);

@@ -33,7 +33,7 @@ import {
     educationStore,
     genderStore,
     getFile,
-    maritalStatusStore,
+    maritalStatusStore, processCancel,
     processWithoutEkyc,
     provinceStore,
     religionStore,
@@ -78,6 +78,7 @@ export default function EditPage() {
     const [referenceNumber, setReferenceNumber] = useState("");
     const [isShowPopupOCR, setShowPopupOCR] = useState(false);
     const [isShowLoadingOCR, setShowLoadingOCR] = useState(false);
+    const [isButtonCancel, setButtonCancel] = useState(false);
 
     const getBranchByUser = selectBoxBranchOptions(
         new DataSource(getActiveBranchByUserStore as any),
@@ -139,7 +140,7 @@ export default function EditPage() {
 
     useEffect(() => {
         const contactId = String(id);
-    
+
         contactDetailApi(contactId).then((res: any) => {
             const data: ContactRequest = {
                 contactId: contactId,
@@ -153,7 +154,7 @@ export default function EditPage() {
                 idMarital: res.maritalId,
                 motherMaidenName: res.motherMaidenName,
                 lengthOfJob: res?.workExperienceMonth || 0,
-    
+
                 idCountry: res?.contactAddressCountryId,
                 idCity: res?.contactAddressCityId,
                 idProvince: res?.contactAddressProvinceId,
@@ -164,18 +165,18 @@ export default function EditPage() {
                 neighborhoodUnit: res?.contactAddressNeighborhoodUnit,
                 communityUnit: res?.contactAddressCommunityUnit,
                 livingAddressStatus: res?.contactAddressOwnershipId,
-    
+
                 mobilePhone: res?.contactPhone,
                 email: res?.contactEmail,
-    
+
                 ktpImage: "",
                 typeOfGood: res?.typeOfGood,
                 salesChannelId: res?.salesChannelId,
                 marketAddress: res.marketAddress,
             };
-    
+
             setContact(prevContact => ({ ...prevContact, ...data }));
-    
+
             if (res?.contactAddressCountryId) {
                 setProvinceOptions(
                     selectBoxOptions(new DataSource(provinceStore(String(res?.contactAddressCountryId))), "")
@@ -201,18 +202,18 @@ export default function EditPage() {
                     .then(response => setKtpSrc(response))
                     .catch(error => console.error("ERROR:: ", error));
             }
-    
+
             if (res?.contactIdentFileUrlSelfie) {
                 getFile(res.contactIdentFileUrlSelfie)
                     .then(response => setSelfie(response))
                     .catch(error => console.error("ERROR:: ", error));
             }
-    
+
             if (res?.contactRelatives) {
                 setContactRelatives(res?.contactRelatives);
             }
         });
-    
+
         const handleFetchEkycInfo = () => {
             contactEkycInfo(contactId).then(res => {
                 const dataEkyc = {
@@ -223,20 +224,21 @@ export default function EditPage() {
                     createdOn: res.createdOn,
                     completedOn: res.modifiedOn
                 };
-    
+
                 setContact(prevContact => ({ ...prevContact, ...dataEkyc }));
             });
         };
-    
+
         handleFetchEkycInfo();
-    
+
         const handleCheckEkyc = (intervalId: NodeJS.Timeout) => {
             contactCheckEkyc(contactId).then((res) => {
+                setButtonCancel(res.isCancel);
                 setShowPopupCheckEkyc(res.isEkycWaiting);
                 setShowPopupError(res.isShowResult);
                 setReferenceNumber(res.referenceNumber);
                 setProcessWithoutEkyc(!res.isResend);
-    
+
                 if (res.message) {
                     setErrorMessage(res.message);
                 }
@@ -249,16 +251,16 @@ export default function EditPage() {
                 }
             });
         };
-    
+
         const intervalId = setInterval(() => {
             handleCheckEkyc(intervalId);
         }, 5000);
-    
+
         handleCheckEkyc(intervalId);
-    
+
         return () => clearInterval(intervalId);
     }, [id]);
-    
+
     const onFileChanged = async (e: any, type: "KTP" | "SELFIE") => {
         if (e.value.length > 0) {
             const uri = await resizeImage(e.value[0]);
@@ -431,6 +433,16 @@ export default function EditPage() {
         navigate(`/contact`);
     };
 
+
+    const submitCancel = () => {
+        const contactId = String(id);
+
+        processCancel(contactId).then((res) => {
+            setButtonCancel(false);
+            setShowPopupCheckEkyc(false);
+        });
+    };
+
     const backButtonOptions = {
         icon: "back",
         text: "Kembali",
@@ -596,23 +608,23 @@ export default function EditPage() {
                         </GroupItem>
                         <GroupItem colSpan={2} cssClass={"dx-card responsive-paddings next-card"}>
                             <GroupItem caption="EKYC Information" colCount={2}>
-                                <SimpleItem 
-                                    dataField="referenceNumber" 
-                                    label={{text: "Reference Number"}} 
+                                <SimpleItem
+                                    dataField="referenceNumber"
+                                    label={{text: "Reference Number"}}
                                     editorOptions={{
                                         readOnly: true,
-                                    }} 
+                                    }}
                                 />
-                                <SimpleItem 
-                                    dataField="privyId" 
-                                    label={{text: "Privy Id"}} 
+                                <SimpleItem
+                                    dataField="privyId"
+                                    label={{text: "Privy Id"}}
                                     editorOptions={{
                                         readOnly: true,
-                                    }} 
+                                    }}
                                 />
-                                <SimpleItem 
-                                    dataField="createdOn" 
-                                    label={{text: "Created On"}} 
+                                <SimpleItem
+                                    dataField="createdOn"
+                                    label={{text: "Created On"}}
                                     editorOptions={{
                                         displayFormat: "dd MMM yyyy HH:mm:ss",
                                         type: "datetime",
@@ -620,9 +632,9 @@ export default function EditPage() {
                                       }}
                                     editorType="dxDateBox"
                                 />
-                                <SimpleItem 
-                                    dataField="completedOn" 
-                                    label={{text: "Completed On"}} 
+                                <SimpleItem
+                                    dataField="completedOn"
+                                    label={{text: "Completed On"}}
                                     editorOptions={{
                                         displayFormat: "dd MMM yyyy HH:mm:ss",
                                         type: "datetime",
@@ -630,20 +642,20 @@ export default function EditPage() {
                                     }}
                                     editorType="dxDateBox"
                                 />
-                                <SimpleItem 
-                                    dataField="rejectReason" 
-                                    label={{text: "Reject Reason"}} 
+                                <SimpleItem
+                                    dataField="rejectReason"
+                                    label={{text: "Reject Reason"}}
                                     cssClass="reject-reason"
                                     editorOptions={{
                                         readOnly: true,
-                                    }} 
+                                    }}
                                 />
-                                <SimpleItem 
-                                    dataField="isResend" 
-                                    label={{text: "Retryable"}} 
+                                <SimpleItem
+                                    dataField="isResend"
+                                    label={{text: "Retryable"}}
                                     editorOptions={{
                                         readOnly: true,
-                                    }} 
+                                    }}
                                     editorType="dxTextBox"
                                 />
                             </GroupItem>
@@ -853,7 +865,7 @@ export default function EditPage() {
                         </ButtonItem>
                     </Form>
                 </form>
-                
+
                 <div className="form__tabs dx-card responsive-paddings next-card">
                     <Form>
                         <TabbedItem
@@ -942,13 +954,18 @@ export default function EditPage() {
             <Popup width={360} height={"auto"} visible={isShowPopupCheckEkyc} showTitle={false}>
                 <div className="wrapper-popup-waiting">
                     <Loader/>
-                    <h5 className="title" style={{ marginBottom: 0, marginTop: "1rem" }}>Mohon tunggu sedang dilakukan verifikasi data</h5>
+                    <h5 className="title" style={{marginBottom: 0, marginTop: "1rem"}}>Mohon tunggu sedang dilakukan
+                        verifikasi data</h5>
                     {referenceNumber && (
                         <div className="card-reference-number">
-                            <p style={{ textAlign: "center" }}>Privy reference number: <span style={{ fontWeight: 500 }}>{referenceNumber}</span></p>
+                            <p style={{textAlign: "center"}}>Privy reference number: <span
+                                style={{fontWeight: 500}}>{referenceNumber}</span></p>
                         </div>
                     )}
-                    <Button text="Kembali" type="normal" onClick={handleBack}/>
+                    <div style={{display: "flex", gap: "10px"}}>
+                        <Button text="Kembali" type="default" onClick={handleBack}/>
+                        <Button text="Batalkan" visible={isButtonCancel}  type="normal" onClick={() => submitCancel()}/>
+                    </div>
                 </div>
             </Popup>
 
