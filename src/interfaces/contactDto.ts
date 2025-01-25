@@ -109,3 +109,27 @@ export type TResInfoEkyc = {
   isResend?: boolean;
   referenceNumber?: string;
 };
+
+export type TResContactOCR =  {
+  identity:        string;
+  name:            string;
+  dateOfBirth:     string;
+  placeOfBirth:    string;
+  occupation:      string;
+  nationality:     string;
+  religionId:      string;
+  genderId:        string;
+  maritalStatusId: string;
+  bloodType:       string;
+  countryId:       string;
+  provinceId:      string;
+  cityId:          string;
+  districtId:      string;
+  subDistrictId:   string;
+  address:         string;
+  rt:              string;
+  rw:              string;
+  department:      null;
+  validityPeriod:  string;
+  issueTime:       null;
+}
