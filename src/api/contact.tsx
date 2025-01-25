@@ -1,6 +1,6 @@
 import CustomStore from "devextreme/data/custom_store";
 import qs from "qs";
-import type { TReqCreateLeads, TResCheckEkyc, TResInfoEkyc } from "../interfaces/contactDto";
+import type { TReqCreateLeads, TResCheckEkyc, TResContactOCR, TResInfoEkyc } from "../interfaces/contactDto";
 import { FilterPss, setFilterPss } from "../interfaces/IFilterPss";
 import { customStore } from "../model/customStore";
 import { dataRawCustomStore } from "../model/datagrid";
@@ -153,6 +153,11 @@ export const processWithoutEkyc = async (payload: { contactId: string }): Promis
   const resp = await ajaxPost(`/api/contact/without/ekyc`, payload);
   return resp.data;
 };
+
+export const contactOCR = async (payload: { contactId: string, ktp: string }): Promise<TResContactOCR> => {
+  const resp = await ajaxPost(`/api/contact/ocr`, payload);
+  return resp.data;
+}
 
 export const processCancel = async (contactId: string): Promise<any> => {
   const resp = await ajaxGet(`/api/contact/ekyc/cancel/${contactId}`);

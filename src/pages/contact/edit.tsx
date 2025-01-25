@@ -26,6 +26,7 @@ import {
     contactCheckEkyc,
     contactDetailApi,
     contactEkycInfo,
+    contactOCR,
     contactRelativeStore,
     countryStore,
     districtStore,
@@ -75,6 +76,8 @@ export default function EditPage() {
     const [errorMessage, setErrorMessage] = useState([""]);
     const [isLoadingUpdate, setLoadingUpdate] = useState(false);
     const [referenceNumber, setReferenceNumber] = useState("");
+    const [isShowPopupOCR, setShowPopupOCR] = useState(false);
+    const [isShowLoadingOCR, setShowLoadingOCR] = useState(false);
     const [isButtonCancel, setButtonCancel] = useState(false);
 
     const getBranchByUser = selectBoxBranchOptions(
@@ -299,6 +302,10 @@ export default function EditPage() {
             setSubDistrictOptions(selectBoxOptions(new DataSource(subDistrictStore(evt.value)), ""));
         }
 
+        if (evt.dataField === "ktpImage" && evt.value != null) {
+            setShowPopupOCR(true)
+        }
+
         contact[evt.dataField] = evt.value;
     };
 
@@ -351,7 +358,6 @@ export default function EditPage() {
             productId: loanAppOnboarding.productId,
         }
 
-        console.log('request create app ', payload);
         processWithoutEkyc(payload)
             .then(res => {
                 if (res.appId) {
@@ -363,6 +369,64 @@ export default function EditPage() {
                 notifyError(error.message);
             });
         e.preventDefault();
+    }
+
+    const handleSubmitOCR = () => {
+        setShowLoadingOCR(true);
+        const contactId = String(id);
+        const payload = {
+            contactId,
+            ktp: ktpSrc
+        }
+        contactOCR(payload)
+            .then(res => {
+                setShowLoadingOCR(false);
+                setShowPopupOCR(false);
+                const data = {
+                    idNumber: res.identity,
+                    nameBorrower: res.name,
+                    birthPlace: res.placeOfBirth,
+                    birthDate: res.dateOfBirth,
+                    idGender: res.genderId,
+                    idReligion: res.religionId,
+                    idMarital: res.maritalStatusId,
+                    idCountry: res.countryId,
+                    idProvince: res.provinceId,
+                    idCity: res.cityId,
+                    districtId: res.districtId,
+                    subdistrictId: res.subDistrictId,
+                    address: res.address,
+                    neighborhoodUnit: res.rt,
+                    communityUnit: res.rw,
+                };
+        
+                setContact(prevContact => ({ ...prevContact, ...data }));
+
+                if (res.countryId) {
+                    setProvinceOptions(
+                        selectBoxOptions(new DataSource(provinceStore(String(res.countryId))), "")
+                    );
+                }
+                if (res.provinceId) {
+                    setCityOptions(
+                        selectBoxOptions(new DataSource(cityStore(res.provinceId)), "")
+                    );
+                }
+                if (res.cityId) {
+                    setDistrictOptions(
+                        selectBoxOptions(new DataSource(districtStore(res.cityId)), "")
+                    );
+                }
+                if (res.districtId) {
+                    setSubDistrictOptions(
+                        selectBoxOptions(new DataSource(subDistrictStore(res.districtId)), "")
+                    );
+                }
+            })
+            .catch(err => {
+                notifyError(err.message);
+                setShowLoadingOCR(false);
+            })
     }
 
     const handleBack = () => {
@@ -1001,6 +1065,20 @@ export default function EditPage() {
                         />
                     </Form>
                 </form>
+            </Popup>
+
+
+            <Popup id="popup-ocr" width={360} height={"auto"} visible={isShowPopupOCR} showTitle={false}>
+                <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", gap: "20px" }}>
+                    <h3 className="title" style={{ marginBottom: 0, marginTop: "1rem" }}>Lanjutkan dengan OCR?</h3>
+                    <div style={{ display: "flex", gap: "10px" }}>
+                        <Button text="Tidak" type="normal" onClick={() => setShowPopupOCR(false)}/>
+                        <Button text="Lanjutkan" type="default" onClick={handleSubmitOCR} disabled={isShowLoadingOCR}>
+                            <LoadIndicator height={16} width={16} className="button-indicator" visible={isShowLoadingOCR} />
+                            <span className="dx-button-text" style={{ marginLeft: "8px" }}>Lanjutkan</span>
+                        </Button>
+                    </div>
+                </div>
             </Popup>
         </>
     );
