@@ -1,13 +1,13 @@
-import { Popup } from "devextreme-react";
+import {LoadIndicator, Popup} from "devextreme-react";
 import { Button } from "devextreme-react/button";
 import "devextreme-react/date-box";
 import "devextreme-react/file-uploader";
-import Form, {ButtonItem, GroupItem, PatternRule, RequiredRule, SimpleItem} from "devextreme-react/form";
+import Form, {ButtonItem, ButtonOptions, GroupItem, PatternRule, RequiredRule, SimpleItem} from "devextreme-react/form";
 import { LoadPanel } from "devextreme-react/load-panel";
 import DataSource from "devextreme/data/data_source";
 import { FieldDataChangedEvent } from "devextreme/ui/form";
 import queryString from "query-string";
-import { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 import { useLocation } from "react-router-dom";
 import {checkAccess, checkStatusSigning, createAppLoanOnboardingStep1, detailAppLoan, getListBank, getLoanPurpose, getUnsignedDoc, loanTermStore} from "src/api/apploan";
@@ -161,9 +161,9 @@ export default function Step1Page() {
       }
     }
 
-    if (dataField === "bankId" || dataField === "bankAccNumber") {
-      sendBankCheck();
-    }
+    // if (dataField === "bankId" || dataField === "bankAccNumber") {
+    //   sendBankCheck();
+    // }
   };
 
   const stompClientRef = useRef<any>(null);
@@ -181,19 +181,21 @@ export default function Step1Page() {
         stompClient.subscribe("/api/bankAccountResult", (response) => {
           console.log("Received message:", response.body);
           const res = JSON.parse(response.body);
-          if (res.isWaiting) {
-            setDisableBankIdBankAccNumber(true);
-          } else {
-            setDisableBankIdBankAccNumber(false);
-          }
-
-          if (res.isSuccess) {
-            notifySuccess(res.message);
-            setDisableButtonNext(false);
-          } else {
-            notifyError(res.message);
-            setDisableButtonNext(true);
-          }
+					if(res.appId === id){
+						if (res.isWaiting) {
+							setDisableBankIdBankAccNumber(true);
+						} else {
+							setDisableBankIdBankAccNumber(false);
+						}
+						
+						if (res.isSuccess) {
+							notifySuccess(res.message);
+							setDisableButtonNext(false);
+						} else {
+							notifyError(res.message);
+							setDisableButtonNext(true);
+						}
+					}
         });
       },
       onStompError: (frame) => {
@@ -208,26 +210,39 @@ export default function Step1Page() {
     return () => {
       stompClient.deactivate();
     };
-  }, []);
+  }, [id]);
 
-  const sendBankCheck = () => {
-    const payload = {
+  const sendBankCheck = (e: any) => {
+	  const form = formRef.current!.instance;
+	  const bankId = form.getEditor('bankId')?.option('value');
+	  const bankAccNumber = form.getEditor('bankAccNumber')?.option('value');
+	  const payload = {
       appId: id,
-      bankId: onboardingLoan.bankId,
-      bankAccountNumber: onboardingLoan.bankAccNumber
+      bankId: bankId,
+      bankAccountNumber: bankAccNumber
     };
     console.log("Sending bank account check:", payload);
-    const stompClient = stompClientRef.current;
-    if (stompClient && stompClient.connected) {
-      if((onboardingLoan.bankId != null && onboardingLoan.bankId.length > 0) && (onboardingLoan.bankAccNumber != null && onboardingLoan.bankAccNumber.length > 0)) {
-        stompClient.publish({
-          destination: `/api/bankAccountCheck/${id}`,
-          body: JSON.stringify(payload),
-        });
-      }
-    } else {
-      console.error("Stomp client is not connected");
+    if(bankId === null || bankId === "" || bankId === "null"){
+      notifyError("Bank tidak boleh kosong, wajib dipilih!");
+    } else if(bankAccNumber === null || bankAccNumber === "" || bankAccNumber === "null"){
+		  notifyError("Nomor rekening wajib diisi");
+	  } else {
+	    const stompClient = stompClientRef.current;
+	    if (stompClient && stompClient.connected) {
+		    if((bankId.length > 0) && (bankAccNumber.length > 0)) {
+			    stompClient.publish({
+				    destination: `/api/bankAccountCheck/${id}`,
+				    body: JSON.stringify(payload),
+			    });
+			    setDisableBankIdBankAccNumber(true);
+		    }
+	    } else {
+		    console.error("Stomp client is not connected");
+	    }
+	    
     }
+    
+	  e.event.stopPropagation();
   };
 
   return (
@@ -300,13 +315,28 @@ export default function Step1Page() {
                 >
                   <RequiredRule message="Bank wajib diisi" />
                 </SimpleItem>
-                <SimpleItem
-                  dataField="bankAccNumber"
-                  label={{ text: "Nomor Rekening" }}
-                  editorOptions={{ disabled: isDableBankIdBankAccNumber }}
-                >
-                  <RequiredRule message="Nomor rekening wajib diisi" />
-                </SimpleItem>
+                <GroupItem itemType="group" colCount={4}>
+                  <SimpleItem
+                    colSpan={3}
+                    dataField="bankAccNumber"
+                    label={{ text: "Nomor Rekening" }}
+                    editorOptions={{ disabled: isDableBankIdBankAccNumber }}
+                  >
+                    <RequiredRule message="Nomor rekening wajib diisi" />
+                  </SimpleItem>
+                  <ButtonItem
+                    colSpan={1}
+                    verticalAlignment={"center"}
+                    horizontalAlignment={"center"}
+                  >
+	                  <ButtonOptions onClick={sendBankCheck} type="success" disabled={isDableBankIdBankAccNumber}>
+		                  <div className="button-options">
+			                  <LoadIndicator width="20px" height="20px" visible={isDableBankIdBankAccNumber}/>
+			                  <span className="dx-button-text">Periksa</span>
+		                  </div>
+	                  </ButtonOptions>
+                  </ButtonItem>
+                </GroupItem>
               </GroupItem>
 
               <GroupItem caption="Informasi tambahan" colCount={2}>
