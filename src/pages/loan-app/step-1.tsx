@@ -17,7 +17,6 @@ import {AppLoanOnboardingStep1Request, AppLoanRequest, initLoanOnboardingStep1Va
 import { store } from "src/store/store";
 import "./loan-app.scss";
 import {notifyError, notifySuccess, notifyWarning} from "../../utils/devExtremeUtils";
-
 import SockJS from 'sockjs-client';
 import { Client } from '@stomp/stompjs';
 
@@ -36,6 +35,7 @@ export default function Step1Page() {
   const [loadingDownloadBtn, setLoadingDownloadBtn] = useState(false);
   const [isShowWaitingPopup, setShowWaitingPopup] = useState(false);
   const [isDisableButtonNext, setDisableButtonNext] = useState(false);
+  const [isDableBankIdBankAccNumber, setDisableBankIdBankAccNumber] = useState(false);
 
   const formRef = useRef<Form>(null);
 
@@ -133,12 +133,12 @@ export default function Step1Page() {
           handleCheckSigning(intervalId);
         } else {
           checkAccess('0c0983ad-20b2-446d-8462-328aa64915f7').then((res) => {
-              if (!res) {
-                  notifySuccess("Berhasil submit data");
-                  navigate(`/loan-app`);
-              } else {
-                  navigate(`/loan-app/create/step/2?id=${id}`);
-              }
+            if (!res) {
+              notifySuccess("Berhasil submit data");
+              navigate(`/loan-app`);
+            } else {
+              navigate(`/loan-app/create/step/2?id=${id}`);
+            }
           });
         }
       }, (error) => {
@@ -160,10 +160,14 @@ export default function Step1Page() {
         }));
       }
     }
+
+    if (dataField === "bankId" || dataField === "bankAccNumber") {
+      sendBankCheck();
+    }
   };
-	
-	const stompClientRef = useRef<any>(null);
-	
+
+  const stompClientRef = useRef<any>(null);
+
   useEffect(() => {
     var socket = new SockJS(`${process.env.REACT_APP_BACKEND}api/bankAccountLive`);
     const stompClient = new Client({
@@ -173,9 +177,23 @@ export default function Step1Page() {
         console.log(str);
       },
       onConnect: () => {
-        console.log('Connected to WebSocket');
-        stompClient.subscribe('/api/bankAccountResult', (response) => {
-          console.log('Received message:', response.body);
+        console.log("Connected to WebSocket");
+        stompClient.subscribe("/api/bankAccountResult", (response) => {
+          console.log("Received message:", response.body);
+          const res = JSON.parse(response.body);
+          if (res.isWaiting) {
+            setDisableBankIdBankAccNumber(true);
+          } else {
+            setDisableBankIdBankAccNumber(false);
+          }
+
+          if (res.isSuccess) {
+            notifySuccess(res.message);
+            setDisableButtonNext(false);
+          } else {
+            notifyError(res.message);
+            setDisableButtonNext(true);
+          }
         });
       },
       onStompError: (frame) => {
@@ -183,22 +201,22 @@ export default function Step1Page() {
         console.error('Additional details: ' + frame.body);
       },
     });
-    
+
     stompClient.activate();
     stompClientRef.current = stompClient;
-    
+
     return () => {
       stompClient.deactivate();
     };
   }, []);
-  
-  const sendBankCheck = (e:any) => {
-	  const payload = {
-		  appId: id,
-		  bankId: onboardingLoan.bankId,
-		  bankAccountNumber: onboardingLoan.bankAccNumber
-	  };
-	  console.log('Sending bank account check:', payload, e);
+
+  const sendBankCheck = () => {
+    const payload = {
+      appId: id,
+      bankId: onboardingLoan.bankId,
+      bankAccountNumber: onboardingLoan.bankAccNumber
+    };
+    console.log("Sending bank account check:", payload);
     const stompClient = stompClientRef.current;
     if (stompClient && stompClient.connected) {
       if((onboardingLoan.bankId != null && onboardingLoan.bankId.length > 0) && (onboardingLoan.bankAccNumber != null && onboardingLoan.bankAccNumber.length > 0)) {
@@ -208,11 +226,10 @@ export default function Step1Page() {
         });
       }
     } else {
-      console.error('Stomp client is not connected');
+      console.error("Stomp client is not connected");
     }
   };
-  
-  
+
   return (
     <>
       <LoadPanel
@@ -278,12 +295,16 @@ export default function Step1Page() {
                 <SimpleItem
                   dataField="bankId"
                   editorType="dxSelectBox"
-                  editorOptions={{...listBank, onFocusOut: sendBankCheck}}
+                  editorOptions={{ ...listBank, disabled: isDableBankIdBankAccNumber }}
                   label={{ text: "Bank" }}
                 >
                   <RequiredRule message="Bank wajib diisi" />
                 </SimpleItem>
-                <SimpleItem dataField="bankAccNumber" label={{ text: "Nomor Rekening" }} editorOptions={{onFocusOut: sendBankCheck}}>
+                <SimpleItem
+                  dataField="bankAccNumber"
+                  label={{ text: "Nomor Rekening" }}
+                  editorOptions={{ disabled: isDableBankIdBankAccNumber }}
+                >
                   <RequiredRule message="Nomor rekening wajib diisi" />
                 </SimpleItem>
               </GroupItem>
