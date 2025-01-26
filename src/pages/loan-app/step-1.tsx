@@ -18,6 +18,9 @@ import { store } from "src/store/store";
 import "./loan-app.scss";
 import {notifyError, notifySuccess, notifyWarning} from "../../utils/devExtremeUtils";
 
+import SockJS from 'sockjs-client';
+import { Client } from '@stomp/stompjs';
+
 export default function Step1Page() {
   const navigate = useNavigate();
   const { loanapp } = store.getState();
@@ -158,7 +161,58 @@ export default function Step1Page() {
       }
     }
   };
-
+	
+	const stompClientRef = useRef<any>(null);
+	
+  useEffect(() => {
+    var socket = new SockJS(`${process.env.REACT_APP_BACKEND}api/bankAccountLive`);
+    const stompClient = new Client({
+      webSocketFactory: () => socket,
+      reconnectDelay: 5000,
+      debug: (str) => {
+        console.log(str);
+      },
+      onConnect: () => {
+        console.log('Connected to WebSocket');
+        stompClient.subscribe('/api/bankAccountResult', (response) => {
+          console.log('Received message:', response.body);
+        });
+      },
+      onStompError: (frame) => {
+        console.error('Broker reported error: ' + frame.headers['message']);
+        console.error('Additional details: ' + frame.body);
+      },
+    });
+    
+    stompClient.activate();
+    stompClientRef.current = stompClient;
+    
+    return () => {
+      stompClient.deactivate();
+    };
+  }, []);
+  
+  const sendBankCheck = (e:any) => {
+	  const payload = {
+		  appId: id,
+		  bankId: onboardingLoan.bankId,
+		  bankAccountNumber: onboardingLoan.bankAccNumber
+	  };
+	  console.log('Sending bank account check:', payload, e);
+    const stompClient = stompClientRef.current;
+    if (stompClient && stompClient.connected) {
+      if((onboardingLoan.bankId != null && onboardingLoan.bankId.length > 0) && (onboardingLoan.bankAccNumber != null && onboardingLoan.bankAccNumber.length > 0)) {
+        stompClient.publish({
+          destination: `/api/bankAccountCheck/${id}`,
+          body: JSON.stringify(payload),
+        });
+      }
+    } else {
+      console.error('Stomp client is not connected');
+    }
+  };
+  
+  
   return (
     <>
       <LoadPanel
@@ -224,12 +278,12 @@ export default function Step1Page() {
                 <SimpleItem
                   dataField="bankId"
                   editorType="dxSelectBox"
-                  editorOptions={listBank}
+                  editorOptions={{...listBank, onFocusOut: sendBankCheck}}
                   label={{ text: "Bank" }}
                 >
                   <RequiredRule message="Bank wajib diisi" />
                 </SimpleItem>
-                <SimpleItem dataField="bankAccNumber" label={{ text: "Nomor Rekening" }}>
+                <SimpleItem dataField="bankAccNumber" label={{ text: "Nomor Rekening" }} editorOptions={{onFocusOut: sendBankCheck}}>
                   <RequiredRule message="Nomor rekening wajib diisi" />
                 </SimpleItem>
               </GroupItem>
