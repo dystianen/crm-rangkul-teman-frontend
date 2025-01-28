@@ -19,6 +19,7 @@ import "./loan-app.scss";
 import {notifyError, notifySuccess, notifyWarning} from "../../utils/devExtremeUtils";
 import SockJS from 'sockjs-client';
 import { Client } from '@stomp/stompjs';
+import {CustomBankItem} from "../../components/bank-list";
 
 export default function Step1Page() {
   const navigate = useNavigate();
@@ -297,6 +298,7 @@ export default function Step1Page() {
                   editorType="dxSelectBox"
                   editorOptions={{ ...listBank, disabled: isDableBankIdBankAccNumber }}
                   label={{ text: "Bank" }}
+                  render={CustomBankItem}
                 >
                   <RequiredRule message="Bank wajib diisi" />
                 </SimpleItem>
