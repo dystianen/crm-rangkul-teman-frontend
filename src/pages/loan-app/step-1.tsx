@@ -1,8 +1,15 @@
-import {LoadIndicator, Popup} from "devextreme-react";
+import { Client } from "@stomp/stompjs";
+import { Popup } from "devextreme-react";
 import { Button } from "devextreme-react/button";
 import "devextreme-react/date-box";
 import "devextreme-react/file-uploader";
-import Form, {ButtonItem, ButtonOptions, GroupItem, PatternRule, RequiredRule, SimpleItem} from "devextreme-react/form";
+import Form, {
+  ButtonItem,
+  GroupItem,
+  PatternRule,
+  RequiredRule,
+  SimpleItem
+} from "devextreme-react/form";
 import { LoadPanel } from "devextreme-react/load-panel";
 import DataSource from "devextreme/data/data_source";
 import { FieldDataChangedEvent } from "devextreme/ui/form";
@@ -10,15 +17,27 @@ import queryString from "query-string";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 import { useLocation } from "react-router-dom";
-import {checkAccess, checkStatusSigning, createAppLoanOnboardingStep1, detailAppLoan, getListBank, getLoanPurpose, getUnsignedDoc, loanTermStore} from "src/api/apploan";
+import SockJS from "sockjs-client";
+import {
+  checkAccess,
+  checkStatusSigning,
+  createAppLoanOnboardingStep1,
+  detailAppLoan,
+  getListBank,
+  getLoanPurpose,
+  getUnsignedDoc,
+  loanTermStore
+} from "src/api/apploan";
 import { selectBoxOptions } from "src/api/contact";
 import Loader from "src/components/loader";
-import {AppLoanOnboardingStep1Request, AppLoanRequest, initLoanOnboardingStep1Value} from "src/interfaces/appLoanOnboarding";
+import {
+  AppLoanOnboardingStep1Request,
+  AppLoanRequest,
+  initLoanOnboardingStep1Value
+} from "src/interfaces/appLoanOnboarding";
 import { store } from "src/store/store";
+import { notifyError, notifySuccess, notifyWarning } from "../../utils/devExtremeUtils";
 import "./loan-app.scss";
-import {notifyError, notifySuccess, notifyWarning} from "../../utils/devExtremeUtils";
-import SockJS from 'sockjs-client';
-import { Client } from '@stomp/stompjs';
 
 export default function Step1Page() {
   const navigate = useNavigate();
@@ -132,7 +151,7 @@ export default function Step1Page() {
 
           handleCheckSigning(intervalId);
         } else {
-          checkAccess('0c0983ad-20b2-446d-8462-328aa64915f7').then((res) => {
+          checkAccess("0c0983ad-20b2-446d-8462-328aa64915f7").then((res) => {
             if (!res) {
               notifySuccess("Berhasil submit data");
               navigate(`/loan-app`);
@@ -141,7 +160,8 @@ export default function Step1Page() {
             }
           });
         }
-      }, (error) => {
+      },
+      (error) => {
         setSubmitForm(false);
         notifyError(error);
       }
@@ -161,9 +181,9 @@ export default function Step1Page() {
       }
     }
 
-    // if (dataField === "bankId" || dataField === "bankAccNumber") {
-    //   sendBankCheck();
-    // }
+    if (dataField === "bankId" || dataField === "bankAccNumber") {
+      sendBankCheck();
+    }
   };
 
   const stompClientRef = useRef<any>(null);
@@ -181,27 +201,27 @@ export default function Step1Page() {
         stompClient.subscribe("/api/bankAccountResult", (response) => {
           console.log("Received message:", response.body);
           const res = JSON.parse(response.body);
-					if(res.appId === id){
-						if (res.isWaiting) {
-							setDisableBankIdBankAccNumber(true);
-						} else {
-							setDisableBankIdBankAccNumber(false);
-						}
-						
-						if (res.isSuccess) {
-							notifySuccess(res.message);
-							setDisableButtonNext(false);
-						} else {
-							notifyError(res.message);
-							setDisableButtonNext(true);
-						}
-					}
+          if (res.appId === id) {
+            if (res.isWaiting) {
+              setDisableBankIdBankAccNumber(true);
+            } else {
+              setDisableBankIdBankAccNumber(false);
+
+              if (res.success) {
+                notifySuccess(res.message);
+                setDisableButtonNext(false);
+              } else {
+                notifyError(res.message);
+                setDisableButtonNext(true);
+              }
+            }
+          }
         });
       },
       onStompError: (frame) => {
-        console.error('Broker reported error: ' + frame.headers['message']);
-        console.error('Additional details: ' + frame.body);
-      },
+        console.error("Broker reported error: " + frame.headers["message"]);
+        console.error("Additional details: " + frame.body);
+      }
     });
 
     stompClient.activate();
@@ -212,37 +232,29 @@ export default function Step1Page() {
     };
   }, [id]);
 
-  const sendBankCheck = (e: any) => {
-	  const form = formRef.current!.instance;
-	  const bankId = form.getEditor('bankId')?.option('value');
-	  const bankAccNumber = form.getEditor('bankAccNumber')?.option('value');
-	  const payload = {
+  const sendBankCheck = () => {
+    const payload = {
       appId: id,
-      bankId: bankId,
-      bankAccountNumber: bankAccNumber
+      bankId: onboardingLoan.bankId,
+      bankAccountNumber: onboardingLoan.bankAccNumber
     };
     console.log("Sending bank account check:", payload);
-    if(bankId === null || bankId === "" || bankId === "null"){
-      notifyError("Bank tidak boleh kosong, wajib dipilih!");
-    } else if(bankAccNumber === null || bankAccNumber === "" || bankAccNumber === "null"){
-		  notifyError("Nomor rekening wajib diisi");
-	  } else {
-	    const stompClient = stompClientRef.current;
-	    if (stompClient && stompClient.connected) {
-		    if((bankId.length > 0) && (bankAccNumber.length > 0)) {
-			    stompClient.publish({
-				    destination: `/api/bankAccountCheck/${id}`,
-				    body: JSON.stringify(payload),
-			    });
-			    setDisableBankIdBankAccNumber(true);
-		    }
-	    } else {
-		    console.error("Stomp client is not connected");
-	    }
-	    
+    const stompClient = stompClientRef.current;
+    if (stompClient && stompClient.connected) {
+      if (
+        onboardingLoan.bankId != null &&
+        onboardingLoan.bankId.length > 0 &&
+        onboardingLoan.bankAccNumber != null &&
+        onboardingLoan.bankAccNumber.length > 0
+      ) {
+        stompClient.publish({
+          destination: `/api/bankAccountCheck/${id}`,
+          body: JSON.stringify(payload)
+        });
+      }
+    } else {
+      console.error("Stomp client is not connected");
     }
-    
-	  e.event.stopPropagation();
   };
 
   return (
@@ -315,28 +327,14 @@ export default function Step1Page() {
                 >
                   <RequiredRule message="Bank wajib diisi" />
                 </SimpleItem>
-                <GroupItem itemType="group" colCount={4}>
-                  <SimpleItem
-                    colSpan={3}
-                    dataField="bankAccNumber"
-                    label={{ text: "Nomor Rekening" }}
-                    editorOptions={{ disabled: isDableBankIdBankAccNumber }}
-                  >
-                    <RequiredRule message="Nomor rekening wajib diisi" />
-                  </SimpleItem>
-                  <ButtonItem
-                    colSpan={1}
-                    verticalAlignment={"center"}
-                    horizontalAlignment={"center"}
-                  >
-	                  <ButtonOptions onClick={sendBankCheck} type="success" disabled={isDableBankIdBankAccNumber}>
-		                  <div className="button-options">
-			                  <LoadIndicator width="20px" height="20px" visible={isDableBankIdBankAccNumber}/>
-			                  <span className="dx-button-text">Periksa</span>
-		                  </div>
-	                  </ButtonOptions>
-                  </ButtonItem>
-                </GroupItem>
+                <SimpleItem
+                  colSpan={3}
+                  dataField="bankAccNumber"
+                  label={{ text: "Nomor Rekening" }}
+                  editorOptions={{ disabled: isDableBankIdBankAccNumber }}
+                >
+                  <RequiredRule message="Nomor rekening wajib diisi" />
+                </SimpleItem>
               </GroupItem>
 
               <GroupItem caption="Informasi tambahan" colCount={2}>
