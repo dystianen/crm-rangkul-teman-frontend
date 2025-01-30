@@ -7,7 +7,7 @@ const resizeImage = (value: Blob): Promise<string> => {
       1772,
       1181,
       "JPG",
-      100,
+      75,
       0,
       (uri) => {
         if (uri) {
@@ -16,9 +16,7 @@ const resizeImage = (value: Blob): Promise<string> => {
           reject(new Error("Failed to resize image"));
         }
       },
-      "base64",
-      900,
-      400
+      "base64"
     );
   });
 };
