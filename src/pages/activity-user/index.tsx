@@ -12,10 +12,10 @@ export const ActivityUserPage: FC = () => {
     const onClickDownload = (e: any) => {
         let instance = dataGrid.current?.instance;
         let fileName = `aktivitas-penguna.xlsx`;
-        let columns = [];
-        let captions = [];
+        let columns: any[] = [];
+        let captions: any[] = [];
         const visibleColums = instance.getVisibleColumns();
-        visibleColums.filter(function (val) {
+        visibleColums.filter(function (val: any) {
             if (val.dataField != null) {
                 columns.push(val.dataField);
             }
