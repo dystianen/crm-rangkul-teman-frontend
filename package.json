@@ -45,6 +45,7 @@
     "@types/sockjs-client": "^1.5.4",
     "@types/stompjs": "^2.3.9",
     "axios": "^0.24.0",
+    "browser-image-compression": "^2.0.2",
     "devextreme": "^23.1.5",
     "devextreme-react": "^23.1.5",
     "emoji-picker-react": "^4.8.0",

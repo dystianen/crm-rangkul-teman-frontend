@@ -55,6 +55,7 @@ import ContactActivity from "src/components/contact/contact-activity";
 import {StringLengthRule} from "devextreme-react/validator";
 import {AppLoanOnboardingRequest, initLoanOnboardingValue} from "../../interfaces/appLoanOnboarding";
 import {getActiveBranchByUserStore, getActiveProductByBranch} from "../../api/apploan";
+import imageCompress from "src/utils/imageCompress.util";
 
 export default function EditPage() {
     const formAppRef = useRef<Form>(null);
@@ -263,11 +264,12 @@ export default function EditPage() {
 
     const onFileChanged = async (e: any, type: "KTP" | "SELFIE") => {
         if (e.value.length > 0) {
-            const uri = await resizeImage(e.value[0]);
+            console.log(e.value[0])
+            const uri = await imageCompress(e.value[0]);
             if (type === "KTP") {
-                setKtpSrc(uri);
+                setKtpSrc(uri.base64);
             } else {
-                setSelfie(uri);
+                setSelfie(uri.base64);
             }
         }
     };
