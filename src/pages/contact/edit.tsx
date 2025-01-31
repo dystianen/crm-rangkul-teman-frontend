@@ -1,4 +1,4 @@
-import {Button, DataGrid, LoadIndicator, Popup} from "devextreme-react";
+import {Button, DataGrid, LoadIndicator, LoadPanel, Popup} from "devextreme-react";
 import {Column, Lookup, Pager, Paging, Scrolling} from "devextreme-react/data-grid";
 import Form, {
     AsyncRule,
@@ -17,7 +17,7 @@ import * as Title from "devextreme-react/toolbar";
 import DataSource from "devextreme/data/data_source";
 import notify from "devextreme/ui/notify";
 import queryString from "query-string";
-import React, {useEffect, useRef, useState} from "react";
+import React, {useCallback, useEffect, useRef, useState} from "react";
 import {useNavigate} from "react-router";
 import {useLocation} from "react-router-dom";
 import {
@@ -80,6 +80,7 @@ export default function EditPage() {
     const [isShowPopupOCR, setShowPopupOCR] = useState(false);
     const [isShowLoadingOCR, setShowLoadingOCR] = useState(false);
     const [isButtonCancel, setButtonCancel] = useState(false);
+    const [isLoadingPage, setLoadingPage] = useState(false);
 
     const getBranchByUser = selectBoxBranchOptions(
         new DataSource(getActiveBranchByUserStore as any),
@@ -262,17 +263,17 @@ export default function EditPage() {
         return () => clearInterval(intervalId);
     }, [id]);
 
-    const onFileChanged = async (e: any, type: "KTP" | "SELFIE") => {
+    const onFileChanged = useCallback(async (e: any, type: "KTP" | "SELFIE") => {
         if (e.value.length > 0) {
-            console.log(e.value[0])
-            const uri = await imageCompress(e.value[0]);
             if (type === "KTP") {
+                const uri = await imageCompress(e.value[0]);
                 setKtpSrc(uri.base64);
             } else {
-                setSelfie(uri.base64);
+                const uri = await resizeImage(e.value[0]);
+                setSelfie(uri);
             }
         }
-    };
+    }, []);
 
     const commonPropsUpload = {
         selectButtonText: "Select photo",
@@ -290,7 +291,7 @@ export default function EditPage() {
         onValueChanged: (e: any) => onFileChanged(e, "SELFIE")
     };
 
-    const onFieldDataChanged = (evt: any) => {
+    const onFieldDataChanged = async (evt: any) => {
         if (evt.dataField === "idCountry" && evt.value != null) {
             setProvinceOptions(selectBoxOptions(new DataSource(provinceStore(evt.value)), ""));
         }
@@ -305,7 +306,10 @@ export default function EditPage() {
         }
 
         if (evt.dataField === "ktpImage" && evt.value != null) {
-            setShowPopupOCR(true)
+            setLoadingPage(true)
+            await onFileChanged({ value: [evt.value[0]] }, "KTP");
+            setLoadingPage(false)
+            setShowPopupOCR(true);
         }
 
         contact[evt.dataField] = evt.value;
@@ -453,6 +457,15 @@ export default function EditPage() {
 
     return (
         <>
+            <LoadPanel
+                shadingColor="rgba(0,0,0,0.4)"
+                visible={isLoadingPage}
+                showIndicator={true}
+                shading={true}
+                showPane={true}
+                hideOnOutsideClick={false}
+            />
+
             <div className={"content-block"}>
                 <h2>Detail Contact</h2>
                 <Title.Toolbar className={"dx-card"}>
