@@ -208,7 +208,11 @@ export default function Step1Page() {
               setDisableBankIdBankAccNumber(false);
 
               if (res.success) {
-                notifySuccess(res.message);
+                if(res?.error){
+                  notifySuccess(res.message);
+                } else {
+                  notifyError(res.message);
+                }
                 setDisableButtonNext(false);
               } else {
                 notifyError(res.message);
