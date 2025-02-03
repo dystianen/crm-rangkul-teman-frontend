@@ -353,6 +353,11 @@ export default function Index() {
                         alignment={"left"}
                         filterOperations={filterOperation.string}
                     />
+                    <Column
+                        dataField={"note"}
+                        caption={"Keterangan"}
+                        filterOperations={filterOperation.string}
+                    />
                     <Paging defaultPageSize={50}/>
                     <Pager
                         showPageSizeSelector={true}
