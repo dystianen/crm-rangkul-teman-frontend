@@ -209,9 +209,9 @@ export default function Step1Page() {
 
               if (res.success) {
                 if(res?.error){
-                  notifySuccess(res.message);
-                } else {
                   notifyError(res.message);
+                } else {
+                  notifySuccess(res.message);
                 }
                 setDisableButtonNext(false);
               } else {
