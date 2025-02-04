@@ -69,6 +69,12 @@ export const createAppLoanOnboardingStep1 = async (appId: string, payload: any):
   return resp.data;
 };
 
+
+export const processCancel = async (appId: string): Promise<any> => {
+  const resp = await ajaxGet(`/api/loan/sign/cancel/${appId}`);
+  return resp.data;
+};
+
 export const createAppLoanOnboardingStep2 = async (appId: string, payload: any): Promise<any> => {
   const resp = await ajaxPost(`${API_PATH.APPLICATION}/create/step/2/${appId}`, payload);
   return resp.data;

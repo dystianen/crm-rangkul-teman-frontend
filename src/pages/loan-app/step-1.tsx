@@ -26,9 +26,10 @@ import {
   getListBank,
   getLoanPurpose,
   getUnsignedDoc,
-  loanTermStore
+  loanTermStore,
+  processCancel
 } from "src/api/apploan";
-import { selectBoxOptions } from "src/api/contact";
+import {selectBoxOptions} from "src/api/contact";
 import Loader from "src/components/loader";
 import {
   AppLoanOnboardingStep1Request,
@@ -50,6 +51,7 @@ export default function Step1Page() {
   const [onboardingLoan, setOnboardingLoan] = useState<AppLoanOnboardingStep1Request>(
     initLoanOnboardingStep1Value
   );
+  const [accessStep2, setAccessStep2] = useState<boolean>(false);
   const [submitForm, setSubmitForm] = useState(false);
   const [loadingDownloadBtn, setLoadingDownloadBtn] = useState(false);
   const [isShowWaitingPopup, setShowWaitingPopup] = useState(false);
@@ -57,7 +59,11 @@ export default function Step1Page() {
   const [isDableBankIdBankAccNumber, setDisableBankIdBankAccNumber] = useState(false);
 
   const formRef = useRef<Form>(null);
-
+  
+  useEffect(() => {
+    checkAccess("0c0983ad-20b2-446d-8462-328aa64915f7").then((res) => setAccessStep2(res));
+  }, []);
+  
   const handleCheckSigning = useCallback(
     (intervalId: NodeJS.Timeout) => {
       checkStatusSigning(idData).then((res) => {
@@ -66,17 +72,6 @@ export default function Step1Page() {
 
         if (!res) {
           clearInterval(intervalId);
-
-          if (isAutoNext) {
-            checkAccess("0c0983ad-20b2-446d-8462-328aa64915f7").then((res) => {
-              if (res) {
-                navigate(`/loan-app/create/step/2?id=${idData}`);
-              } else {
-                notifySuccess("Berhasil submit data");
-                navigate(`/loan-app`);
-              }
-            });
-          }
         }
       });
     },
@@ -136,7 +131,16 @@ export default function Step1Page() {
       })
       .finally(() => setLoadingDownloadBtn(false));
   };
-
+  
+  
+  const submitCancel = () => {
+    const appId = String(id);
+    
+    processCancel(appId).then((res) => {
+      setShowWaitingPopup(false);
+    });
+  };
+  
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     setSubmitForm(true);
     createAppLoanOnboardingStep1(id as string, onboardingLoan).then(
@@ -151,21 +155,19 @@ export default function Step1Page() {
 
           handleCheckSigning(intervalId);
         } else {
-          checkAccess("0c0983ad-20b2-446d-8462-328aa64915f7").then((res) => {
-            if (!res) {
-              notifySuccess("Berhasil submit data");
-              navigate(`/loan-app`);
-            } else {
-              navigate(`/loan-app/create/step/2?id=${id}`);
-            }
-          });
+          if (!accessStep2) {
+            notifySuccess("Berhasil submit data");
+            navigate(`/loan-app`);
+          } else {
+            navigate(`/loan-app/create/step/2?id=${id}`);
+          }
         }
       },
       (error) => {
         setSubmitForm(false);
         notifyError(error);
       }
-    );
+    ).finally(()=>setSubmitForm(false));
 
     e.preventDefault();
   };
@@ -381,9 +383,13 @@ export default function Step1Page() {
 
       <Popup width={360} height={"auto"} visible={isShowWaitingPopup} showTitle={false}>
         <div className="wrapper-popup-waiting">
-          <Loader />
+          <Loader/>
           <h5 className="title">Mohon tunggu penandatanganan perjanjian sedang diproses</h5>
-          <Button text="Kembali" type="normal" onClick={() => navigate(-1)} />
+          
+          <div style={{display: "flex", gap: "10px"}}>
+            <Button text="Kembali" type="default" onClick={() => navigate("/loan-app")}/>
+            <Button text="Batalkan" type="normal" onClick={() => submitCancel()}/>
+          </div>
         </div>
       </Popup>
     </>
