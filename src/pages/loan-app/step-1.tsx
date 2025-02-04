@@ -72,6 +72,15 @@ export default function Step1Page() {
 
         if (!res) {
           clearInterval(intervalId);
+          
+          if (isAutoNext) {
+            if (accessStep2) {
+              navigate(`/loan-app/create/step/2?id=${idData}`);
+            } else {
+              notifySuccess("Berhasil submit data");
+              navigate(`/loan-app`);
+            }
+          }
         }
       });
     },
