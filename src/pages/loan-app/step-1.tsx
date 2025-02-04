@@ -388,7 +388,7 @@ export default function Step1Page() {
           
           <div style={{display: "flex", gap: "10px"}}>
             <Button text="Kembali" type="default" onClick={() => navigate("/loan-app")}/>
-            <Button text="Batalkan" type="normal" onClick={() => submitCancel()}/>
+            <Button text="Batalkan" type="normal" onClick={submitCancel}/>
           </div>
         </div>
       </Popup>
