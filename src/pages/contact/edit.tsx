@@ -56,6 +56,7 @@ import {StringLengthRule} from "devextreme-react/validator";
 import {AppLoanOnboardingRequest, initLoanOnboardingValue} from "../../interfaces/appLoanOnboarding";
 import {getActiveBranchByUserStore, getActiveProductByBranch} from "../../api/apploan";
 import imageCompress from "src/utils/imageCompress.util";
+import trimBody from "../../utils/trim-body";
 
 export default function EditPage() {
     const formAppRef = useRef<Form>(null);
@@ -107,7 +108,7 @@ export default function EditPage() {
     const [subDistrictOptions, setSubDistrictOptions] = useState({});
 
     const handleSubmit = (e: any) => {
-        const request = {
+        let request = {
             ...contact,
             contactId: id,
             birthDate: formatDate(contact.birthDate),
@@ -115,6 +116,8 @@ export default function EditPage() {
             selfie,
             contactRelatives: contactRelatives
         };
+
+        trimBody(request);
 
         setLoadingUpdate(true);
         updateContact(id, request)
