@@ -60,7 +60,7 @@ export const getSignedDoc = async (id: string): Promise<any> => {
 
 
 export const checkStatusSigning = async (id: string): Promise<boolean> => {
-  const resp = await ajaxGet(`${API_PATH.APPLICATION}/check/signed/${id}`);
+  const resp = await ajaxGet(`${API_PATH.APPLICATION}/check/signing/${id}`);
   return resp.data;
 };
 
