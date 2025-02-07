@@ -110,8 +110,8 @@ export default function Index() {
                 }
             }, (error) => {
                 const {status} = error.options;
-                if (status == "20101") {
-                    navigate(`/contact/create?ktp=${request.contactIdentity}&branchId=${request.branchId}&productId=${request.productId}&backTo=step1`);
+                if (status === "20101") {
+                    navigate(`/contact/leads/create?ktp=${request.contactIdentity}&branchId=${request.branchId}`);
                 } else {
                     notify({
                         message: error,
@@ -351,6 +351,11 @@ export default function Index() {
                         dataField={"branchName"}
                         caption={"Cabang"}
                         alignment={"left"}
+                        filterOperations={filterOperation.string}
+                    />
+                    <Column
+                        dataField={"note"}
+                        caption={"Keterangan"}
                         filterOperations={filterOperation.string}
                     />
                     <Paging defaultPageSize={50}/>

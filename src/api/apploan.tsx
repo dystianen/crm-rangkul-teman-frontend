@@ -60,12 +60,18 @@ export const getSignedDoc = async (id: string): Promise<any> => {
 
 
 export const checkStatusSigning = async (id: string): Promise<boolean> => {
-  const resp = await ajaxGet(`${API_PATH.APPLICATION}/check/signed/${id}`);
+  const resp = await ajaxGet(`${API_PATH.APPLICATION}/check/signing/${id}`);
   return resp.data;
 };
 
 export const createAppLoanOnboardingStep1 = async (appId: string, payload: any): Promise<any> => {
   const resp = await ajaxPost(`${API_PATH.APPLICATION}/create/step/1/${appId}`, payload);
+  return resp.data;
+};
+
+
+export const processCancel = async (appId: string): Promise<any> => {
+  const resp = await ajaxGet(`/api/loan/sign/cancel/${appId}`);
   return resp.data;
 };
 

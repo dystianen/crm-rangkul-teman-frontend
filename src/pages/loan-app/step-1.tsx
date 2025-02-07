@@ -1,22 +1,44 @@
+import { Client } from "@stomp/stompjs";
 import { Popup } from "devextreme-react";
 import { Button } from "devextreme-react/button";
 import "devextreme-react/date-box";
 import "devextreme-react/file-uploader";
-import Form, {ButtonItem, GroupItem, PatternRule, RequiredRule, SimpleItem} from "devextreme-react/form";
+import Form, {
+  ButtonItem,
+  GroupItem,
+  PatternRule,
+  RequiredRule,
+  SimpleItem
+} from "devextreme-react/form";
 import { LoadPanel } from "devextreme-react/load-panel";
 import DataSource from "devextreme/data/data_source";
 import { FieldDataChangedEvent } from "devextreme/ui/form";
 import queryString from "query-string";
-import { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 import { useLocation } from "react-router-dom";
-import {checkAccess, checkStatusSigning, createAppLoanOnboardingStep1, detailAppLoan, getListBank, getLoanPurpose, getUnsignedDoc, loanTermStore} from "src/api/apploan";
-import { selectBoxOptions } from "src/api/contact";
+import SockJS from "sockjs-client";
+import {
+  checkAccess,
+  checkStatusSigning,
+  createAppLoanOnboardingStep1,
+  detailAppLoan,
+  getListBank,
+  getLoanPurpose,
+  getUnsignedDoc,
+  loanTermStore,
+  processCancel
+} from "src/api/apploan";
+import {selectBoxOptions} from "src/api/contact";
 import Loader from "src/components/loader";
-import {AppLoanOnboardingStep1Request, AppLoanRequest, initLoanOnboardingStep1Value} from "src/interfaces/appLoanOnboarding";
+import {
+  AppLoanOnboardingStep1Request,
+  AppLoanRequest,
+  initLoanOnboardingStep1Value
+} from "src/interfaces/appLoanOnboarding";
 import { store } from "src/store/store";
+import { notifyError, notifySuccess, notifyWarning } from "../../utils/devExtremeUtils";
 import "./loan-app.scss";
-import {notifyError, notifySuccess, notifyWarning} from "../../utils/devExtremeUtils";
 
 export default function Step1Page() {
   const navigate = useNavigate();
@@ -29,13 +51,19 @@ export default function Step1Page() {
   const [onboardingLoan, setOnboardingLoan] = useState<AppLoanOnboardingStep1Request>(
     initLoanOnboardingStep1Value
   );
+  const [accessStep2, setAccessStep2] = useState<boolean>(false);
   const [submitForm, setSubmitForm] = useState(false);
   const [loadingDownloadBtn, setLoadingDownloadBtn] = useState(false);
   const [isShowWaitingPopup, setShowWaitingPopup] = useState(false);
   const [isDisableButtonNext, setDisableButtonNext] = useState(false);
+  const [isDableBankIdBankAccNumber, setDisableBankIdBankAccNumber] = useState(false);
 
   const formRef = useRef<Form>(null);
-
+  
+  useEffect(() => {
+    checkAccess("0c0983ad-20b2-446d-8462-328aa64915f7").then((res) => setAccessStep2(res));
+  }, []);
+  
   const handleCheckSigning = useCallback(
     (intervalId: NodeJS.Timeout) => {
       checkStatusSigning(idData).then((res) => {
@@ -44,16 +72,14 @@ export default function Step1Page() {
 
         if (!res) {
           clearInterval(intervalId);
-
+          
           if (isAutoNext) {
-            checkAccess("0c0983ad-20b2-446d-8462-328aa64915f7").then((res) => {
-              if (res) {
-                navigate(`/loan-app/create/step/2?id=${idData}`);
-              } else {
-                notifySuccess("Berhasil submit data");
-                navigate(`/loan-app`);
-              }
-            });
+            if (accessStep2) {
+              navigate(`/loan-app/create/step/2?id=${idData}`);
+            } else {
+              notifySuccess("Berhasil submit data");
+              navigate(`/loan-app`);
+            }
           }
         }
       });
@@ -114,7 +140,16 @@ export default function Step1Page() {
       })
       .finally(() => setLoadingDownloadBtn(false));
   };
-
+  
+  
+  const submitCancel = () => {
+    const appId = String(id);
+    
+    processCancel(appId).then((res) => {
+      setShowWaitingPopup(false);
+    });
+  };
+  
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     setSubmitForm(true);
     createAppLoanOnboardingStep1(id as string, onboardingLoan).then(
@@ -129,20 +164,19 @@ export default function Step1Page() {
 
           handleCheckSigning(intervalId);
         } else {
-          checkAccess('0c0983ad-20b2-446d-8462-328aa64915f7').then((res) => {
-              if (!res) {
-                  notifySuccess("Berhasil submit data");
-                  navigate(`/loan-app`);
-              } else {
-                  navigate(`/loan-app/create/step/2?id=${id}`);
-              }
-          });
+          if (!accessStep2) {
+            notifySuccess("Berhasil submit data");
+            navigate(`/loan-app`);
+          } else {
+            navigate(`/loan-app/create/step/2?id=${id}`);
+          }
         }
-      }, (error) => {
+      },
+      (error) => {
         setSubmitForm(false);
         notifyError(error);
       }
-    );
+    ).finally(()=>setSubmitForm(false));
 
     e.preventDefault();
   };
@@ -156,6 +190,85 @@ export default function Step1Page() {
           [dataField]: value
         }));
       }
+    }
+
+    if (dataField === "bankId" || dataField === "bankAccNumber") {
+      sendBankCheck();
+    }
+  };
+
+  const stompClientRef = useRef<any>(null);
+
+  useEffect(() => {
+    var socket = new SockJS(`${process.env.REACT_APP_BACKEND}api/bankAccountLive`);
+    const stompClient = new Client({
+      webSocketFactory: () => socket,
+      reconnectDelay: 5000,
+      debug: (str) => {
+        console.log(str);
+      },
+      onConnect: () => {
+        console.log("Connected to WebSocket");
+        stompClient.subscribe("/api/bankAccountResult", (response) => {
+          console.log("Received message:", response.body);
+          const res = JSON.parse(response.body);
+          if (res.appId === id) {
+            if (res.isWaiting) {
+              setDisableBankIdBankAccNumber(true);
+            } else {
+              setDisableBankIdBankAccNumber(false);
+
+              if (res.success) {
+                if(res?.error){
+                  notifyError(res.message);
+                } else {
+                  notifySuccess(res.message);
+                }
+                setDisableButtonNext(false);
+              } else {
+                notifyError(res.message);
+                setDisableButtonNext(true);
+              }
+            }
+          }
+        });
+      },
+      onStompError: (frame) => {
+        console.error("Broker reported error: " + frame.headers["message"]);
+        console.error("Additional details: " + frame.body);
+      }
+    });
+
+    stompClient.activate();
+    stompClientRef.current = stompClient;
+
+    return () => {
+      stompClient.deactivate();
+    };
+  }, [id]);
+
+  const sendBankCheck = () => {
+    const payload = {
+      appId: id,
+      bankId: onboardingLoan.bankId,
+      bankAccountNumber: onboardingLoan.bankAccNumber
+    };
+    console.log("Sending bank account check:", payload);
+    const stompClient = stompClientRef.current;
+    if (stompClient && stompClient.connected) {
+      if (
+        onboardingLoan.bankId != null &&
+        onboardingLoan.bankId.length > 0 &&
+        onboardingLoan.bankAccNumber != null &&
+        onboardingLoan.bankAccNumber.length > 0
+      ) {
+        stompClient.publish({
+          destination: `/api/bankAccountCheck/${id}`,
+          body: JSON.stringify(payload)
+        });
+      }
+    } else {
+      console.error("Stomp client is not connected");
     }
   };
 
@@ -224,12 +337,17 @@ export default function Step1Page() {
                 <SimpleItem
                   dataField="bankId"
                   editorType="dxSelectBox"
-                  editorOptions={listBank}
+                  editorOptions={{ ...listBank, disabled: isDableBankIdBankAccNumber }}
                   label={{ text: "Bank" }}
                 >
                   <RequiredRule message="Bank wajib diisi" />
                 </SimpleItem>
-                <SimpleItem dataField="bankAccNumber" label={{ text: "Nomor Rekening" }}>
+                <SimpleItem
+                  colSpan={3}
+                  dataField="bankAccNumber"
+                  label={{ text: "Nomor Rekening" }}
+                  editorOptions={{ disabled: isDableBankIdBankAccNumber }}
+                >
                   <RequiredRule message="Nomor rekening wajib diisi" />
                 </SimpleItem>
               </GroupItem>
@@ -274,9 +392,13 @@ export default function Step1Page() {
 
       <Popup width={360} height={"auto"} visible={isShowWaitingPopup} showTitle={false}>
         <div className="wrapper-popup-waiting">
-          <Loader />
+          <Loader/>
           <h5 className="title">Mohon tunggu penandatanganan perjanjian sedang diproses</h5>
-          <Button text="Kembali" type="normal" onClick={() => navigate(-1)} />
+          
+          <div style={{display: "flex", gap: "10px"}}>
+            <Button text="Kembali" type="default" onClick={() => navigate("/loan-app")}/>
+            <Button text="Batalkan" type="normal" onClick={submitCancel}/>
+          </div>
         </div>
       </Popup>
     </>
