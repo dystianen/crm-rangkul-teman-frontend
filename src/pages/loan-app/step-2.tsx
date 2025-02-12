@@ -5,7 +5,7 @@ import Form, {
   RequiredRule,
   SimpleItem
 } from "devextreme-react/form";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import "devextreme-react/file-uploader";
 import queryString from "query-string";
@@ -13,7 +13,7 @@ import { useNavigate } from "react-router";
 import { useLocation } from "react-router-dom";
 import "./loan-app.scss";
 
-import { LoadPanel } from "devextreme-react";
+import { CheckBox, LoadPanel, RadioGroup } from "devextreme-react";
 import DataGrid, {
   Column,
   Editing,
@@ -27,11 +27,22 @@ import "devextreme-react/date-box";
 import notify from "devextreme/ui/notify";
 import ReactDOM from "react-dom/client";
 import Resizer from "react-image-file-resizer";
-import {checkAccess, createAppLoanOnboardingStep2, detailAppLoan, getSignedDoc, getUnsignedDoc} from "src/api/apploan";
+import {checkAccess, createAppLoanOnboardingStep2, detailAppLoan, getSignedDoc} from "src/api/apploan";
 import PdfViewer from "src/components/pdf-viewer/PdfViewer";
 import { getFileBase64 } from "../../api/helper";
 import {Button} from "devextreme-react/button";
 import {notifyWarning} from "../../utils/devExtremeUtils";
+import { GoogleMap, Marker, useJsApiLoader } from "@react-google-maps/api";
+
+const containerStyle = {
+  width: '100%',
+  height: '500px',
+}
+
+const defaultCenter = {
+  lat: -6.2262903,
+  lng: 106.8325905,
+}
 
 export default function Step2Page() {
   const navigate = useNavigate();
@@ -195,6 +206,57 @@ export default function Step2Page() {
     onStep2Loan[evt.dataField] = evt.value;
   };
 
+  const dataQuestions = [
+    { id: 1, question: "Do you have experience in sales?" },
+    { id: 2, question: "Have you ever managed a team?" },
+    { id: 3, question: "Are you comfortable with cold calling?" },
+  ];
+
+  const [selectedValues, setSelectedValues] = useState<Record<number, string>>(
+    {}
+  );
+
+  const handleRadioChange = (rowIndex: number, value: string) => {
+    setSelectedValues((prev) => ({ ...prev, [rowIndex]: value }));
+  };
+
+  const { isLoaded } = useJsApiLoader({
+    id: 'google-map-script',
+    googleMapsApiKey: 'AIzaSyD_rLoFdh7ec0xuxi4GOFwrChcN5AhWxCs',
+  })
+
+  const [map, setMap] = useState(null)
+  const [isChecked, setIsChecked] = useState(false);
+  const [center, setCenter] = useState(defaultCenter);
+
+  useEffect(() => {
+    if (isChecked && navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setCenter({
+            lat: position.coords.latitude,
+            lng: position.coords.longitude,
+          });
+        },
+        (error) => {
+          console.error("Error getting location:", error);
+        }
+      );
+    }
+  }, [isChecked]);
+
+  const onLoad = useCallback(function callback(map: any) {
+    // This is just an example of getting and using the map instance!!! don't just blindly copy!
+    const bounds = new window.google.maps.LatLngBounds(center)
+    map.fitBounds(bounds)
+
+    setMap(map)
+  }, [center])
+
+  const onUnmount = useCallback(() => {
+    setMap(null)
+  }, [])
+
   return (
     <>
       <LoadPanel
@@ -224,6 +286,211 @@ export default function Step2Page() {
       </div>
       <div className={"content-block"}>
         <div className={"dx-card responsive-paddings"}>
+          <h3>Family</h3>
+          <DataGrid
+              dataSource={dataGrid}
+              columnAutoWidth={true}
+              wordWrapEnabled={false}
+              showBorders={true}
+              dateSerializationFormat={"yyyy-MM-ddTHH:mm:ss.SSSxxx"}
+              repaintChangesOnly={true}
+          >
+            <Editing mode="popup" allowUpdating={true} allowAdding={true} allowDeleting={true}>
+              <PopGrid title="Family Form" showTitle={true} width={360} height={320} />
+              <FormGrid
+                showColonAfterLabel={true}
+                showValidationSummary={true}
+                validationGroup="customedata"
+                colCount={1}
+              >
+                <SimpleItem dataField="idNumber">
+                  <RequiredRule message="NIK is required" />
+                </SimpleItem>
+                <SimpleItem dataField="name">
+                  <RequiredRule message="Name is required" />
+                </SimpleItem>
+                <SimpleItem dataField={"relationType"} editorType="dxSelectBox">
+                  <RequiredRule message="Relation type is required" />
+                </SimpleItem>
+              </FormGrid>
+            </Editing>
+            <Column
+              caption={"No."}
+              width={70}
+              alignment={"center"}
+              cellTemplate={function (container: any, options: any) {
+                const dom = ReactDOM.createRoot(container);
+                dom.render(options.rowIndex + 1);
+              }}
+            />
+            <Column dataField={"idNumber"} caption={"NIK"} />
+            <Column dataField={"name"} caption={"Name"} />
+            <Column dataField={"relationType"} caption={"Relation Type"} />
+            <Paging defaultPageSize={50} />
+            <Pager showPageSizeSelector={true} showInfo={true} allowedPageSizes={[10, 50, 100]} />
+          </DataGrid>
+        </div>
+
+        <div className={"dx-card responsive-paddings next-card"}>
+          <h3>Documents</h3>
+          <DataGrid
+              dataSource={dataGrid}
+              columnAutoWidth={true}
+              wordWrapEnabled={false}
+              showBorders={true}
+              dateSerializationFormat={"yyyy-MM-ddTHH:mm:ss.SSSxxx"}
+              repaintChangesOnly={true}
+          >
+            <Editing mode="popup" allowUpdating={true} allowAdding={true} allowDeleting={true}>
+              <PopGrid title="Custom Data Form" showTitle={true} width={360} height={320} />
+              <FormGrid
+                showColonAfterLabel={true}
+                showValidationSummary={true}
+                validationGroup="customedata"
+                colCount={1}
+              >
+                <SimpleItem dataField={"fileType"} editorType="dxSelectBox">
+                  <RequiredRule message="File type is required" />
+                </SimpleItem>
+                <SimpleItem dataField={"value"} editorType={"dxFileUploader" as any}>
+                  <RequiredRule message="Value wajib diisi" />
+                </SimpleItem>
+              </FormGrid>
+            </Editing>
+            <Column
+              caption={"No."}
+              width={70}
+              alignment={"center"}
+              cellTemplate={function (container: any, options: any) {
+                const dom = ReactDOM.createRoot(container);
+                dom.render(options.rowIndex + 1);
+              }}
+            />
+            <Column dataField={"name"} caption={"Name"} />
+            <Column dataField={"value"} caption={"Value"} />
+            <Paging defaultPageSize={50} />
+            <Pager showPageSizeSelector={true} showInfo={true} allowedPageSizes={[10, 50, 100]} />
+          </DataGrid>
+        </div>
+
+        <div className="dx-card responsive-paddings next-card">
+          <h3>Selling Questions</h3>
+          <DataGrid
+            dataSource={dataQuestions}
+            columnAutoWidth={true}
+            wordWrapEnabled={false}
+            showBorders={true}
+            repaintChangesOnly={true}
+          >
+            <Column
+              caption="No."
+              width={70}
+              alignment="center"
+              cellTemplate={(container: any, options: any) => {
+                const dom = ReactDOM.createRoot(container);
+                dom.render(options.rowIndex + 1);
+              }}
+            />
+            <Column dataField="question" caption="Questions" />
+            <Column caption="Choose" 
+              cellTemplate={(container: any, options: any) => {
+                const dom = ReactDOM.createRoot(container);
+                dom.render(
+                  <RadioGroup
+                    items={["Yes", "No"]}
+                    value={selectedValues[options.rowIndex] || ""}
+                    layout="horizontal"
+                    onValueChanged={(e) =>
+                      handleRadioChange(options.rowIndex, e.value)
+                    }
+                  />
+                );
+              }}
+            />
+
+            <Paging defaultPageSize={50} />
+            <Pager
+              showPageSizeSelector={true}
+              showInfo={true}
+              allowedPageSizes={[10, 50, 100]}
+            />
+          </DataGrid>
+        </div>
+
+        <div className="dx-card responsive-paddings next-card">
+          <h3>Neighbour Questions</h3>
+          <DataGrid
+            dataSource={dataQuestions}
+            columnAutoWidth={true}
+            wordWrapEnabled={false}
+            showBorders={true}
+            repaintChangesOnly={true}
+          >
+            <Column
+              caption="No."
+              width={70}
+              alignment="center"
+              cellTemplate={(container: any, options: any) => {
+                const dom = ReactDOM.createRoot(container);
+                dom.render(options.rowIndex + 1);
+              }}
+            />
+            <Column dataField="question" caption="Questions" />
+            <Column caption="Choose" 
+              cellTemplate={(container: any, options: any) => {
+                const dom = ReactDOM.createRoot(container);
+                dom.render(
+                  <RadioGroup
+                    items={["Yes", "No"]}
+                    value={selectedValues[options.rowIndex] || ""}
+                    layout="horizontal"
+                    onValueChanged={(e) =>
+                      handleRadioChange(options.rowIndex, e.value)
+                    }
+                  />
+                );
+              }}
+            />
+
+            <Paging defaultPageSize={50} />
+            <Pager
+              showPageSizeSelector={true}
+              showInfo={true}
+              allowedPageSizes={[10, 50, 100]}
+            />
+          </DataGrid>
+        </div>
+
+        <div className="dx-card responsive-paddings next-card">
+          <div className="dx-field">
+            <h3>Street Shop</h3>
+            <div className="dx-field-value">
+              <CheckBox
+                value={isChecked}
+                onValueChanged={(e) => setIsChecked(e.value)}
+                elementAttr={{ "aria-label": "Is Street Shop" }}
+              />
+            </div>
+          </div>
+
+          {isChecked && isLoaded ? (
+            <GoogleMap
+              mapContainerStyle={containerStyle}
+              center={center}
+              zoom={15}
+              onLoad={onLoad}
+              onUnmount={onUnmount}
+              options={{
+                disableDoubleClickZoom: false,
+                draggable: false
+              }}
+            >
+              <Marker position={center} />
+            </GoogleMap>
+          ) : null}
+        </div>
+        
+        <div className={"dx-card responsive-paddings next-card"}>
           <h3>Custom Data</h3>
           <DataGrid
               dataSource={dataGrid}
