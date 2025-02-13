@@ -6,14 +6,12 @@ import Form, {
   SimpleItem
 } from "devextreme-react/form";
 import { useCallback, useEffect, useRef, useState } from "react";
-
 import "devextreme-react/file-uploader";
 import queryString from "query-string";
 import { useNavigate } from "react-router";
 import { useLocation } from "react-router-dom";
 import "./loan-app.scss";
-
-import { CheckBox, LoadPanel, RadioGroup } from "devextreme-react";
+import { CheckBox, LoadPanel, Popup, RadioGroup } from "devextreme-react";
 import DataGrid, {
   Column,
   Editing,
@@ -27,7 +25,7 @@ import "devextreme-react/date-box";
 import notify from "devextreme/ui/notify";
 import ReactDOM from "react-dom/client";
 import Resizer from "react-image-file-resizer";
-import {checkAccess, createAppLoanOnboardingStep2, detailAppLoan, getSignedDoc} from "src/api/apploan";
+import {checkAccess, createAppLoanOnboardingStep2, detailAppLoan, getSignedDoc, getStreetShop, submitStreetShop} from "src/api/apploan";
 import PdfViewer from "src/components/pdf-viewer/PdfViewer";
 import { getFileBase64 } from "../../api/helper";
 import {Button} from "devextreme-react/button";
@@ -48,6 +46,7 @@ export default function Step2Page() {
   const navigate = useNavigate();
   const location = useLocation();
   const { id } = queryString.parse(location.search);
+  const ID = String(id);
   const [incomeProof, setIncomeProof] = useState<any>(undefined);
   const [fileType, setFileType] = useState<string>("");
   const [dataGrid, setDataGrid] = useState<any[]>([]);
@@ -60,10 +59,12 @@ export default function Step2Page() {
   });
   const [submitForm, setSubmitForm] = useState(false);
   const [loadingDownloadBtn, setLoadingDownloadBtn] = useState(false);
-
+  const [isStreetShop, setIsStreetShop] = useState(false);
+  const [center, setCenter] = useState(defaultCenter);
+  const [isShowPopupConfirm, setShowPopupConfirm] = useState(false);
 
   useEffect(() => {
-    detailAppLoan(String(id)).then((res) => {
+    detailAppLoan(ID).then((res) => {
       const data = res as any;
       const gridStore: any[] = data?.customData || [];
       setDataGrid(gridStore);
@@ -81,7 +82,15 @@ export default function Step2Page() {
         });
       }
     });
-  }, [id]);
+
+    getStreetShop(ID).then((res) => {
+      setIsStreetShop(res.isStreetShop ?? false);
+      setCenter({
+        lat: Number(res.latitude),
+        lng: Number(res.longitude)
+      })
+    })
+  }, [ID]);
 
   useEffect(() => {
     checkAccess("0c0983ad-20b2-446d-8462-328aa64915f7").then((res) => {
@@ -222,20 +231,49 @@ export default function Step2Page() {
 
   const { isLoaded } = useJsApiLoader({
     id: 'google-map-script',
-    googleMapsApiKey: 'AIzaSyD_rLoFdh7ec0xuxi4GOFwrChcN5AhWxCs',
+    googleMapsApiKey: `${process.env.REACT_APP_GOOGLE_MAPS_API_KEY}`,
   })
 
-  const [map, setMap] = useState(null)
-  const [isChecked, setIsChecked] = useState(false);
-  const [center, setCenter] = useState(defaultCenter);
+  const onLoad = useCallback(function callback(map: any) {
+    const bounds = new window.google.maps.LatLngBounds(center)
+    map.fitBounds(bounds)
+  }, [center])
 
-  useEffect(() => {
-    if (isChecked && navigator.geolocation) {
+  const isHandlingPopup = useRef(false);
+  const handleChangeStreetShop = useCallback((value: boolean) => {
+    if (isHandlingPopup.current) {
+      isHandlingPopup.current = false;
+      return;
+    }
+
+    if (value === false) {
+      setShowPopupConfirm(true);
+      return;
+    }
+
+    if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
-          setCenter({
-            lat: position.coords.latitude,
-            lng: position.coords.longitude,
+          const lat = position.coords.latitude;
+          const lng = position.coords.longitude;
+          setCenter({ lat, lng });
+
+          const payload = {
+            isStreetShop: value,
+            latitude: value ? lat.toString() : "",
+            longitude: value ? lng.toString() : "",
+          };
+          
+          submitStreetShop(ID, payload).then(() => {
+            getStreetShop(ID).then((res) => {
+              setIsStreetShop(res.isStreetShop ?? false);
+              if (res.isStreetShop) {
+                setCenter({
+                  lat: Number(res.latitude),
+                  lng: Number(res.longitude)
+                })
+              }
+            })
           });
         },
         (error) => {
@@ -243,19 +281,25 @@ export default function Step2Page() {
         }
       );
     }
-  }, [isChecked]);
+  }, [ID]);
 
-  const onLoad = useCallback(function callback(map: any) {
-    // This is just an example of getting and using the map instance!!! don't just blindly copy!
-    const bounds = new window.google.maps.LatLngBounds(center)
-    map.fitBounds(bounds)
+  const handleCancelChangeGeoPos = useCallback(() => {
+    setIsStreetShop(true);
+    setShowPopupConfirm(false);
+  }, []);
 
-    setMap(map)
-  }, [center])
+  const handleYesChangeGeoPos = useCallback(() => {
+    const payload = {
+      isStreetShop: false,
+      latitude: "",
+      longitude: "",
+    };
 
-  const onUnmount = useCallback(() => {
-    setMap(null)
-  }, [])
+    submitStreetShop(ID, payload).then(() => {
+      setIsStreetShop(false);
+      setShowPopupConfirm(false);
+    });
+  }, [ID]);
 
   return (
     <>
@@ -374,7 +418,7 @@ export default function Step2Page() {
         </div>
 
         <div className="dx-card responsive-paddings next-card">
-          <h3>Selling Questions</h3>
+          <h3>Point Selling Questions</h3>
           <DataGrid
             dataSource={dataQuestions}
             columnAutoWidth={true}
@@ -462,24 +506,24 @@ export default function Step2Page() {
         </div>
 
         <div className="dx-card responsive-paddings next-card">
-          <div className="dx-field">
+          <div style={{display: "flex", gap: "10px"}}>
+            <CheckBox
+              value={isStreetShop}
+              onValueChanged={(e) => {
+                handleChangeStreetShop(e.value);
+                setIsStreetShop(e.value);
+              }}
+              elementAttr={{ "aria-label": "Is Street Shop" }}
+            />
             <h3>Street Shop</h3>
-            <div className="dx-field-value">
-              <CheckBox
-                value={isChecked}
-                onValueChanged={(e) => setIsChecked(e.value)}
-                elementAttr={{ "aria-label": "Is Street Shop" }}
-              />
-            </div>
           </div>
 
-          {isChecked && isLoaded ? (
+          {isStreetShop && isLoaded ? (
             <GoogleMap
               mapContainerStyle={containerStyle}
               center={center}
               zoom={15}
               onLoad={onLoad}
-              onUnmount={onUnmount}
               options={{
                 disableDoubleClickZoom: false,
                 draggable: false
@@ -620,6 +664,17 @@ export default function Step2Page() {
           </Form>
         </form>
       </div>
+
+      <Popup width={360} height={"auto"} visible={isShowPopupConfirm} showTitle={false}>
+        <div className="wrapper-popup-waiting">
+          <h5 className="title">You are trying to change existing geoposition. Are you sure you want to do that?</h5>
+          
+          <div style={{display: "flex", gap: "10px"}}>
+            <Button text="Cancel" type="default" onClick={handleCancelChangeGeoPos}/>
+            <Button text="yes" type="normal" onClick={handleYesChangeGeoPos}/>
+          </div>
+        </div>
+      </Popup>
     </>
   );
 }
