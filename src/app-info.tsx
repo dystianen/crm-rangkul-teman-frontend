@@ -1,5 +1,4 @@
 const appInfo = {
-    title: 'Hayman Capital'
+    title: "SOLUSIKU"
 };
 export default appInfo;
-

@@ -34,7 +34,7 @@ export const createAppLoanOnboarding = async (payload: any): Promise<any> => {
 };
 
 export const createAppTemp = async (payload: any): Promise<any> => {
-  const resp = await ajaxPost(`/api/contact/create/app/tmp`, payload);
+  const resp = await ajaxPost(`${API_PATH.CONTACT}/create/app/tmp`, payload);
   return resp.data;
 };
 
@@ -92,6 +92,16 @@ export const detailAppStep = async (id: string): Promise<any> => {
 
 export const detailAppLoan = async (id: string): Promise<any> => {
   const resp = await ajaxGet(`${API_PATH.APPLICATION}/preview/${id}`);
+  return resp.data;
+};
+
+export const submitStreetShop = async (appId: string, payload: any): Promise<any> => {
+  const resp = await ajaxPost(`${API_PATH.CONTACT}/streetshop/${appId}`, payload);
+  return resp.data;
+};
+
+export const getStreetShop = async (appId: string): Promise<any> => {
+  const resp = await ajaxGet(`${API_PATH.CONTACT}/streetshop/${appId}`);
   return resp.data;
 };
 
