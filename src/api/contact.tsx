@@ -164,7 +164,8 @@ export const processCancel = async (contactId: string): Promise<any> => {
   return resp.data;
 };
 
-export const activityResultStore = dataRawCustomStore(`/api/contact/data/activityResult?`);
+export const activityTypeStore = dataRawCustomStore(`/api/contact/data/activityType?`);
+export const activityResultStore = (id: string) => dataRawCustomStore(`/api/contact/data/activityResult/${id}?`);
 export const contactActivityListStore = (id: string) =>
   new CustomStore({
     key: "id",
