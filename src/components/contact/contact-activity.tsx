@@ -158,13 +158,8 @@ class ContactActivity extends React.PureComponent<Iprops, Istate> {
                         }}
                         filterOperations={filterOperation.date}
                     />
-                    <Column dataField={"typeName"} caption={"Activity"}/>
-                    <Column dataField={"typeId"} caption={"Type"}>
-                        <Lookup dataSource={activityTypeStore} displayExpr="name" valueExpr="id"/>
-                    </Column>
-                    <Column dataField={"resultId"} caption={"Result"}>
-                        <Lookup dataSource={activityResultStore(null)} displayExpr="name" valueExpr="id"/>
-                    </Column>
+                    <Column dataField={"typeName"} caption={"Type"}/>
+                    <Column dataField={"resultName"} caption={"Result"} />
                     <Column dataField={"name"} caption={"Comment"} width={300}/>
                     <Column type={"buttons"} buttons={[
                         {
