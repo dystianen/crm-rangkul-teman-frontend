@@ -1,4 +1,4 @@
-import { DataGrid, Form } from "devextreme-react";
+import { DataGrid } from "devextreme-react";
 import { Column, Lookup, Pager, Paging, Scrolling } from "devextreme-react/data-grid";
 import DataSource from "devextreme/data/data_source";
 import React from "react";
@@ -6,7 +6,6 @@ import { checkAccess } from "../../api/apploan";
 import { activityResultStore, activityTypeStore, contactActivityListStore, selectBoxOptions } from "../../api/contact";
 import { filterOperation } from "../../constants/FilterOperation";
 import moment from "moment-timezone";
-import { Item } from 'devextreme-react/form';
 
 interface Iprops {
     contactId: string;
@@ -18,19 +17,40 @@ interface Istate {
     toolbar: any[];
     isCreateVisible: boolean;
     selectedTypeId: string;
-    resultOptions: {};
-    contactData: {};
+    resultOptions: any[];
+    contactData: {
+        typeId?: string;
+        resultId?: string;
+        comment?: string;
+    };
 }
 
 class ContactActivity extends React.PureComponent<Iprops, Istate> {
+    private resultDataSource: DataSource;
+
     constructor(props: Iprops) {
         super(props);
+
+        // Initialize resultDataSource with a custom load function
+        this.resultDataSource = new DataSource({
+            load: async () => {
+                console.log("masuk")
+                const typeId = this.state?.selectedTypeId;
+                if (!typeId) return [];
+
+                const resultStore = activityResultStore(typeId);
+                const ds = new DataSource(resultStore);
+                return await ds.load();
+            },
+            key: 'id'
+        });
+
         this.state = {
             contactActivities: [],
             toolbar: [],
             isCreateVisible: false,
-            selectedTypeId: '', // Default kosong
-            resultOptions: { }, // Inisialisasi dengan struktur yang benar.
+            selectedTypeId: '',
+            resultOptions: [],
             contactData: {}
         };
     }
@@ -43,10 +63,10 @@ class ContactActivity extends React.PureComponent<Iprops, Istate> {
             if (typeData.length > 0) {
                 const initialTypeId = typeData[0].id;
                 const resultOptions = await this.fetchResultOptions(initialTypeId);
-                this.setState({ 
-                    selectedTypeId: initialTypeId, 
-                    resultOptions 
-                }); 
+                this.setState({
+                    selectedTypeId: initialTypeId,
+                    resultOptions
+                });
             }
 
             const hasAccess = await checkAccess("800e5c98-4a29-47e1-b1e7-1ff1d5ea0737");
@@ -73,120 +93,53 @@ class ContactActivity extends React.PureComponent<Iprops, Istate> {
     }
 
     showFormPopup = () => {
-        this.setState({ isCreateVisible: true });
+        this.setState({ isCreateVisible: true, contactData: {} });
     };
 
     hideFormPopup = () => {
-        this.setState({ isCreateVisible: false });
+        this.setState({
+            isCreateVisible: false,
+            contactData: {}
+        });
     };
 
     fetchResultOptions = async (typeId: string) => {
+        if (!typeId) return [];
         const resultDataSource = new DataSource(activityResultStore(typeId));
-        return selectBoxOptions(resultDataSource, "Select Result");
+        const resultData = await resultDataSource.load();
+        return resultData.map((item: any) => ({
+            id: item.id,
+            name: item.name
+        }));
     };
 
     handleTypeChange = async (e: any) => {
         const newTypeId = e.value;
-        console.log("🚀 ~ ContactActivity ~ handleTypeChange= ~ newTypeId:", newTypeId)
         const resultOptions = await this.fetchResultOptions(newTypeId);
-        this.setState({ 
+
+        this.setState({
             selectedTypeId: newTypeId,
             resultOptions,
-            contactData: { 
-                ...this.state.contactData,
-                typeId: newTypeId
+            contactData: {
+                typeId: newTypeId,
+                resultId: undefined 
             }
+        }, () => {
+            this.resultDataSource.reload();
         });
     };
 
-    onFieldDataChanged = async (evt: any) => {
-        const { dataField, value } = evt;
-        console.log("🚀 ~ ContactActivity ~ onFieldDataChanged= ~ dataField:", dataField, value);
-
-        if (dataField === "typeId" && value != null) {
-            const resultOptions = await this.fetchResultOptions(value);
-            this.setState({ 
-                selectedTypeId: value,
-                resultOptions 
-            });
-        }
-
-        this.setState(prevState => ({
-            contactData: { 
-                ...prevState.contactData,
-                [dataField]: value
-            }
-        }));
-    };
-
-    onEditorChannelPreparing = (e: any) => {
-        console.log("e.dataField: ", e.dataField);
-        let that = e;
-        if (e.parentType === 'dataRow' && e.dataField === 'typeId') {
-          e.editorOptions.onValueChanged = async function (arg: any) {
-            e.setValue(arg.value);
-            e.component.cellValue(e.row.rowIndex, 'typeId', arg.value);
-            console.log('channel ', arg.value);
-
-              that.editorType = 'dxSelectBox';
-              that.editorOptions = {
-                dataSource: new DataSource(activityResultStore(arg.value)),
-                placeholder: 'Choose Result',
-                showClearButton: true,
-                displayExpr: 'name',
-                valueExpr: 'id',
-                valueChangeEvent: 'keyup',
-                onValueChanged: function (arg2: any) {
-                    that.setValue(arg2.value);
-                }
-              }
-            // const resultOptions = await that.fetchResultOptions(arg.value);
-            // that.setState({ 
-            //     selectedTypeId: arg.value,
-            //     resultOptions 
-            // });
-          };
-        }
-
-        if (e.dataField === 'resultId' && e.parentType === 'dataRow') {
-            console.log('resultId ', e.row.data.typeId);
-            // if (
-            //   e.row.data &&
-            //   e.row.data.typeId !== null
-            // ) {
-            //     console.log(e.row)
-            //   const contentVal = e.row.data.resultId;
-            //   console.log("🚀 ~ ContactActivity ~ contentVal:", contentVal)
-      
-            //   e.editorType = 'dxSelectBox';
-            //   e.editorOptions = {
-            //     dataSource: new DataSource(activityResultStore(e.row.data.typeId)),
-            //     placeholder: 'Choose Result',
-            //     showClearButton: true,
-            //     displayExpr: 'name',
-            //     valueExpr: 'id',
-            //     valueChangeEvent: 'keyup',
-            //     value: contentVal ? contentVal.replaceAll('"', '') : '',
-            //     onValueChanged: function (arg: any) {
-            //       e.setValue(arg.value);
-            //     }
-            //   }
-            
-            // }
-        }
-    }
-
     render() {
-        const { selectedTypeId, isCreateVisible, resultOptions, contactData } = this.state;
-        console.log("🚀 ~ ContactActivity ~ render ~ contactData:", contactData)
+        let that = this;
+        const { selectedTypeId, isCreateVisible, contactData } = this.state;
         const typeOptions = selectBoxOptions(new DataSource(activityTypeStore), "Select Type");
+        console.log(that.resultDataSource);
 
         return (
             <div className={"dx-card responsive-paddings"}>
                 {this.props.withTitle && <h5 style={{ margin: 0 }}>Contact Activity</h5>}
 
                 <DataGrid
-                    dataSource={contactActivityListStore(this.props.contactId)}
                     remoteOperations={true}
                     columnAutoWidth={true}
                     wordWrapEnabled={true}
@@ -194,11 +147,15 @@ class ContactActivity extends React.PureComponent<Iprops, Istate> {
                     cacheEnabled={false}
                     dateSerializationFormat={"yyyy-MM-ddTHH:mm:ss.SSSxxx"}
                     repaintChangesOnly={true}
+                    dataSource={new DataSource({
+                        store: contactActivityListStore(this.props.contactId),
+                        key: 'id'
+                    })}
                     onRowInserting={(options: any) => {
                         options.data = {
-                            contactId: this.props.contactId,
-                            comment: options.data.name,
+                            contactId: that.props.contactId,
                             typeId: options.data.typeId || selectedTypeId,
+                            comment: options.data.name,
                             resultId: options.data.resultId
                         };
                     }}
@@ -206,13 +163,11 @@ class ContactActivity extends React.PureComponent<Iprops, Istate> {
                         options.newData = {
                             ...options.oldData,
                             ...options.newData,
-                            contactId: this.props.contactId,
+                            contactId: that.props.contactId,
                             comment: options.newData.name ? options.newData.name : options.oldData.name
                         };
                     }}
-                    onEditorPreparing={this.onEditorChannelPreparing.bind(
-                        this,
-                      )}
+
                     editing={{
                         mode: "popup",
                         allowUpdating: (options: any) => {
@@ -228,12 +183,11 @@ class ContactActivity extends React.PureComponent<Iprops, Istate> {
                             width: "40%",
                             height: 360,
                             visible: isCreateVisible,
-                            onHiding: this.hideFormPopup
+                            onHiding: this.hideFormPopup,
                         },
                         form: {
-                            colCount: 1,
                             formData: contactData,
-                            onFieldDataChanged: this.onFieldDataChanged.bind(this),
+                            colCount: 1,
                             items: [
                                 {
                                     dataField: "typeId",
@@ -248,7 +202,12 @@ class ContactActivity extends React.PureComponent<Iprops, Istate> {
                                 {
                                     dataField: "resultId",
                                     editorType: "dxSelectBox",
-                                    editorOptions: resultOptions,
+                                    editorOptions: {
+                                        dataSource: this.resultDataSource,
+                                        displayExpr: "name",
+                                        valueExpr: "id",
+                                        value: contactData.resultId
+                                    },
                                     isRequired: true
                                 },
                                 {
@@ -273,7 +232,9 @@ class ContactActivity extends React.PureComponent<Iprops, Istate> {
                             selectedFilterOperations: any,
                             target: any
                         ) {
+                            // @ts-expect-error
                             const column = this as any;
+                            // @ts-expect-error
                             return column.defaultCalculateFilterExpression.apply(this, [
                                 new Date(value),
                                 selectedFilterOperations,
@@ -287,7 +248,8 @@ class ContactActivity extends React.PureComponent<Iprops, Istate> {
                         <Lookup dataSource={activityTypeStore} displayExpr="name" valueExpr="id" />
                     </Column>
                     <Column dataField={"resultId"} caption={"Result"}>
-                        <Lookup dataSource={resultOptions} displayExpr="name" valueExpr="id" />
+                        {/* @ts-expect-error */}
+                        <Lookup dataSource={that.resultDataSource} displayExpr="name" valueExpr="id" />
                     </Column>
                     <Column dataField={"name"} caption={"Comment"} width={300} />
                     <Paging defaultPageSize={50} />
