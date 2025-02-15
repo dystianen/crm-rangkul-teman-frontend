@@ -164,7 +164,13 @@ export const processCancel = async (contactId: string): Promise<any> => {
   return resp.data;
 };
 
-export const activityResultStore = dataRawCustomStore(`/api/contact/data/activityResult?`);
+export const activityTypeStore = dataRawCustomStore(`/api/contact/data/activityType?`);
+export const activityResultStore = (id: string | null) => {
+  if(id == null) {
+    return dataRawCustomStore(`/api/contact/data/activityResult?`);
+  }
+  return dataRawCustomStore(`/api/contact/data/activityResult/${id}?`);
+};
 export const contactActivityListStore = (id: string) =>
   new CustomStore({
     key: "id",
@@ -186,15 +192,20 @@ export const contactActivityListStore = (id: string) =>
       return resp;
     },
     cacheRawData: true,
-    insert: async (values: any) => {
-      const resp = await ajaxPost("/api/contact/activity/create", values);
-      console.log("insert", resp);
-    },
-    update: async (key: string, values: any) => {
-      console.log("update", key, values);
-      const resp = await ajaxPatch(`/api/contact/activity/update/${key}`, values);
-      console.log("update", resp);
-    }
+    // insert: async (values: any) => {
+    //   const resp = await ajaxPost("/api/contact/activity/create", values);
+    //   console.log("insert", resp);
+    // },
+    // update: async (key: string, values: any) => {
+    //   console.log("update", key, values);
+    //   if(key.startsWith("_DX_KEY_")){
+    //     const resp = await ajaxPost("/api/contact/activity/create", values);
+    //     console.log("insert", resp);
+    //   } else {
+    //     const resp = await ajaxPatch(`/api/contact/activity/update/${key}`, values);
+    //     console.log("update", resp);
+    //   }
+    // }
   });
 export const salesChannelStore = dataRawCustomStore(`/api/contact/data/salesChannel?`);
 export const contactRelativeStore = dataRawCustomStore(`/api/contact/data/contactRelative?`);
