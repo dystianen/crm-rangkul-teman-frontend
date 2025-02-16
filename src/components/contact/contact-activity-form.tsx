@@ -119,7 +119,7 @@ export default function ActivityContactForm(props: ActivityContactProps) {
                         <RequiredRule message="Comment is required"/>
                     </SimpleItem>
 
-                    <GroupItem colCount={2}>
+                    <GroupItem cssClass={"dx-toolbar dx-widget dx-visibility-change-handler dx-collection dx-popup-bottom"} colCount={2}>
                         <ButtonItem horizontalAlignment="left">
                             <ButtonOptions width={"100%"} onClick={props.onCloseModal}>
                                 <span className="dx-button-text">Tutup</span>
