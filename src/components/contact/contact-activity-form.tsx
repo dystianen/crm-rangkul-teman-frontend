@@ -51,6 +51,14 @@ export default function ActivityContactForm(props: ActivityContactProps) {
             const resp = await ajaxPost("/api/contact/activity/create", activityContactData);
             console.log("insert", resp);
         }
+        
+        setActivityContactData({
+            contactId: undefined,
+            id:  undefined,
+            comment:  undefined,
+            resultId:  undefined,
+            typeId:  undefined,
+        });
         props.onSubmit(event);
     }
     const typeOptions = selectBoxOptions(new DataSource(activityTypeStore), "Select Type");
@@ -61,6 +69,7 @@ export default function ActivityContactForm(props: ActivityContactProps) {
                 new DataSource(activityResultStore(evt.value)),
                 "Select Result"
             ));
+            activityContactData["resultId"] = undefined;
         }
 
         activityContactData[evt.dataField] = evt.value;
