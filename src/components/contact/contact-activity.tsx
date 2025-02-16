@@ -28,6 +28,7 @@ interface Istate {
     resultDataSource?: DataSource;
     activityContactData: IContactActivity,
     activityModal: boolean,
+    typeData: any[],
 }
 
 class ContactActivity extends React.PureComponent<Iprops, Istate> {
@@ -45,7 +46,8 @@ class ContactActivity extends React.PureComponent<Iprops, Istate> {
             resultOptions: [],
             contactData: {},
             activityContactData: {contactId: this.props.contactId},
-            activityModal: false
+            activityModal: false,
+            typeData: []
         };
     }
 
@@ -62,6 +64,7 @@ class ContactActivity extends React.PureComponent<Iprops, Istate> {
                 const initialTypeId = typeData[0].id;
                 this.setState({
                     selectedTypeId: initialTypeId,
+                    typeData: typeData
                 });
             }
         } catch (error) {
@@ -89,7 +92,7 @@ class ContactActivity extends React.PureComponent<Iprops, Istate> {
     }
 
     render() {
-        const {selectedTypeId, activityContactData, activityModal} = this.state;
+        const {typeData, selectedTypeId, activityContactData, activityModal} = this.state;
         let that = this;
         return (
             <div className={"dx-card responsive-paddings"}>
@@ -130,10 +133,11 @@ class ContactActivity extends React.PureComponent<Iprops, Istate> {
 
                     editing={{
                         allowUpdating: (options: any) => {
+                            let found = typeData.some(x => x.id === options.row.data.typeId);
                             const createdOn = moment(options.row.data.createdOn);
                             const now = moment();
                             const diffInMinutes = now.diff(createdOn, "minutes");
-                            return diffInMinutes <= 60;
+                            return found && diffInMinutes <= 60;
                         },
                     }}
                 >
