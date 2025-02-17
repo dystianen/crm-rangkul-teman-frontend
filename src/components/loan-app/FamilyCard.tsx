@@ -9,18 +9,22 @@ import DataGrid, {
   Popup as PopGrid
 } from "devextreme-react/data-grid";
 import DataSource from "devextreme/data/data_source";
-import ReactDOM from "react-dom/client";
+import { useMemo } from "react";
 import { familyListStore } from "src/api/apploan";
 import { contactRelativeStore, selectBoxOptions } from "src/api/contact";
 
 const FamilyCard = ({ appId }: { appId: string }) => {
-  const relativeOptions = selectBoxOptions(new DataSource(contactRelativeStore), "Select Relation");
+  const familyDataSource = useMemo(() => new DataSource(familyListStore(appId)), [appId]);
+  const relativeOptions = useMemo(
+    () => selectBoxOptions(new DataSource(contactRelativeStore), "Select Relation"),
+    []
+  );
 
   return (
     <div className={"dx-card responsive-paddings"}>
       <h3>Family</h3>
       <DataGrid
-        dataSource={new DataSource(familyListStore(appId))}
+        dataSource={familyDataSource}
         columnAutoWidth={true}
         wordWrapEnabled={false}
         showBorders={true}
@@ -29,8 +33,8 @@ const FamilyCard = ({ appId }: { appId: string }) => {
         onRowUpdating={(options: any) => {
           options.newData = {
             ...options.oldData,
-            ...options.newData,
-        }
+            ...options.newData
+          };
         }}
       >
         <Editing mode="popup" allowUpdating={true} allowAdding={true}>
@@ -72,9 +76,8 @@ const FamilyCard = ({ appId }: { appId: string }) => {
           caption={"No."}
           width={70}
           alignment={"center"}
-          cellTemplate={function (container: any, options: any) {
-            const dom = ReactDOM.createRoot(container);
-            dom.render(options.rowIndex + 1);
+          cellTemplate={(container, options) => {
+            container.innerText = options.rowIndex + 1;
           }}
         />
         <Column dataField={"idNumber"} caption={"NIK"} />
