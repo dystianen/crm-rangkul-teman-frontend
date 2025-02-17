@@ -40,6 +40,7 @@ import {downloadExcel} from "../../api/http.api";
 // @ts-ignore
 import * as downloadFile from "save-file";
 import {useAuth} from "../../contexts/auth";
+import {appStatusIncomplete} from "../../constants/variableConstata";
 
 export default function Index() {
     const {user} = useAuth();
@@ -189,6 +190,9 @@ export default function Index() {
             });
         }
     }
+    
+    
+    
     return (<React.Fragment>
         <h2 className={"content-block"}>Pengajuan</h2>
         <div className={"content-block"}>
@@ -215,7 +219,9 @@ export default function Index() {
                         cellTemplate={function (container: any, options: any) {
                             console.log("options : ", options);
                             const dom = ReactDOM.createRoot(container);
-                            if (options.data.statusId == "f95a1ecc-2f6f-4553-bbbe-a5e976a78bef") {
+                            let found = appStatusIncomplete.some(x => x === options.data.statusId);
+                            
+                            if (found) {
                                 const id = options.data.id;
                                 dom.render(<OnClickLink
                                     onClick={() => navigate(`/loan-app/create/step/1?id=${options.data.id}&autoNext=false`)}>{options.data.seqId}</OnClickLink>);
@@ -254,8 +260,10 @@ export default function Index() {
                             selectedFilterOperations: any,
                             target: any
                         ) => {
+                            
+                            // @ts-ignore
                             const column = this as any;
-                            return column.defaultCalculateFilterExpression.apply(this, [
+                            return column.defaultCalculateFilterExpression.apply(column, [
                                 new Date(value),
                                 selectedFilterOperations,
                                 target,
@@ -268,13 +276,14 @@ export default function Index() {
                         caption={"Tanggal Diubah"}
                         dataType={"date"}
                         format={"dd MMM yyyy HH:mm:ss"}
-                        calculateFilterExpression={function (
-                            value: any,
-                            selectedFilterOperations: any,
-                            target: any
-                        ) {
+                        calculateFilterExpression={(
+                          value: any,
+                          selectedFilterOperations: any,
+                          target: any
+                        ) => {
+                            // @ts-ignore
                             const column = this as any;
-                            return column.defaultCalculateFilterExpression.apply(this, [
+                            return column.defaultCalculateFilterExpression.apply(column, [
                                 new Date(value),
                                 selectedFilterOperations,
                                 target,
