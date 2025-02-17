@@ -31,6 +31,7 @@ import { getFileBase64 } from "../../api/helper";
 import {Button} from "devextreme-react/button";
 import {notifyWarning} from "../../utils/devExtremeUtils";
 import { GoogleMap, Marker, useJsApiLoader } from "@react-google-maps/api";
+import FamilyCard from "src/components/loan-app/FamilyCard";
 
 const containerStyle = {
   width: '100%',
@@ -329,51 +330,7 @@ export default function Step2Page() {
         />
       </div>
       <div className={"content-block"}>
-        <div className={"dx-card responsive-paddings"}>
-          <h3>Family</h3>
-          <DataGrid
-              dataSource={dataGrid}
-              columnAutoWidth={true}
-              wordWrapEnabled={false}
-              showBorders={true}
-              dateSerializationFormat={"yyyy-MM-ddTHH:mm:ss.SSSxxx"}
-              repaintChangesOnly={true}
-          >
-            <Editing mode="popup" allowUpdating={true} allowAdding={true} allowDeleting={true}>
-              <PopGrid title="Family Form" showTitle={true} width={360} height={320} />
-              <FormGrid
-                showColonAfterLabel={true}
-                showValidationSummary={true}
-                validationGroup="customedata"
-                colCount={1}
-              >
-                <SimpleItem dataField="idNumber">
-                  <RequiredRule message="NIK is required" />
-                </SimpleItem>
-                <SimpleItem dataField="name">
-                  <RequiredRule message="Name is required" />
-                </SimpleItem>
-                <SimpleItem dataField={"relationType"} editorType="dxSelectBox">
-                  <RequiredRule message="Relation type is required" />
-                </SimpleItem>
-              </FormGrid>
-            </Editing>
-            <Column
-              caption={"No."}
-              width={70}
-              alignment={"center"}
-              cellTemplate={function (container: any, options: any) {
-                const dom = ReactDOM.createRoot(container);
-                dom.render(options.rowIndex + 1);
-              }}
-            />
-            <Column dataField={"idNumber"} caption={"NIK"} />
-            <Column dataField={"name"} caption={"Name"} />
-            <Column dataField={"relationType"} caption={"Relation Type"} />
-            <Paging defaultPageSize={50} />
-            <Pager showPageSizeSelector={true} showInfo={true} allowedPageSizes={[10, 50, 100]} />
-          </DataGrid>
-        </div>
+        <FamilyCard appId={ID}/>
 
         <div className={"dx-card responsive-paddings next-card"}>
           <h3>Documents</h3>

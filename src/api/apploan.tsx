@@ -1,8 +1,11 @@
 import { AxiosRequestConfig } from "axios";
 import { customStore } from "../model/customStore";
 import { dataRawCustomStore } from "../model/datagrid";
-import { ajaxGet, ajaxPost } from "./http.api";
+import { ajaxGet, ajaxPatch, ajaxPost } from "./http.api";
 import { API_PATH } from "./path_url";
+import CustomStore from "devextreme/data/custom_store";
+import { FilterPss, setFilterPss } from "src/interfaces/IFilterPss";
+import qs from "qs";
 
 export const appLoanListStore = customStore({
   loadUrl: API_PATH.APPLICATION
@@ -116,3 +119,35 @@ export const loanTermStore = (appId: string) =>
   dataRawCustomStore(`/api/product/term/list/app/${appId}?`);
 export const getListBank = dataRawCustomStore(`/api/data/bank/list?`);
 export const getLoanPurpose = dataRawCustomStore(`/api/data/loan/purpose/list?`);
+
+export const familyListStore = (id: string) =>
+  new CustomStore({
+    key: "id",
+    load: async (loadOptions) => {
+      let { sort } = loadOptions;
+      if (sort === null) {
+        sort = [{ selector: "modifiedOn", desc: false }];
+      }
+      const startVal: number | undefined = loadOptions.skip != null ? loadOptions.skip : 0,
+        lengthVal: number | undefined = loadOptions.take != null ? loadOptions.take : 50;
+      const paramSearch: FilterPss = {
+        ...setFilterPss(),
+        start: startVal,
+        length: lengthVal,
+        sort: sort,
+        searchQuery: JSON.stringify(loadOptions.filter)
+      };
+      const resp = await ajaxGet(`${API_PATH.CONTACT}/data/family/${id}?${qs.stringify(paramSearch)}`);
+      return resp;
+    },
+    cacheRawData: true,
+    insert: async (values: any) => {
+      const resp = await ajaxPost(`${API_PATH.CONTACT}/data/family/${id}`, values);
+      console.log("insert", resp);
+    },
+    update: async (key: string, values: any) => {
+      console.log("update", key, values);
+      const resp = await ajaxPatch(`${API_PATH.CONTACT}/data/family/${id}`, values);
+      console.log("update", resp);
+    }
+  });
