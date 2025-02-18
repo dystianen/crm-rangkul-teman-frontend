@@ -1,7 +1,7 @@
 import { AxiosRequestConfig } from "axios";
 import { customStore } from "../model/customStore";
 import { dataRawCustomStore } from "../model/datagrid";
-import { ajaxGet, ajaxPatch, ajaxPost } from "./http.api";
+import { ajaxDelete, ajaxGet, ajaxPatch, ajaxPost } from "./http.api";
 import { API_PATH } from "./path_url";
 import CustomStore from "devextreme/data/custom_store";
 import { FilterPss, setFilterPss } from "src/interfaces/IFilterPss";
@@ -112,6 +112,26 @@ export const getStreetShop = async (appId: string): Promise<any> => {
   return resp.data;
 };
 
+export const fetchSellingQuestions = async (appId: string): Promise<any> => {
+  const resp = await ajaxGet(`${API_PATH.QUESTION}/selling/${appId}`);
+  return resp.data;
+};
+
+export const submitSellingQuestions = async (appId: string, payload: any): Promise<any> => {
+  const resp = await ajaxPost(`${API_PATH.QUESTION}/selling/${appId}`, payload);
+  return resp.data;
+};
+
+export const fetchNeighbourQuestions = async (appId: string): Promise<any> => {
+  const resp = await ajaxGet(`${API_PATH.QUESTION}/neighbour/${appId}`);
+  return resp.data;
+};
+
+export const submitNeighbourQuestions = async (appId: string, payload: any): Promise<any> => {
+  const resp = await ajaxPost(`${API_PATH.QUESTION}/neighbour/${appId}`, payload);
+  return resp.data;
+};
+
 export const getActiveBranchByUserStore = dataRawCustomStore(`/api/data/branch/user?`);
 
 export const getActiveProductByBranch = (branchId: string) =>
@@ -153,5 +173,9 @@ export const familyListStore = (id: string) =>
       console.log("update", key, values);
       const resp = await ajaxPatch(`${API_PATH.CONTACT}/data/family/${id}`, values);
       console.log("update", resp);
-    }
+    },
+    remove: async (key: string) => {
+      const resp = await ajaxDelete(`${API_PATH.CONTACT}/data/family/${key}`);
+      console.log("delete", resp);
+    },
   });
