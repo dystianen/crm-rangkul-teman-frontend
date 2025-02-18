@@ -46,7 +46,7 @@ const FamilyCard = ({ appId }: { appId: string }) => {
           };
         }}
       >
-        <Editing mode="popup" allowUpdating={true} allowAdding={true}>
+        <Editing mode="popup" allowUpdating={true} allowAdding={true} allowDeleting={true}>
           <PopGrid title="Family Form" showTitle={true} width={360} height={320} />
           <FormGrid
             showColonAfterLabel={true}
