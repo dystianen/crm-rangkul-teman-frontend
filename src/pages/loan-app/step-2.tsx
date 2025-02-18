@@ -1,17 +1,5 @@
-import Form, {
-  ButtonItem,
-  GroupItem,
-  PatternRule,
-  RequiredRule,
-  SimpleItem
-} from "devextreme-react/form";
-import { useCallback, useEffect, useRef, useState } from "react";
-import "devextreme-react/file-uploader";
-import queryString from "query-string";
-import { useNavigate } from "react-router";
-import { useLocation } from "react-router-dom";
-import "./loan-app.scss";
-import { CheckBox, LoadPanel, Popup, RadioGroup } from "devextreme-react";
+import { LoadPanel } from "devextreme-react";
+import { Button } from "devextreme-react/button";
 import DataGrid, {
   Column,
   Editing,
@@ -22,26 +10,35 @@ import DataGrid, {
   Popup as PopGrid
 } from "devextreme-react/data-grid";
 import "devextreme-react/date-box";
+import "devextreme-react/file-uploader";
+import Form, {
+  ButtonItem,
+  GroupItem,
+  PatternRule,
+  RequiredRule,
+  SimpleItem
+} from "devextreme-react/form";
 import notify from "devextreme/ui/notify";
+import queryString from "query-string";
+import { useEffect, useRef, useState } from "react";
 import ReactDOM from "react-dom/client";
 import Resizer from "react-image-file-resizer";
-import {checkAccess, createAppLoanOnboardingStep2, detailAppLoan, getSignedDoc, getStreetShop, submitStreetShop} from "src/api/apploan";
+import { useNavigate } from "react-router";
+import { useLocation } from "react-router-dom";
+import {
+  checkAccess,
+  createAppLoanOnboardingStep2,
+  detailAppLoan,
+  getSignedDoc
+} from "src/api/apploan";
+import FamilyCard from "src/components/loan-app/FamilyCard";
+import NeighbourQuestions from "src/components/loan-app/NeighbourQuestions";
+import SellingQuestions from "src/components/loan-app/SellingQuestions";
+import StreetShop from "src/components/loan-app/StreetShop";
 import PdfViewer from "src/components/pdf-viewer/PdfViewer";
 import { getFileBase64 } from "../../api/helper";
-import {Button} from "devextreme-react/button";
-import {notifyWarning} from "../../utils/devExtremeUtils";
-import { GoogleMap, Marker, useJsApiLoader } from "@react-google-maps/api";
-import FamilyCard from "src/components/loan-app/FamilyCard";
-
-const containerStyle = {
-  width: '100%',
-  height: '500px',
-}
-
-const defaultCenter = {
-  lat: -6.2262903,
-  lng: 106.8325905,
-}
+import { notifyWarning } from "../../utils/devExtremeUtils";
+import "./loan-app.scss";
 
 export default function Step2Page() {
   const navigate = useNavigate();
@@ -60,9 +57,6 @@ export default function Step2Page() {
   });
   const [submitForm, setSubmitForm] = useState(false);
   const [loadingDownloadBtn, setLoadingDownloadBtn] = useState(false);
-  const [isStreetShop, setIsStreetShop] = useState(false);
-  const [center, setCenter] = useState(defaultCenter);
-  const [isShowPopupConfirm, setShowPopupConfirm] = useState(false);
 
   useEffect(() => {
     detailAppLoan(ID).then((res) => {
@@ -83,14 +77,6 @@ export default function Step2Page() {
         });
       }
     });
-
-    getStreetShop(ID).then((res) => {
-      setIsStreetShop(res.isStreetShop ?? false);
-      setCenter({
-        lat: Number(res.latitude),
-        lng: Number(res.longitude)
-      })
-    })
   }, [ID]);
 
   useEffect(() => {
@@ -105,27 +91,27 @@ export default function Step2Page() {
   const downloadDocSigned = () => {
     setLoadingDownloadBtn(true);
     getSignedDoc(id as any)
-        .then((dt) => {
-          const link = document.createElement("a");
-          link.href = `data:${dt.fileType};base64,${dt.fileContent}`;
-          link.target = "_blank";
-          link.download = dt.fileName;
-          link.click();
-        })
-        .catch((e) => {
-          notify(
-              {
-                message: e?.message,
-                position: {
-                  my: "center top",
-                  at: "center top"
-                }
-              },
-              "warning",
-              15000
-          );
-        })
-        .finally(() => setLoadingDownloadBtn(false));
+      .then((dt) => {
+        const link = document.createElement("a");
+        link.href = `data:${dt.fileType};base64,${dt.fileContent}`;
+        link.target = "_blank";
+        link.download = dt.fileName;
+        link.click();
+      })
+      .catch((e) => {
+        notify(
+          {
+            message: e?.message,
+            position: {
+              my: "center top",
+              at: "center top"
+            }
+          },
+          "warning",
+          15000
+        );
+      })
+      .finally(() => setLoadingDownloadBtn(false));
   };
 
   const handleSubmit = (e: any) => {
@@ -216,92 +202,6 @@ export default function Step2Page() {
     onStep2Loan[evt.dataField] = evt.value;
   };
 
-  const dataQuestions = [
-    { id: 1, question: "Do you have experience in sales?" },
-    { id: 2, question: "Have you ever managed a team?" },
-    { id: 3, question: "Are you comfortable with cold calling?" },
-  ];
-
-  const [selectedValues, setSelectedValues] = useState<Record<number, string>>(
-    {}
-  );
-
-  const handleRadioChange = (rowIndex: number, value: string) => {
-    setSelectedValues((prev) => ({ ...prev, [rowIndex]: value }));
-  };
-
-  const { isLoaded } = useJsApiLoader({
-    id: 'google-map-script',
-    googleMapsApiKey: `${process.env.REACT_APP_GOOGLE_MAPS_API_KEY}`,
-  })
-
-  const onLoad = useCallback(function callback(map: any) {
-    const bounds = new window.google.maps.LatLngBounds(center)
-    map.fitBounds(bounds)
-  }, [center])
-
-  const isHandlingPopup = useRef(false);
-  const handleChangeStreetShop = useCallback((value: boolean) => {
-    if (isHandlingPopup.current) {
-      isHandlingPopup.current = false;
-      return;
-    }
-
-    if (value === false) {
-      setShowPopupConfirm(true);
-      return;
-    }
-
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const lat = position.coords.latitude;
-          const lng = position.coords.longitude;
-          setCenter({ lat, lng });
-
-          const payload = {
-            isStreetShop: value,
-            latitude: value ? lat.toString() : "",
-            longitude: value ? lng.toString() : "",
-          };
-          
-          submitStreetShop(ID, payload).then(() => {
-            getStreetShop(ID).then((res) => {
-              setIsStreetShop(res.isStreetShop ?? false);
-              if (res.isStreetShop) {
-                setCenter({
-                  lat: Number(res.latitude),
-                  lng: Number(res.longitude)
-                })
-              }
-            })
-          });
-        },
-        (error) => {
-          console.error("Error getting location:", error);
-        }
-      );
-    }
-  }, [ID]);
-
-  const handleCancelChangeGeoPos = useCallback(() => {
-    setIsStreetShop(true);
-    setShowPopupConfirm(false);
-  }, []);
-
-  const handleYesChangeGeoPos = useCallback(() => {
-    const payload = {
-      isStreetShop: false,
-      latitude: "",
-      longitude: "",
-    };
-
-    submitStreetShop(ID, payload).then(() => {
-      setIsStreetShop(false);
-      setShowPopupConfirm(false);
-    });
-  }, [ID]);
-
   return (
     <>
       <LoadPanel
@@ -313,34 +213,34 @@ export default function Step2Page() {
         hideOnOutsideClick={false}
       />
       <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            margin: "0 15px 0"
-          }}
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          margin: "0 15px 0"
+        }}
       >
         <h2>Step 2</h2>
         <Button
-            text="Download Signed Contract"
-            type="success"
-            stylingMode="contained"
-            disabled={loadingDownloadBtn}
-            onClick={downloadDocSigned}
+          text="Download Signed Contract"
+          type="success"
+          stylingMode="contained"
+          disabled={loadingDownloadBtn}
+          onClick={downloadDocSigned}
         />
       </div>
       <div className={"content-block"}>
-        <FamilyCard appId={ID}/>
+        <FamilyCard appId={ID} />
 
         <div className={"dx-card responsive-paddings next-card"}>
           <h3>Documents</h3>
           <DataGrid
-              dataSource={dataGrid}
-              columnAutoWidth={true}
-              wordWrapEnabled={false}
-              showBorders={true}
-              dateSerializationFormat={"yyyy-MM-ddTHH:mm:ss.SSSxxx"}
-              repaintChangesOnly={true}
+            dataSource={dataGrid}
+            columnAutoWidth={true}
+            wordWrapEnabled={false}
+            showBorders={true}
+            dateSerializationFormat={"yyyy-MM-ddTHH:mm:ss.SSSxxx"}
+            repaintChangesOnly={true}
           >
             <Editing mode="popup" allowUpdating={true} allowAdding={true} allowDeleting={true}>
               <PopGrid title="Custom Data Form" showTitle={true} width={360} height={320} />
@@ -374,132 +274,21 @@ export default function Step2Page() {
           </DataGrid>
         </div>
 
-        <div className="dx-card responsive-paddings next-card">
-          <h3>Point Selling Questions</h3>
-          <DataGrid
-            dataSource={dataQuestions}
-            columnAutoWidth={true}
-            wordWrapEnabled={false}
-            showBorders={true}
-            repaintChangesOnly={true}
-          >
-            <Column
-              caption="No."
-              width={70}
-              alignment="center"
-              cellTemplate={(container: any, options: any) => {
-                const dom = ReactDOM.createRoot(container);
-                dom.render(options.rowIndex + 1);
-              }}
-            />
-            <Column dataField="question" caption="Questions" />
-            <Column caption="Choose" 
-              cellTemplate={(container: any, options: any) => {
-                const dom = ReactDOM.createRoot(container);
-                dom.render(
-                  <RadioGroup
-                    items={["Yes", "No"]}
-                    value={selectedValues[options.rowIndex] || ""}
-                    layout="horizontal"
-                    onValueChanged={(e) =>
-                      handleRadioChange(options.rowIndex, e.value)
-                    }
-                  />
-                );
-              }}
-            />
+        <SellingQuestions appId={ID} />
 
-            <Paging defaultPageSize={50} />
-            <Pager
-              showPageSizeSelector={true}
-              showInfo={true}
-              allowedPageSizes={[10, 50, 100]}
-            />
-          </DataGrid>
-        </div>
+        <NeighbourQuestions appId={ID} />
 
-        <div className="dx-card responsive-paddings next-card">
-          <h3>Neighbour Questions</h3>
-          <DataGrid
-            dataSource={dataQuestions}
-            columnAutoWidth={true}
-            wordWrapEnabled={false}
-            showBorders={true}
-            repaintChangesOnly={true}
-          >
-            <Column
-              caption="No."
-              width={70}
-              alignment="center"
-              cellTemplate={(container: any, options: any) => {
-                const dom = ReactDOM.createRoot(container);
-                dom.render(options.rowIndex + 1);
-              }}
-            />
-            <Column dataField="question" caption="Questions" />
-            <Column caption="Choose" 
-              cellTemplate={(container: any, options: any) => {
-                const dom = ReactDOM.createRoot(container);
-                dom.render(
-                  <RadioGroup
-                    items={["Yes", "No"]}
-                    value={selectedValues[options.rowIndex] || ""}
-                    layout="horizontal"
-                    onValueChanged={(e) =>
-                      handleRadioChange(options.rowIndex, e.value)
-                    }
-                  />
-                );
-              }}
-            />
+        <StreetShop appId={ID} />
 
-            <Paging defaultPageSize={50} />
-            <Pager
-              showPageSizeSelector={true}
-              showInfo={true}
-              allowedPageSizes={[10, 50, 100]}
-            />
-          </DataGrid>
-        </div>
-
-        <div className="dx-card responsive-paddings next-card">
-          <div style={{display: "flex", gap: "10px"}}>
-            <CheckBox
-              value={isStreetShop}
-              onValueChanged={(e) => {
-                handleChangeStreetShop(e.value);
-                setIsStreetShop(e.value);
-              }}
-              elementAttr={{ "aria-label": "Is Street Shop" }}
-            />
-            <h3>Street Shop</h3>
-          </div>
-
-          {isStreetShop && isLoaded ? (
-            <GoogleMap
-              mapContainerStyle={containerStyle}
-              center={center}
-              zoom={15}
-              onLoad={onLoad}
-              options={{
-                disableDoubleClickZoom: false,
-                draggable: false
-              }}
-            >
-              <Marker position={center} />
-            </GoogleMap>
-          ) : null}
-        </div>
-        
         <div className={"dx-card responsive-paddings next-card"}>
           <h3>Custom Data</h3>
           <DataGrid
-              dataSource={dataGrid}
-              columnAutoWidth={true}
-              wordWrapEnabled={false}
-              showBorders={true}
-              dateSerializationFormat={"yyyy-MM-ddTHH:mm:ss.SSSxxx"}
-              repaintChangesOnly={true}
+            dataSource={dataGrid}
+            columnAutoWidth={true}
+            wordWrapEnabled={false}
+            showBorders={true}
+            dateSerializationFormat={"yyyy-MM-ddTHH:mm:ss.SSSxxx"}
+            repaintChangesOnly={true}
           >
             <Editing mode="popup" allowUpdating={true} allowAdding={true} allowDeleting={true}>
               <PopGrid title="Custom Data Form" showTitle={true} width={360} height={320} />
@@ -533,7 +322,7 @@ export default function Step2Page() {
           </DataGrid>
         </div>
 
-        <form action="validate" onSubmit={handleSubmit} className={'next-card'}>
+        <form action="validate" onSubmit={handleSubmit} className={"next-card"}>
           <Form
             ref={formRef}
             colCount={1}
@@ -549,7 +338,7 @@ export default function Step2Page() {
                   dataField="monthlyIncome"
                   label={{ text: "Penghasilan perbulan" }}
                   editorType="dxNumberBox"
-                  editorOptions={{ format: "Rp #,##0.00"}}
+                  editorOptions={{ format: "Rp #,##0.00" }}
                 >
                   <RequiredRule message="Penghasilan perbulan wajib diisi" />
                   <PatternRule message="hanya boleh angka" pattern={/^[0-9]+$/} />
@@ -563,7 +352,7 @@ export default function Step2Page() {
                   dataField="debitTransaction"
                   label={{ text: "Debit Transaksi" }}
                   editorType="dxNumberBox"
-                  editorOptions={{ format: "Rp #,##0.00"}}
+                  editorOptions={{ format: "Rp #,##0.00" }}
                 >
                   <RequiredRule message="Debit transaksi wajib diisi" />
                   <PatternRule message="hanya boleh angka" pattern={/^[0-9]+$/} />
@@ -572,7 +361,7 @@ export default function Step2Page() {
                   dataField="creditTransaction"
                   label={{ text: "Kredit Transaksi" }}
                   editorType="dxNumberBox"
-                  editorOptions={{ format: "Rp #,##0.00"}}
+                  editorOptions={{ format: "Rp #,##0.00" }}
                 >
                   <RequiredRule message="Kredit transaksi wajib diisi" />
                   <PatternRule message="hanya boleh angka" pattern={/^[0-9]+$/} />
@@ -621,17 +410,6 @@ export default function Step2Page() {
           </Form>
         </form>
       </div>
-
-      <Popup width={360} height={"auto"} visible={isShowPopupConfirm} showTitle={false}>
-        <div className="wrapper-popup-waiting">
-          <h5 className="title">You are trying to change existing geoposition. Are you sure you want to do that?</h5>
-          
-          <div style={{display: "flex", gap: "10px"}}>
-            <Button text="Cancel" type="default" onClick={handleCancelChangeGeoPos}/>
-            <Button text="yes" type="normal" onClick={handleYesChangeGeoPos}/>
-          </div>
-        </div>
-      </Popup>
     </>
   );
 }

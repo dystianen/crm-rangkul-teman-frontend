@@ -16,5 +16,6 @@ export enum API_PATH {
   MESSAGE_LOG = '/api/trx/message/log',
   MESSAGE_WHATSAPP = '/api/trx/message/whatsapp',
   MESSAGE_RECEIVER = '/api/trx/message/receiver',
-  CONTACT = '/api/contact'
+  CONTACT = '/api/contact',
+  QUESTION = '/api/app/question'
 }

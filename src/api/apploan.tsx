@@ -117,7 +117,7 @@ export const fetchSellingQuestions = async (appId: string): Promise<any> => {
   return resp.data;
 };
 
-export const submitSellingQuestions = async (appId: string, payload: any): Promise<any> => {
+export const submitSellingQuestions = async (appId: string, payload: { questionId: string, answer: boolean }): Promise<any> => {
   const resp = await ajaxPost(`${API_PATH.QUESTION}/selling/${appId}`, payload);
   return resp.data;
 };
