@@ -229,8 +229,11 @@ export default function Index() {
                         cellTemplate={function (container: any, options: any) {
                             const dom = ReactDOM.createRoot(container);
                             let found = appStatusIncomplete.some(x => x === options.data.statusId);
-                            
-                            if (found) {
+                            console.log("record app ", options.data);
+                            if(options.data.isWaitingSigning) {
+                                dom.render(<OnClickLink
+                                  onClick={() => navigate(`/loan-app/create/step/1?id=${options.data.id}&autoNext=false`)}>{options.data.seqId}</OnClickLink>);
+                            } else if (found) {
                                 const id = options.data.id;
                                 dom.render(<OnClickLink
                                     onClick={() => navigate(`/loan-app/create/step/1?id=${options.data.id}&autoNext=false`)}>{options.data.seqId}</OnClickLink>);
@@ -238,16 +241,21 @@ export default function Index() {
                                 if(!options.data.isWaitingSigning) {
                                     detailAppStep(String(id)).then((res) => {
                                         const step = res?.steps;
-                                        if (typeof res?.allowed !== "undefined") {
-                                            if(res?.allowed) {
-                                                if (step == 1) {
-                                                    dom.render(<OnClickLink
-                                                        onClick={() => navigate(`/loan-app/create/step/2?id=${options.data.id}`)}>{options.data.seqId}</OnClickLink>);
-                                                } else if (step <= 2 && step > 1) {
-                                                    dom.render(<OnClickLink
-                                                        onClick={() => navigate(`/loan-app/create/preview?id=${options.data.id}`)}>{options.data.seqId}</OnClickLink>);
+                                        switch(step) {
+                                            case 2:
+                                                if (typeof res?.allowed !== "undefined" && res?.allowed) {
+                                                    dom.render(<OnClickLink onClick={() => navigate(`/loan-app/create/step/2?id=${options.data.id}`)}>{options.data.seqId}</OnClickLink>);
                                                 }
-                                            }
+                                                break;
+                                            case 3:
+                                                if (typeof res?.allowed !== "undefined" && res?.allowed) {
+                                                    dom.render(<OnClickLink onClick={() => navigate(`/loan-app/create/preview?id=${options.data.id}`)}>{options.data.seqId}</OnClickLink>);
+                                                }
+                                                break;
+                                            default:
+                                                dom.render(<OnClickLink
+                                                  onClick={() => navigate(`/loan-app/create/step/1?id=${options.data.id}&autoNext=false`)}>{options.data.seqId}</OnClickLink>);
+                                            
                                         }
                                     });
                                 }
