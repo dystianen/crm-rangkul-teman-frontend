@@ -16,13 +16,13 @@ import Form, {
     SimpleItem,
 } from "devextreme-react/form";
 import {selectBoxBranchOptions, selectBoxOptions, validateIdNumber} from "src/api/contact";
-import {Button} from "devextreme-react/button";
 import {useNavigate} from "react-router";
 import {filterOperation} from "../../constants/FilterOperation";
 import {Popup} from "devextreme-react/popup";
 import {RequiredRule, AsyncRule, StringLengthRule} from "devextreme-react/validator";
 import DataSource from "devextreme/data/data_source";
 import {
+    appCancel,
     appLoanListStore, checkAccess,
     createAppLoanOnboarding, detailAppStep, getActiveBranchByUserStore, getActiveProductByBranch,
     getActiveProductStore,
@@ -37,9 +37,11 @@ import ReactDOM from "react-dom/client";
 import {OnClickLink} from "../../components/alink";
 import {ApplicationStatus} from "../../components/application-status";
 import {downloadExcel} from "../../api/http.api";
-// @ts-ignore
 import * as downloadFile from "save-file";
 import {useAuth} from "../../contexts/auth";
+import {appStatusIncomplete, appStatusNotAllowToCancel, roleAllowToCancel} from "../../constants/variableConstata";
+import {confirmNotify, notifySuccess} from "../../utils/devExtremeUtils";
+import "./loan-app.scss";
 
 export default function Index() {
     const {user} = useAuth();
@@ -56,6 +58,8 @@ export default function Index() {
         checkAccess('800e5c98-4a29-47e1-b1e7-1ff1d5ea0737').then((res) => {
             setPengajuanVisible(res);
         });
+        
+        console.log("user",user);
     }, []);
 
     const getBranchByUser = selectBoxBranchOptions(
@@ -189,6 +193,9 @@ export default function Index() {
             });
         }
     }
+    
+    
+    
     return (<React.Fragment>
         <h2 className={"content-block"}>Pengajuan</h2>
         <div className={"content-block"}>
@@ -204,6 +211,13 @@ export default function Index() {
                     dateSerializationFormat={"yyyy-MM-ddTHH:mm:ss.SSSxxx"}
                     repaintChangesOnly={true}
                     onToolbarPreparing={(e)=>onToolbarPreparing(e,isPengajuanVisible)}
+                    editing={{
+                        allowUpdating: (options: any) => {
+                            let found = appStatusNotAllowToCancel.some(x => x === options.row.data.statusId);
+                            let userFound = (typeof user?.roles !== "undefined") && user?.roles.some((role:string) => roleAllowToCancel.includes(role));
+                            return !found && userFound;
+                        },
+                    }}
                 >
                     <Scrolling showScrollbar={"always"}/>
                     <FilterRow visible={true}/>
@@ -213,9 +227,10 @@ export default function Index() {
                         caption={"#No"}
                         width={90}
                         cellTemplate={function (container: any, options: any) {
-                            console.log("options : ", options);
                             const dom = ReactDOM.createRoot(container);
-                            if (options.data.statusId == "f95a1ecc-2f6f-4553-bbbe-a5e976a78bef") {
+                            let found = appStatusIncomplete.some(x => x === options.data.statusId);
+                            
+                            if (found) {
                                 const id = options.data.id;
                                 dom.render(<OnClickLink
                                     onClick={() => navigate(`/loan-app/create/step/1?id=${options.data.id}&autoNext=false`)}>{options.data.seqId}</OnClickLink>);
@@ -254,8 +269,10 @@ export default function Index() {
                             selectedFilterOperations: any,
                             target: any
                         ) => {
+                            
+                            // @ts-ignore
                             const column = this as any;
-                            return column.defaultCalculateFilterExpression.apply(this, [
+                            return column.defaultCalculateFilterExpression.apply(column, [
                                 new Date(value),
                                 selectedFilterOperations,
                                 target,
@@ -268,13 +285,14 @@ export default function Index() {
                         caption={"Tanggal Diubah"}
                         dataType={"date"}
                         format={"dd MMM yyyy HH:mm:ss"}
-                        calculateFilterExpression={function (
-                            value: any,
-                            selectedFilterOperations: any,
-                            target: any
-                        ) {
+                        calculateFilterExpression={(
+                          value: any,
+                          selectedFilterOperations: any,
+                          target: any
+                        ) => {
+                            // @ts-ignore
                             const column = this as any;
-                            return column.defaultCalculateFilterExpression.apply(this, [
+                            return column.defaultCalculateFilterExpression.apply(column, [
                                 new Date(value),
                                 selectedFilterOperations,
                                 target,
@@ -356,8 +374,35 @@ export default function Index() {
                     <Column
                         dataField={"note"}
                         caption={"Keterangan"}
+                        width={200}
+                        cssClass={"wrappedColumnClass"}
                         filterOperations={filterOperation.string}
                     />
+                    <Column type={"buttons"}
+                            alignment={"center"}
+                            width={"50"}
+                            buttons={[
+                              {
+                            hint: 'Cancel app',
+                            icon: 'close',
+                            name: 'edit',
+                            onClick: function (e: any) {
+                                const key = e.row.data.id;
+                                confirmNotify(`Apakah yakin untuk melakukan cancel app #${e.row.data.seqId} ??`).then((result) => {
+                                    if (result) {
+                                        appCancel(key).then((resp: boolean) => {
+                                            notifySuccess('sukses cancel aplikasi');
+                                            e.component.refresh(true).done(function () {
+                                                e.component.cancelEditData();
+                                            });
+                                        });
+                                    }
+                                });
+                                
+                                e.event.preventDefault();
+                            },
+                        },
+                    ]}></Column>
                     <Paging defaultPageSize={50}/>
                     <Pager
                         showPageSizeSelector={true}

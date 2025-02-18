@@ -20,6 +20,7 @@ import {getFileBase64} from "src/api/helper";
 import notify from "devextreme/ui/notify";
 import PdfViewer from "../../components/pdf-viewer/PdfViewer";
 import {notifyWarning} from "../../utils/devExtremeUtils";
+import {appStatusIncomplete} from "../../constants/variableConstata";
 
 export default function PreviewPage() {
     const navigate = useNavigate();
@@ -40,7 +41,8 @@ export default function PreviewPage() {
     useEffect(() => {
         detailAppLoan(id as string).then((res) => {
             console.log("Detail : ", res);
-            if(res?.statusName != "Incomplete") {
+            let found = appStatusIncomplete.some(x => x === res.statusId);
+            if(!found) {
                 navigate(`/loan-app`);
             }
             setLoanApp(res);

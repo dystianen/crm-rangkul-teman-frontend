@@ -72,6 +72,10 @@ export const createAppLoanOnboardingStep1 = async (appId: string, payload: any):
   return resp.data;
 };
 
+export const appCancel = async (appId: string): Promise<any> => {
+  const resp = await ajaxGet(`/api/trx/application/cancel/${appId}`);
+  return resp.data;
+};
 
 export const processCancel = async (appId: string): Promise<any> => {
   const resp = await ajaxGet(`/api/loan/sign/cancel/${appId}`);
