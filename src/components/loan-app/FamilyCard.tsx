@@ -1,5 +1,6 @@
 import { RequiredRule, SimpleItem } from "devextreme-react/cjs/form";
 import DataGrid, {
+  AsyncRule,
   Column,
   Editing,
   Form as FormGrid,
@@ -11,7 +12,7 @@ import DataGrid, {
 import DataSource from "devextreme/data/data_source";
 import { useMemo } from "react";
 import { familyListStore } from "src/api/apploan";
-import { contactRelativeStore, selectBoxOptions } from "src/api/contact";
+import { contactRelativeStore, selectBoxOptions, validateIdNumber } from "src/api/contact";
 
 const FamilyCard = ({ appId }: { appId: string }) => {
   const familyDataSource = useMemo(() => new DataSource(familyListStore(appId)), [appId]);
@@ -19,6 +20,14 @@ const FamilyCard = ({ appId }: { appId: string }) => {
     () => selectBoxOptions(new DataSource(contactRelativeStore), "Select Relation"),
     []
   );
+
+  const asyncValidationIdNumber = (params: any) => {
+    const request = {
+      idNumber: params.value,
+      contactId: ""
+    };
+    return validateIdNumber(request);
+  };
 
   return (
     <div className={"dx-card responsive-paddings"}>
@@ -59,6 +68,10 @@ const FamilyCard = ({ appId }: { appId: string }) => {
               }}
             >
               <RequiredRule message="NIK is required" />
+              <AsyncRule
+                message="NIK already registered"
+                validationCallback={asyncValidationIdNumber}
+              />
             </SimpleItem>
             <SimpleItem dataField="name">
               <RequiredRule message="Name is required" />
