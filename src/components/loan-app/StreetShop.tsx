@@ -109,7 +109,7 @@ const StreetShop = ({ appId }: { appId: string }) => {
   return (
     <>
       <div className="dx-card responsive-paddings next-card">
-        <div style={{ display: "flex", gap: "10px" }}>
+        <div style={{ display: "flex", gap: "10px", marginBottom: isStreetShop ? 16 : 0 }}>
           <CheckBox
             value={isStreetShop}
             onValueChanged={(e) => {
