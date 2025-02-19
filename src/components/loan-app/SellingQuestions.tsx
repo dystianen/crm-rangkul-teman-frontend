@@ -11,9 +11,10 @@ interface SellingQuestion {
 
 interface SellingQuestionsProps {
   appId: string;
+  disabled?: boolean;
 }
 
-const SellingQuestions: React.FC<SellingQuestionsProps> = ({ appId }) => {
+const SellingQuestions: React.FC<SellingQuestionsProps> = ({ appId, disabled = false }) => {
   const [sellingQuestions, setSellingQuestions] = useState<SellingQuestion[]>([]);
   const [selectedValues, setSelectedValues] = useState<Record<string, boolean | null>>({});
   const [loadingStates, setLoadingStates] = useState<Record<string, boolean>>({});
@@ -76,7 +77,7 @@ const SellingQuestions: React.FC<SellingQuestionsProps> = ({ appId }) => {
       layout="horizontal"
       displayExpr="label"
       valueExpr="value"
-      disabled={loadingStates[data.questionId]}
+      disabled={disabled || loadingStates[data.questionId]}
       onValueChanged={(e) => handleSellingRadioChange(data.questionId, e.value)}
     />
   ));

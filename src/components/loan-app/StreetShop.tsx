@@ -13,7 +13,7 @@ const defaultCenter = {
   lng: 106.8325905
 };
 
-const StreetShop = ({ appId }: { appId: string }) => {
+const StreetShop = ({ appId, disabled = false }: { appId: string, disabled?: boolean }) => {
   const [isStreetShop, setIsStreetShop] = useState(false);
   const [center, setCenter] = useState(defaultCenter);
   const [isShowPopupConfirm, setShowPopupConfirm] = useState(false);
@@ -111,6 +111,7 @@ const StreetShop = ({ appId }: { appId: string }) => {
       <div className="dx-card responsive-paddings next-card">
         <div style={{ display: "flex", gap: "10px", marginBottom: isStreetShop ? 16 : 0 }}>
           <CheckBox
+            disabled={disabled}
             value={isStreetShop}
             onValueChanged={(e) => {
               handleChangeStreetShop(e.value);

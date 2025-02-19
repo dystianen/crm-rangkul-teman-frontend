@@ -11,9 +11,10 @@ interface NeighbourQuestion {
 
 interface NeighbourQuestionsProps {
   appId: string;
+  disabled?: boolean;
 }
 
-const NeighbourQuestions: React.FC<NeighbourQuestionsProps> = ({ appId }) => {
+const NeighbourQuestions: React.FC<NeighbourQuestionsProps> = ({ appId, disabled = false }) => {
   const [neighbourQuestions, setNeighbourQuestions] = useState<NeighbourQuestion[]>([]);
   const [selectedValues, setSelectedValues] = useState<Record<string, boolean | null>>({});
   const [loadingStates, setLoadingStates] = useState<Record<string, boolean>>({});
@@ -76,7 +77,7 @@ const NeighbourQuestions: React.FC<NeighbourQuestionsProps> = ({ appId }) => {
       layout="horizontal"
       displayExpr="label"
       valueExpr="value"
-      disabled={loadingStates[data.questionId]}
+      disabled={disabled || loadingStates[data.questionId]}
       onValueChanged={(e) => handleNeighbourRadioChange(data.questionId, e.value)}
     />
   ));
