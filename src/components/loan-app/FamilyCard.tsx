@@ -1,5 +1,6 @@
 import { RequiredRule, SimpleItem } from "devextreme-react/cjs/form";
 import DataGrid, {
+  AsyncRule,
   Column,
   Editing,
   Form as FormGrid,
@@ -11,18 +12,26 @@ import DataGrid, {
 import DataSource from "devextreme/data/data_source";
 import { useMemo } from "react";
 import { familyListStore } from "src/api/apploan";
-import { contactRelativeStore, selectBoxOptions } from "src/api/contact";
+import { contactRelativeStore, selectBoxOptions, validateIdNumber } from "src/api/contact";
 
-const FamilyCard = ({ appId }: { appId: string }) => {
+const FamilyCard = ({ appId, disabled = false }: { appId: string, disabled?: boolean }) => {
   const familyDataSource = useMemo(() => new DataSource(familyListStore(appId)), [appId]);
   const relativeOptions = useMemo(
     () => selectBoxOptions(new DataSource(contactRelativeStore), "Select Relation"),
     []
   );
 
+  const asyncValidationIdNumber = (params: any) => {
+    const request = {
+      idNumber: params.value,
+      contactId: ""
+    };
+    return validateIdNumber(request);
+  };
+
   return (
     <div className={"dx-card responsive-paddings"}>
-      <h3>Family</h3>
+      <h3 style={{ marginBottom: 16 }}>Family</h3>
       <DataGrid
         dataSource={familyDataSource}
         columnAutoWidth={true}
@@ -37,7 +46,7 @@ const FamilyCard = ({ appId }: { appId: string }) => {
           };
         }}
       >
-        <Editing mode="popup" allowUpdating={true} allowAdding={true}>
+        <Editing mode="popup" allowUpdating={!disabled} allowAdding={!disabled} allowDeleting={!disabled}>
           <PopGrid title="Family Form" showTitle={true} width={360} height={320} />
           <FormGrid
             showColonAfterLabel={true}
@@ -59,6 +68,10 @@ const FamilyCard = ({ appId }: { appId: string }) => {
               }}
             >
               <RequiredRule message="NIK is required" />
+              <AsyncRule
+                message="NIK already registered"
+                validationCallback={asyncValidationIdNumber}
+              />
             </SimpleItem>
             <SimpleItem dataField="name">
               <RequiredRule message="Name is required" />
