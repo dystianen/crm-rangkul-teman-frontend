@@ -40,7 +40,7 @@ import {downloadExcel} from "../../api/http.api";
 import * as downloadFile from "save-file";
 import {useAuth} from "../../contexts/auth";
 import {appStatusIncomplete, appStatusNotAllowToCancel, roleAllowToCancel} from "../../constants/variableConstata";
-import {confirmNotify, notifySuccess} from "../../utils/devExtremeUtils";
+import {confirmNotify, notifyError, notifySuccess} from "../../utils/devExtremeUtils";
 import "./loan-app.scss";
 
 export default function Index() {
@@ -403,7 +403,7 @@ export default function Index() {
                                             e.component.refresh(true).done(function () {
                                                 e.component.cancelEditData();
                                             });
-                                        });
+                                        }).catch(e=>notifyError(e.message));
                                     }
                                 });
                                 
