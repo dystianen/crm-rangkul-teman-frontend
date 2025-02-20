@@ -64,7 +64,7 @@ export default function PreviewPage() {
                 "success",
                 3000
             );
-            navigate(`/loan-app/detail?id=${id}`);
+            navigate(`/loan-app`);
         });
     };
 
