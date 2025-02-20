@@ -39,7 +39,12 @@ import {ApplicationStatus} from "../../components/application-status";
 import {downloadExcel} from "../../api/http.api";
 import * as downloadFile from "save-file";
 import {useAuth} from "../../contexts/auth";
-import {appStatusIncomplete, appStatusNotAllowToCancel, roleAllowToCancel} from "../../constants/variableConstata";
+import {
+    appStatusIncomplete,
+    appStatusNotAllowToCancel,
+    backofficeAccess,
+    roleAllowToCancel
+} from "../../constants/variableConstata";
 import {confirmNotify, notifyError, notifySuccess} from "../../utils/devExtremeUtils";
 import "./loan-app.scss";
 
@@ -55,7 +60,7 @@ export default function Index() {
     const [isPengajuanVisible, setPengajuanVisible] = useState<boolean>(false);
 
     useEffect(() => {
-        checkAccess('800e5c98-4a29-47e1-b1e7-1ff1d5ea0737').then((res) => {
+        checkAccess(backofficeAccess.backoffice_master_contact_write).then((res) => {
             setPengajuanVisible(res);
         });
         

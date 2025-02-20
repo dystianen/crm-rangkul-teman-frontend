@@ -30,3 +30,32 @@
   background: #707070;
   color: #ffffff;
 }
+
+.status-signed {
+  background: #91d710;
+  color: #ffffff;
+}
+.status-discarded {
+  background: #8e10d7;
+  color: #ffffff;
+}
+.status-completed {
+  background: #1048d7;
+  color: #ffffff;
+}
+.status-disbursementfailed {
+  background: #d74510;
+  color: #ffffff;
+}
+
+.status-canceled {
+
+}
+.status-toverify {
+  background: #cad710;
+  color: #ffffff;
+}
+.status-unsignedchanges {
+  background: #d78110;
+  color: #ffffff;
+}

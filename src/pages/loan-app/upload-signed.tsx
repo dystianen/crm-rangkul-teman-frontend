@@ -124,7 +124,7 @@ export default function UploadSignedPage() {
                 <GroupItem caption="" colCount={1}>
                   <SimpleItem
                     dataField="signedDoc"
-                    editorType="dxFileUploader"
+                    editorType={"dxFileUploader" as any}
                     editorOptions={uploadKtpOptions}
                     label={{ text: "Document" }}
                   >

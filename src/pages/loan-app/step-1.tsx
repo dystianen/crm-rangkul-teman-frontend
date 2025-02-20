@@ -39,6 +39,7 @@ import {
 import { store } from "src/store/store";
 import { notifyError, notifySuccess, notifyWarning } from "../../utils/devExtremeUtils";
 import "./loan-app.scss";
+import {backofficeAccess} from "../../constants/variableConstata";
 
 export default function Step1Page() {
   const navigate = useNavigate();
@@ -61,7 +62,7 @@ export default function Step1Page() {
   const formRef = useRef<Form>(null);
   
   useEffect(() => {
-    checkAccess("0c0983ad-20b2-446d-8462-328aa64915f7").then((res) => setAccessStep2(res));
+    checkAccess(backofficeAccess.backoffice_application_step_2).then((res) => setAccessStep2(res));
   }, []);
   
   const handleCheckSigning = useCallback(
