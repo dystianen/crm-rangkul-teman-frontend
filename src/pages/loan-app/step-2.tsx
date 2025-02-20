@@ -39,6 +39,7 @@ import PdfViewer from "src/components/pdf-viewer/PdfViewer";
 import { getFileBase64 } from "../../api/helper";
 import { notifyWarning } from "../../utils/devExtremeUtils";
 import "./loan-app.scss";
+import DocumentCard from "src/components/loan-app/DocumentCard";
 
 export default function Step2Page() {
   const navigate = useNavigate();
@@ -232,47 +233,7 @@ export default function Step2Page() {
       <div className={"content-block"}>
         <FamilyCard appId={ID} />
 
-        <div className={"dx-card responsive-paddings next-card"}>
-          <h3>Documents</h3>
-          <DataGrid
-            dataSource={dataGrid}
-            columnAutoWidth={true}
-            wordWrapEnabled={false}
-            showBorders={true}
-            dateSerializationFormat={"yyyy-MM-ddTHH:mm:ss.SSSxxx"}
-            repaintChangesOnly={true}
-          >
-            <Editing mode="popup" allowUpdating={true} allowAdding={true} allowDeleting={true}>
-              <PopGrid title="Custom Data Form" showTitle={true} width={360} height={320} />
-              <FormGrid
-                showColonAfterLabel={true}
-                showValidationSummary={true}
-                validationGroup="customedata"
-                colCount={1}
-              >
-                <SimpleItem dataField={"fileType"} editorType="dxSelectBox">
-                  <RequiredRule message="File type is required" />
-                </SimpleItem>
-                <SimpleItem dataField={"value"} editorType={"dxFileUploader" as any}>
-                  <RequiredRule message="Value wajib diisi" />
-                </SimpleItem>
-              </FormGrid>
-            </Editing>
-            <Column
-              caption={"No."}
-              width={70}
-              alignment={"center"}
-              cellTemplate={function (container: any, options: any) {
-                const dom = ReactDOM.createRoot(container);
-                dom.render(options.rowIndex + 1);
-              }}
-            />
-            <Column dataField={"name"} caption={"Name"} />
-            <Column dataField={"value"} caption={"Value"} />
-            <Paging defaultPageSize={50} />
-            <Pager showPageSizeSelector={true} showInfo={true} allowedPageSizes={[10, 50, 100]} />
-          </DataGrid>
-        </div>
+        <DocumentCard appId={ID} />
 
         <SellingQuestions appId={ID} />
 
