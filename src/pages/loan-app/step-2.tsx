@@ -63,10 +63,10 @@ export default function Step2Page() {
 	detailAppLoan(ID).then((res) => {
 	  const data = res as any;
 	  
-	  console.log("data app: ", data);
-	  if (!data.privyEnabled && data.statusId === statusApp.unsigned) {
-		navigate(`/loan-app/detail/upload-signed?id=${ID}`);
-	  }
+	  // console.log("data app: ", data);
+	  // if (!data.privyEnabled && data.statusId === statusApp.unsigned) {
+		// navigate(`/loan-app/detail/upload-signed?id=${ID}`);
+	  // }
 	  const gridStore: any[] = data?.customData || [];
 	  setDataGrid(gridStore);
 	  if (data?.incomeProof) {
