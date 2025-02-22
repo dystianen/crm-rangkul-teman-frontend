@@ -84,7 +84,7 @@ const DocumentCard: React.FC<DocumentCardProps> = ({ appId, disabled = false }) 
   return (
     <>
       <div className="dx-card responsive-paddings next-card">
-        <h3 style={{ marginBottom: 16 }}>Documents</h3>
+        <h3 style={{ marginBottom: disabled ? 16 : 0 }}>Documents</h3>
         <DataGrid
           dataSource={documentListStore}
           columnAutoWidth
