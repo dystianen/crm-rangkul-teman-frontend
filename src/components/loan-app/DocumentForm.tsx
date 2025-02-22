@@ -10,7 +10,6 @@ import Form, {
 import DataSource from "devextreme/data/data_source";
 import React, { Ref, useCallback, useEffect, useMemo, useState } from "react";
 import { fileTypeStore, getFile } from "src/api/apploan";
-import convertBlobToBase64 from "src/utils/convertBlobToBase64.util";
 import convertFileToBase64 from "src/utils/convertFileToBase64.util";
 import { notifyError } from "src/utils/devExtremeUtils";
 import resizeImage from "src/utils/resizeImage.util";
@@ -49,7 +48,7 @@ export default function DocumentForm(props: ActivityContactProps) {
     name: "",
     createdAt: ""
   });
-  const [file, setFile] = useState("");
+  const [file, setFile] = useState<string | null>(null);
 
   useEffect(() => {
     setDocumentData((prev) => ({ ...prev, ...props.documentData }));
@@ -61,8 +60,8 @@ export default function DocumentForm(props: ActivityContactProps) {
         const response = await getFile(props.documentData.urlPath, { responseType: "blob" });
         const fileUrl = URL.createObjectURL(response);
 
-        const base64 = await convertBlobToBase64(response);
-        setFile(base64);
+        // const base64 = await convertBlobToBase64(response);
+        // setFile(base64);
 
         const fileName = props.documentData.name || "file";
         const file = new File([response], fileName, { type: response.type });
@@ -84,6 +83,18 @@ export default function DocumentForm(props: ActivityContactProps) {
     []
   );
 
+  const resetForm = () => {
+    setDocumentData({
+      contactId: "",
+      id: "",
+      typeId: "",
+      file: "",
+      name: "",
+      createdAt: ""
+    });
+    setFile(null);
+  };
+
   const onSubmit = async (event: any) => {
     event.preventDefault();
     setLoading(true);
@@ -94,7 +105,7 @@ export default function DocumentForm(props: ActivityContactProps) {
           id: documentData.id,
           typeId: documentData.typeId,
           fileName: documentData.name,
-          file: file || documentData.file
+          file: file === "" ? null : file
         };
         await ajaxPatch(`/api/app/file/${props.appId}`, payload);
       } else {
@@ -106,19 +117,11 @@ export default function DocumentForm(props: ActivityContactProps) {
         await ajaxPost(`/api/app/file/${props.appId}`, payload);
       }
 
-      setDocumentData({
-        contactId: "",
-        id: "",
-        typeId: "",
-        file: "",
-        name: ""
-      });
-      setFile("");
+      resetForm();
       props.onSubmit(event);
     } catch (error) {
       setLoading(false);
       notifyError(error as string);
-      console.error("Error saving document:", error);
     } finally {
       setLoading(false);
     }

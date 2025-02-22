@@ -8,7 +8,7 @@ import DocumentForm from "./DocumentForm";
 
 interface DocumentCardProps {
   appId: string;
-  disabled: boolean;
+  disabled?: boolean;
 }
 
 interface DocumentFormData {
