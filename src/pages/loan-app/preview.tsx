@@ -21,6 +21,7 @@ import PdfViewer from "../../components/pdf-viewer/PdfViewer";
 import { appStatusIncomplete } from "../../constants/variableConstata";
 import { notifyWarning } from "../../utils/devExtremeUtils";
 import FamilyCard from "src/components/loan-app/FamilyCard";
+import DocumentCard from "src/components/loan-app/DocumentCard";
 
 export default function PreviewPage() {
     const navigate = useNavigate();
@@ -133,6 +134,9 @@ export default function PreviewPage() {
 
                             <GroupItem>
                                 <FamilyCard appId={ID} disabled />
+                            </GroupItem>
+                            <GroupItem>
+                                <DocumentCard appId={ID} disabled />
                             </GroupItem>
                             <GroupItem>
                                 <SellingQuestions appId={ID} disabled />
