@@ -1,11 +1,11 @@
 import { AxiosRequestConfig } from "axios";
+import CustomStore from "devextreme/data/custom_store";
+import qs from "qs";
+import { FilterPss, setFilterPss } from "src/interfaces/IFilterPss";
 import { customStore } from "../model/customStore";
 import { dataRawCustomStore } from "../model/datagrid";
-import { ajaxGet, ajaxPatch, ajaxPost } from "./http.api";
+import { ajaxDelete, ajaxGet, ajaxPatch, ajaxPost } from "./http.api";
 import { API_PATH } from "./path_url";
-import CustomStore from "devextreme/data/custom_store";
-import { FilterPss, setFilterPss } from "src/interfaces/IFilterPss";
-import qs from "qs";
 
 export const appLoanListStore = customStore({
   loadUrl: API_PATH.APPLICATION
@@ -61,7 +61,6 @@ export const getSignedDoc = async (id: string): Promise<any> => {
   return resp.data;
 };
 
-
 export const checkStatusSigning = async (id: string): Promise<boolean> => {
   const resp = await ajaxGet(`${API_PATH.APPLICATION}/check/signing/${id}`);
   return resp.data;
@@ -112,6 +111,29 @@ export const getStreetShop = async (appId: string): Promise<any> => {
   return resp.data;
 };
 
+export const fetchSellingQuestions = async (appId: string): Promise<any> => {
+  const resp = await ajaxGet(`${API_PATH.QUESTION}/selling/${appId}`);
+  return resp.data;
+};
+
+export const submitSellingQuestions = async (
+  appId: string,
+  payload: { questionId: string; answer: boolean }
+): Promise<any> => {
+  const resp = await ajaxPost(`${API_PATH.QUESTION}/selling/${appId}`, payload);
+  return resp.data;
+};
+
+export const fetchNeighbourQuestions = async (appId: string): Promise<any> => {
+  const resp = await ajaxGet(`${API_PATH.QUESTION}/neighbour/${appId}`);
+  return resp.data;
+};
+
+export const submitNeighbourQuestions = async (appId: string, payload: any): Promise<any> => {
+  const resp = await ajaxPost(`${API_PATH.QUESTION}/neighbour/${appId}`, payload);
+  return resp.data;
+};
+
 export const getActiveBranchByUserStore = dataRawCustomStore(`/api/data/branch/user?`);
 
 export const getActiveProductByBranch = (branchId: string) =>
@@ -141,7 +163,9 @@ export const familyListStore = (id: string) =>
         sort: sort,
         searchQuery: JSON.stringify(loadOptions.filter)
       };
-      const resp = await ajaxGet(`${API_PATH.CONTACT}/data/family/${id}?${qs.stringify(paramSearch)}`);
+      const resp = await ajaxGet(
+        `${API_PATH.CONTACT}/data/family/${id}?${qs.stringify(paramSearch)}`
+      );
       return resp;
     },
     cacheRawData: true,
@@ -153,5 +177,47 @@ export const familyListStore = (id: string) =>
       console.log("update", key, values);
       const resp = await ajaxPatch(`${API_PATH.CONTACT}/data/family/${id}`, values);
       console.log("update", resp);
+    },
+    remove: async (key: string) => {
+      const resp = await ajaxDelete(`${API_PATH.CONTACT}/data/family/${key}`);
+      console.log("delete", resp);
+    }
+  });
+
+export const fileTypeStore = dataRawCustomStore("/api/data/file/type?");
+
+export const loanDocumentListStore = (id: string) =>
+  new CustomStore({
+    key: "id",
+    load: async (loadOptions) => {
+      let { sort } = loadOptions;
+      if (sort === null) {
+        sort = [{ selector: "modifiedOn", desc: false }];
+      }
+      const startVal: number | undefined = loadOptions.skip != null ? loadOptions.skip : 0,
+        lengthVal: number | undefined = loadOptions.take != null ? loadOptions.take : 50;
+      const paramSearch: FilterPss = {
+        ...setFilterPss(),
+        start: startVal,
+        length: lengthVal,
+        sort: sort,
+        searchQuery: JSON.stringify(loadOptions.filter)
+      };
+      const resp = await ajaxGet(`/api/app/file/${id}?${qs.stringify(paramSearch)}`);
+      return resp;
+    },
+    cacheRawData: true,
+    insert: async (values: any) => {
+      const resp = await ajaxPost(`/api/app/file/${id}`, values);
+      console.log("insert", resp);
+    },
+    update: async (key: string, values: any) => {
+      console.log("update", key, values);
+      const resp = await ajaxPatch(`/api/app/file/${id}`, values);
+      console.log("update", resp);
+    },
+    remove: async (key: string) => {
+      const resp = await ajaxDelete(`/api/app/file/${key}`);
+      console.log("delete", resp);
     }
   });

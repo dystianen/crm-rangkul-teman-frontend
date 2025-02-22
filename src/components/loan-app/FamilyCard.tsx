@@ -14,7 +14,7 @@ import { useMemo } from "react";
 import { familyListStore } from "src/api/apploan";
 import { contactRelativeStore, selectBoxOptions, validateIdNumber } from "src/api/contact";
 
-const FamilyCard = ({ appId }: { appId: string }) => {
+const FamilyCard = ({ appId, disabled = false }: { appId: string, disabled?: boolean }) => {
   const familyDataSource = useMemo(() => new DataSource(familyListStore(appId)), [appId]);
   const relativeOptions = useMemo(
     () => selectBoxOptions(new DataSource(contactRelativeStore), "Select Relation"),
@@ -31,7 +31,7 @@ const FamilyCard = ({ appId }: { appId: string }) => {
 
   return (
     <div className={"dx-card responsive-paddings"}>
-      <h3>Family</h3>
+      <h3 style={{ marginBottom: 16 }}>Family</h3>
       <DataGrid
         dataSource={familyDataSource}
         columnAutoWidth={true}
@@ -46,7 +46,7 @@ const FamilyCard = ({ appId }: { appId: string }) => {
           };
         }}
       >
-        <Editing mode="popup" allowUpdating={true} allowAdding={true}>
+        <Editing mode="popup" allowUpdating={!disabled} allowAdding={!disabled} allowDeleting={!disabled}>
           <PopGrid title="Family Form" showTitle={true} width={360} height={320} />
           <FormGrid
             showColonAfterLabel={true}

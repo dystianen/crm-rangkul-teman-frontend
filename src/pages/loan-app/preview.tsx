@@ -1,39 +1,41 @@
-import React, {useEffect, useState} from "react";
-import Form, {GroupItem, SimpleItem} from "devextreme-react/form";
-import {Form as FinancialForm, GroupItem as FinancialGroupItem, SimpleItem as FinancialSimpleItem} from "devextreme-react/form";
+import Form, { GroupItem, SimpleItem } from "devextreme-react/form";
+import { useEffect, useState } from "react";
 
 import "devextreme-react/file-uploader";
-import "./loan-app.scss";
-import {useNavigate} from "react-router";
-import {useLocation} from "react-router-dom";
 import queryString from "query-string";
+import { useNavigate } from "react-router";
+import { useLocation } from "react-router-dom";
+import "./loan-app.scss";
 
+import { Button, DataGrid, LoadPanel } from "devextreme-react";
+import { Column, FilterRow, Pager, Paging, Scrolling } from "devextreme-react/data-grid";
 import "devextreme-react/date-box";
-import {Button, DataGrid, LoadPanel} from "devextreme-react";
-import {Column, FilterRow, Item, Pager, Paging, Scrolling,} from "devextreme-react/data-grid";
-import {checkAccess, detailAppLoan, submitAppLoan} from "src/api/apploan";
-import {
-    AppLoanRequest,
-    initLoanAppValue,
-} from "src/interfaces/appLoanOnboarding";
-import {getFileBase64} from "src/api/helper";
 import notify from "devextreme/ui/notify";
+import { checkAccess, detailAppLoan, submitAppLoan } from "src/api/apploan";
+import { getFileBase64 } from "src/api/helper";
+import NeighbourQuestions from "src/components/loan-app/NeighbourQuestions";
+import SellingQuestions from "src/components/loan-app/SellingQuestions";
+import StreetShop from "src/components/loan-app/StreetShop";
+import { AppLoanRequest, initLoanAppValue } from "src/interfaces/appLoanOnboarding";
 import PdfViewer from "../../components/pdf-viewer/PdfViewer";
-import {notifyWarning} from "../../utils/devExtremeUtils";
-import {appStatusIncomplete} from "../../constants/variableConstata";
+import { appStatusIncomplete } from "../../constants/variableConstata";
+import { notifyWarning } from "../../utils/devExtremeUtils";
+import FamilyCard from "src/components/loan-app/FamilyCard";
+import DocumentCard from "src/components/loan-app/DocumentCard";
 
 export default function PreviewPage() {
     const navigate = useNavigate();
     const location = useLocation();
-    const {id} = queryString.parse(location.search);
+    const { id } = queryString.parse(location.search);
+    const ID = id as string;
     const [submitForm, setSubmitForm] = useState(false);
 
     const [loanApp, setLoanApp] = useState<AppLoanRequest>(initLoanAppValue);
 
     useEffect(() => {
-        checkAccess('d8b5626f-4dca-43ad-8e0a-08f87e50c7ab').then((res) => {
-            if(!res){
-                notifyWarning('user tidak punya akses menu preview');
+        checkAccess("d8b5626f-4dca-43ad-8e0a-08f87e50c7ab").then((res) => {
+            if (!res) {
+                notifyWarning("user tidak punya akses menu preview");
                 navigate(`/loan-app`);
             }
         });
@@ -41,8 +43,8 @@ export default function PreviewPage() {
     useEffect(() => {
         detailAppLoan(id as string).then((res) => {
             console.log("Detail : ", res);
-            let found = appStatusIncomplete.some(x => x === res.statusId);
-            if(!found) {
+            let found = appStatusIncomplete.some((x) => x === res.statusId);
+            if (!found) {
                 navigate(`/loan-app`);
             }
             setLoanApp(res);
@@ -57,13 +59,13 @@ export default function PreviewPage() {
                     message: "Submit loan application success",
                     position: {
                         my: "center top",
-                        at: "center top",
-                    },
+                        at: "center top"
+                    }
                 },
                 "success",
                 3000
             );
-            navigate(`/loan-app/detail?id=${id}`);
+            navigate(`/loan-app`);
         });
     };
 
@@ -88,47 +90,70 @@ export default function PreviewPage() {
                             validationGroup="loanAppData"
                             formData={loanApp}
                         >
-                            <GroupItem colSpan={2} cssClass={"dx-card responsive-paddings next-card"}>
+                            <GroupItem
+                                colSpan={2}
+                                cssClass={"dx-card responsive-paddings next-card"}
+                            >
                                 <GroupItem caption="Pengajuan" colCount={2}>
                                     <SimpleItem
                                         dataField="loanAmount"
-                                        label={{text: "Jumlah Pinjaman"}}
-                                        editorOptions={{format: "Rp #,##0", readOnly: true}}
+                                        label={{ text: "Jumlah Pinjaman" }}
+                                        editorOptions={{ format: "Rp #,##0", readOnly: true }}
                                     ></SimpleItem>
                                     <SimpleItem
                                         dataField="loanTerm"
-                                        label={{text: "Jangka Waktu"}}
-                                        editorOptions={{readOnly: true}}
+                                        label={{ text: "Jangka Waktu" }}
+                                        editorOptions={{ readOnly: true }}
                                     ></SimpleItem>
                                 </GroupItem>
                                 <GroupItem caption="Pencairan" colCount={2}>
                                     <SimpleItem
                                         dataField="bankName"
-                                        label={{text: "Bank"}}
-                                        editorOptions={{readOnly: true}}
+                                        label={{ text: "Bank" }}
+                                        editorOptions={{ readOnly: true }}
                                     ></SimpleItem>
                                     <SimpleItem
                                         dataField="bankAccNumber"
-                                        label={{text: "Nomor Rekening"}}
-                                        editorOptions={{readOnly: true}}
+                                        label={{ text: "Nomor Rekening" }}
+                                        editorOptions={{ readOnly: true }}
                                     ></SimpleItem>
                                 </GroupItem>
                                 <GroupItem caption="Informasi Tambahan" colCount={2}>
                                     <SimpleItem
                                         dataField="loanPurpose"
-                                        label={{text: "Tujuan Pinjaman"}}
-                                        editorOptions={{readOnly: true}}
+                                        label={{ text: "Tujuan Pinjaman" }}
+                                        editorOptions={{ readOnly: true }}
                                     ></SimpleItem>
                                     <SimpleItem
                                         dataField="monthlyIncome"
-                                        label={{text: "Penghasilan perbulan"}}
-                                        editorOptions={{format: "Rp #,##0", readOnly: true}}
+                                        label={{ text: "Penghasilan perbulan" }}
+                                        editorOptions={{ format: "Rp #,##0", readOnly: true }}
                                     ></SimpleItem>
                                 </GroupItem>
                             </GroupItem>
-                            <GroupItem colSpan={2} cssClass={"dx-card responsive-paddings next-card"}>
-                                <GroupItem caption={'Custom Data'} colCount={2}>
-                                <DataGrid
+
+                            <GroupItem>
+                                <FamilyCard appId={ID} disabled />
+                            </GroupItem>
+                            <GroupItem>
+                                <DocumentCard appId={ID} disabled />
+                            </GroupItem>
+                            <GroupItem>
+                                <SellingQuestions appId={ID} disabled />
+                            </GroupItem>
+                            <GroupItem>
+                                <NeighbourQuestions appId={ID} disabled />
+                            </GroupItem>
+                            <GroupItem>
+                                <StreetShop appId={ID} disabled />
+                            </GroupItem>
+
+                            <GroupItem
+                                colSpan={2}
+                                cssClass={"dx-card responsive-paddings next-card"}
+                            >
+                                <GroupItem caption={"Custom Data"} colCount={2}>
+                                    <DataGrid
                                         dataSource={loanApp.customData}
                                         remoteOperations={true}
                                         columnAutoWidth={true}
@@ -137,12 +162,12 @@ export default function PreviewPage() {
                                         dateSerializationFormat={"yyyy-MM-ddTHH:mm:ss.SSSxxx"}
                                         repaintChangesOnly={true}
                                     >
-                                        <Scrolling showScrollbar={"always"}/>
-                                        <FilterRow visible={true}/>
-                                        <Column dataField={"no"} caption={"No."} width={70}/>
-                                        <Column dataField={"name"} caption={"Name"}/>
-                                        <Column dataField={"value"} caption={"Value"}/>
-                                        <Paging defaultPageSize={50}/>
+                                        <Scrolling showScrollbar={"always"} />
+                                        <FilterRow visible={true} />
+                                        <Column dataField={"no"} caption={"No."} width={70} />
+                                        <Column dataField={"name"} caption={"Name"} />
+                                        <Column dataField={"value"} caption={"Value"} />
+                                        <Paging defaultPageSize={50} />
                                         <Pager
                                             showPageSizeSelector={true}
                                             showInfo={true}
@@ -151,28 +176,32 @@ export default function PreviewPage() {
                                     </DataGrid>
                                 </GroupItem>
                             </GroupItem>
-                            <GroupItem colSpan={2} cssClass={"dx-card responsive-paddings next-card"}>
+                            <GroupItem
+                                colSpan={2}
+                                cssClass={"dx-card responsive-paddings next-card"}
+                            >
                                 <GroupItem colCount={2}>
                                     <SimpleItem
                                         dataField="debitTransaction"
-                                        label={{text: "Debit Transaksi"}}
-                                        editorOptions={{format: "Rp #,##0", readOnly: true}}
+                                        label={{ text: "Debit Transaksi" }}
+                                        editorOptions={{ format: "Rp #,##0", readOnly: true }}
                                     ></SimpleItem>
                                     <SimpleItem
                                         dataField="creditTransaction"
-                                        label={{text: "Kredit Transaksi"}}
-                                        editorOptions={{format: "Rp #,##0", readOnly: true}}
+                                        label={{ text: "Kredit Transaksi" }}
+                                        editorOptions={{ format: "Rp #,##0", readOnly: true }}
                                     ></SimpleItem>
                                     <SimpleItem
                                         dataField="handwrittenSalesBook"
-                                        label={{text: "Handwritten Sales book"}}
-                                        editorOptions={{readOnly: true}}
+                                        label={{ text: "Handwritten Sales book" }}
+                                        editorOptions={{ readOnly: true }}
                                     ></SimpleItem>
                                 </GroupItem>
                                 {loanApp.incomeProof && (
                                     <GroupItem caption={"Income proof"} colCount={1}>
                                         <SimpleItem>
-                                            {loanApp.incomeProof.fileType.includes("image/") ? <img
+                                            {loanApp.incomeProof.fileType.includes("image/") ? (
+                                                <img
                                                     id="dropzone-ktp"
                                                     src={getFileBase64(
                                                         loanApp.incomeProof.fileType,
@@ -180,12 +209,15 @@ export default function PreviewPage() {
                                                     )}
                                                     alt="ktp"
                                                     width={"50%"}
-                                                /> :
-                                                <PdfViewer url={getFileBase64(
-                                                    loanApp.incomeProof.fileType,
-                                                    loanApp.incomeProof.fileContent
-                                                )}/>
-                                            }
+                                                />
+                                            ) : (
+                                                <PdfViewer
+                                                    url={getFileBase64(
+                                                        loanApp.incomeProof.fileType,
+                                                        loanApp.incomeProof.fileContent
+                                                    )}
+                                                />
+                                            )}
                                         </SimpleItem>
                                     </GroupItem>
                                 )}

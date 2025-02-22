@@ -22,11 +22,36 @@
   background: #d77310;
   color: #ffffff;
 }
-.status-active{
+
+.status-active {
   background: #d7a910;
   color: #ffffff;
 }
-.status-incomplete{
+
+.status-incomplete {
   background: #707070;
+  color: #ffffff;
+}
+
+.status-writeoff {
+  background: #1048d7;
+  color: #ffffff;
+}
+
+.status-canceled {
+}
+
+.status-waitingfordisbursement {
+  background: #8e10d7;
+  color: #ffffff;
+}
+
+.status-signing {
+  background: #cad710;
+  color: #ffffff;
+}
+
+.status-new {
+  background: #91d710;
   color: #ffffff;
 }
