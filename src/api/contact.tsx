@@ -208,6 +208,7 @@ export const contactActivityListStore = (id: string) =>
     // }
   });
 export const salesChannelStore = dataRawCustomStore(`/api/contact/data/salesChannel?`);
+export const contactFamilyStore = dataRawCustomStore(`/api/contact/data/contactFamily?`);
 export const contactRelativeStore = dataRawCustomStore(`/api/contact/data/contactRelative?`);
 export const genderStore = dataRawCustomStore(`/api/contact/data/gender?`);
 export const religionStore = dataRawCustomStore(`/api/contact/data/religion?`);
