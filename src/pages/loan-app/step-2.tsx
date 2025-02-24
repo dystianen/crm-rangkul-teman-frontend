@@ -20,7 +20,7 @@ import Form, {
 } from "devextreme-react/form";
 import notify from "devextreme/ui/notify";
 import queryString from "query-string";
-import {useEffect, useRef, useState} from "react";
+import {useCallback, useEffect, useRef, useState} from "react";
 import ReactDOM from "react-dom/client";
 import Resizer from "react-image-file-resizer";
 import {useNavigate} from "react-router";
@@ -37,7 +37,7 @@ import SellingQuestions from "src/components/loan-app/SellingQuestions";
 import StreetShop from "src/components/loan-app/StreetShop";
 import PdfViewer from "src/components/pdf-viewer/PdfViewer";
 import {getFileBase64} from "../../api/helper";
-import {notifyWarning} from "../../utils/devExtremeUtils";
+import {notifySuccess, notifyWarning} from "../../utils/devExtremeUtils";
 import "./loan-app.scss";
 import {backofficeAccess} from "../../constants/variableConstata";
 import DocumentCard from "src/components/loan-app/DocumentCard";
@@ -60,13 +60,12 @@ export default function Step2Page() {
   const [submitForm, setSubmitForm] = useState(false);
   const [loadingDownloadBtn, setLoadingDownloadBtn] = useState(false);
   
-  useEffect(() => {
-	detailAppLoan(ID).then((res) => {
+  const detailLoanApp = (appId: any) =>  detailAppLoan(appId).then((res) => {
 	  const data = res as any;
 	  
 	  // console.log("data app: ", data);
 	  // if (!data.privyEnabled && data.statusId === statusApp.unsigned) {
-		// navigate(`/loan-app/detail/upload-signed?id=${ID}`);
+	  // navigate(`/loan-app/detail/upload-signed?id=${ID}`);
 	  // }
 	  const gridStore: any[] = data?.customData || [];
 	  setDataGrid(gridStore);
@@ -84,6 +83,9 @@ export default function Step2Page() {
 		});
 	  }
 	});
+  
+  useEffect(() => {
+	detailLoanApp(ID);
   }, [ID]);
   
   useEffect(() => {
@@ -144,10 +146,16 @@ export default function Step2Page() {
 	  creditTransaction: onStep2Loan?.creditTransaction
 	}).then(
 		(res) => {
+		  // console.log("submit step 2", res);
 		  setIncomeProof("");
 		  setDataGrid([]);
 		  form.resetValues();
-		  navigate(`/loan-app/create/preview?id=${id}`);
+		  notifySuccess(res.message);
+		  setSubmitForm(false);
+		  detailLoanApp(ID);
+		  if(res.isCompletedStep){
+			navigate(`/loan-app/create/preview?id=${id}`);
+		  }
 		},
 		(error) => {
 		  setSubmitForm(false);
@@ -307,7 +315,6 @@ export default function Step2Page() {
 					  editorType="dxNumberBox"
 					  editorOptions={{format: "Rp #,##0.00"}}
 				  >
-					<RequiredRule message="Penghasilan perbulan wajib diisi"/>
 					<PatternRule message="hanya boleh angka" pattern={/^[0-9]+$/}/>
 				  </SimpleItem>
 				  <SimpleItem
@@ -321,7 +328,6 @@ export default function Step2Page() {
 					  editorType="dxNumberBox"
 					  editorOptions={{format: "Rp #,##0.00"}}
 				  >
-					<RequiredRule message="Debit transaksi wajib diisi"/>
 					<PatternRule message="hanya boleh angka" pattern={/^[0-9]+$/}/>
 				  </SimpleItem>
 				  <SimpleItem
@@ -330,7 +336,6 @@ export default function Step2Page() {
 					  editorType="dxNumberBox"
 					  editorOptions={{format: "Rp #,##0.00"}}
 				  >
-					<RequiredRule message="Kredit transaksi wajib diisi"/>
 					<PatternRule message="hanya boleh angka" pattern={/^[0-9]+$/}/>
 				  </SimpleItem>
 				  <SimpleItem

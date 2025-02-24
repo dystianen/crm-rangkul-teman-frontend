@@ -12,12 +12,12 @@ import DataGrid, {
 import DataSource from "devextreme/data/data_source";
 import { useMemo } from "react";
 import { familyListStore } from "src/api/apploan";
-import { contactRelativeStore, selectBoxOptions, validateIdNumber } from "src/api/contact";
+import {contactFamilyStore, contactRelativeStore, selectBoxOptions, validateIdNumber} from "src/api/contact";
 
 const FamilyCard = ({ appId, disabled = false }: { appId: string, disabled?: boolean }) => {
   const familyDataSource = useMemo(() => new DataSource(familyListStore(appId)), [appId]);
   const relativeOptions = useMemo(
-    () => selectBoxOptions(new DataSource(contactRelativeStore), "Select Relation"),
+    () => selectBoxOptions(new DataSource(contactFamilyStore), "Select Relation"),
     []
   );
 

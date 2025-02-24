@@ -9,7 +9,7 @@ import Form, {
 } from "devextreme-react/form";
 import DataSource from "devextreme/data/data_source";
 import React, { Ref, useCallback, useEffect, useMemo, useState } from "react";
-import { fileTypeStore, getFile } from "src/api/apploan";
+import {fileTypeAppStore, fileTypeStore, getFile} from "src/api/apploan";
 import convertFileToBase64 from "src/utils/convertFileToBase64.util";
 import { notifyError } from "src/utils/devExtremeUtils";
 import resizeImage from "src/utils/resizeImage.util";
@@ -79,7 +79,7 @@ export default function DocumentForm(props: ActivityContactProps) {
   }, [props.documentData, props.isModalVisible]);
 
   const fileTypeOptions = useMemo(
-    () => selectBoxOptions(new DataSource(fileTypeStore), "Select File Type"),
+    () => selectBoxOptions(new DataSource(fileTypeAppStore(props.appId)), "Select File Type"),
     []
   );
 
@@ -128,8 +128,8 @@ export default function DocumentForm(props: ActivityContactProps) {
   };
 
   const onFieldAppDataChanged = useCallback((evt: any) => {
+    
     setDocumentData((prev) => {
-      // @ts-expect-error
       if (prev[evt.dataField] !== evt.value) {
         return { ...prev, [evt.dataField]: evt.value };
       }

@@ -184,6 +184,7 @@ export const familyListStore = (id: string) =>
     }
   });
 
+export const fileTypeAppStore=(appId: string) =>dataRawCustomStore(`/api/app/file/type/${appId}?`);
 export const fileTypeStore = dataRawCustomStore("/api/data/file/type?");
 
 export const loanDocumentListStore = (id: string) =>

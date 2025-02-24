@@ -24,3 +24,9 @@ export const rejectApp1 = async (payload: any): Promise<any> => {
     const resp = await ajaxPost(`${API_PATH.APPROVAL}/manual/reject/1`, payload);
     return resp.data;
 };
+
+export const retryApprovalHistory = async (type: string, appId: string): Promise<any> => {
+    const resp = await ajaxPost(`${API_PATH.APPROVAL}/${type}`, {appId});
+    return resp.data;
+};
+
