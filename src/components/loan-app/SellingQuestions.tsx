@@ -85,13 +85,7 @@ const SellingQuestions: React.FC<SellingQuestionsProps> = ({ appId, disabled = f
   return (
     <div className="dx-card responsive-paddings next-card">
       <h3 style={{ marginBottom: 16 }}>Selling Questions</h3>
-      <DataGrid
-        dataSource={sellingQuestions}
-        columnAutoWidth={true}
-        wordWrapEnabled={false}
-        showBorders={true}
-        repaintChangesOnly={true}
-      >
+      <DataGrid dataSource={sellingQuestions} wordWrapEnabled showBorders repaintChangesOnly>
         <Column
           caption="No."
           width={70}
@@ -101,7 +95,11 @@ const SellingQuestions: React.FC<SellingQuestionsProps> = ({ appId, disabled = f
           }}
         />
         <Column dataField="question" caption="Questions" />
-        <Column caption="Choose" cellRender={({ data }) => <RadioGroupCell data={data} />} />
+        <Column
+          caption="Choose"
+          width={200}
+          cellRender={({ data }) => <RadioGroupCell data={data} />}
+        />
 
         <Paging defaultPageSize={50} />
         <Pager showPageSizeSelector={true} showInfo={true} allowedPageSizes={[10, 50, 100]} />
