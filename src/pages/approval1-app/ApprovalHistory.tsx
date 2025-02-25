@@ -86,10 +86,9 @@ export const ApprovalHistory: FC<any> = ({ id }) => {
           <Button
             icon="refresh"
             hint="Retry"
-            visible={(e) => {
-              const type = e.row?.data?.typeName;
-              return type?.includes("Get CBI Data") || type?.includes("SEON Check");
-            }}
+            visible={({ row }) => 
+              row?.data?.statusIsRetry && ["Get CBI Data", "SEON Check"].some(type => row?.data?.typeName?.includes(type))
+            }            
             onClick={async (e) => {
               const type = e.row?.data?.typeName;
               if (!type) return;

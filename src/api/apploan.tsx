@@ -222,3 +222,8 @@ export const loanDocumentListStore = (id: string) =>
       console.log("delete", resp);
     }
   });
+
+export const fetchCheckPartial = async (appId: string): Promise<any> => {
+  const resp = await ajaxGet(`${API_PATH.APPLICATION}/checkPartial/step2/${appId}`);
+  return resp.data;
+};
