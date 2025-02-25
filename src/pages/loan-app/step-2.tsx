@@ -1,4 +1,4 @@
-import {LoadPanel} from "devextreme-react";
+import {LoadPanel, Popup} from "devextreme-react";
 import {Button} from "devextreme-react/button";
 import DataGrid, {
   Column,
@@ -20,7 +20,7 @@ import Form, {
 } from "devextreme-react/form";
 import notify from "devextreme/ui/notify";
 import queryString from "query-string";
-import {useCallback, useEffect, useRef, useState} from "react";
+import {useEffect, useRef, useState} from "react";
 import ReactDOM from "react-dom/client";
 import Resizer from "react-image-file-resizer";
 import {useNavigate} from "react-router";
@@ -29,6 +29,7 @@ import {
   checkAccess,
   createAppLoanOnboardingStep2,
   detailAppLoan,
+  fetchCheckPartial,
   getSignedDoc
 } from "src/api/apploan";
 import FamilyCard from "src/components/loan-app/FamilyCard";
@@ -52,336 +53,366 @@ export default function Step2Page() {
   const [dataGrid, setDataGrid] = useState<any[]>([]);
   const formRef = useRef<Form>(null);
   const [onStep2Loan, setOnStep2Loan] = useState<any>({
-	monthlyIncome: 0,
-	handwrittenSalesBook: false,
-	debitTransaction: 0,
-	creditTransaction: 0
+    monthlyIncome: 0,
+    handwrittenSalesBook: false,
+    debitTransaction: 0,
+    creditTransaction: 0
   });
   const [submitForm, setSubmitForm] = useState(false);
   const [loadingDownloadBtn, setLoadingDownloadBtn] = useState(false);
-  
-  const detailLoanApp = (appId: any) =>  detailAppLoan(appId).then((res) => {
-	  const data = res as any;
-	  
-	  // console.log("data app: ", data);
-	  // if (!data.privyEnabled && data.statusId === statusApp.unsigned) {
-	  // navigate(`/loan-app/detail/upload-signed?id=${ID}`);
-	  // }
-	  const gridStore: any[] = data?.customData || [];
-	  setDataGrid(gridStore);
-	  if (data?.incomeProof) {
-		setFileType(data.incomeProof.fileType);
-		setIncomeProof(getFileBase64(data.incomeProof.fileType, data.incomeProof.fileContent));
-	  }
-	  
-	  if (typeof data.monthlyIncome !== "undefined") {
-		setOnStep2Loan({
-		  monthlyIncome: data?.monthlyIncome,
-		  handwrittenSalesBook: data?.handwrittenSalesBook ? data?.handwrittenSalesBook : false,
-		  debitTransaction: data?.debitTransaction,
-		  creditTransaction: data?.creditTransaction
-		});
-	  }
-	});
-  
+  const [isShowRemainingPopup, setShowRemainingPopup] = useState(false);
+  const [missingFields, setMissingFields] = useState<string[]>([]);
+
+  const detailLoanApp = (appId: any) =>
+    detailAppLoan(appId).then((res) => {
+      const data = res as any;
+
+      // console.log("data app: ", data);
+      // if (!data.privyEnabled && data.statusId === statusApp.unsigned) {
+      // navigate(`/loan-app/detail/upload-signed?id=${ID}`);
+      // }
+      const gridStore: any[] = data?.customData || [];
+      setDataGrid(gridStore);
+      if (data?.incomeProof) {
+        setFileType(data.incomeProof.fileType);
+        setIncomeProof(getFileBase64(data.incomeProof.fileType, data.incomeProof.fileContent));
+      }
+
+      if (typeof data.monthlyIncome !== "undefined") {
+        setOnStep2Loan({
+          monthlyIncome: data?.monthlyIncome,
+          handwrittenSalesBook: data?.handwrittenSalesBook ? data?.handwrittenSalesBook : false,
+          debitTransaction: data?.debitTransaction,
+          creditTransaction: data?.creditTransaction
+        });
+      }
+    });
+
   useEffect(() => {
-	detailLoanApp(ID);
+    detailLoanApp(ID);
+
+    fetchCheckPartial(ID).then((res) => {
+      setMissingFields(res.messages);
+      setShowRemainingPopup(res.opened);
+    });
   }, [ID]);
-  
+
   useEffect(() => {
-	checkAccess(backofficeAccess.backoffice_application_step_2).then((res) => {
-	  if (!res) {
-		navigate(`/loan-app`);
-		notifyWarning("User tidak memilik akses ke menu step 2");
-	  }
-	});
+    checkAccess(backofficeAccess.backoffice_application_step_2).then((res) => {
+      if (!res) {
+        navigate(`/loan-app`);
+        notifyWarning("User tidak memilik akses ke menu step 2");
+      }
+    });
   }, []);
-  
+
   const downloadDocSigned = () => {
-	setLoadingDownloadBtn(true);
-	getSignedDoc(id as any)
-	.then((dt) => {
-	  const link = document.createElement("a");
-	  link.href = `data:${dt.fileType};base64,${dt.fileContent}`;
-	  link.target = "_blank";
-	  link.download = dt.fileName;
-	  link.click();
-	})
-	.catch((e) => {
-	  notify(
-		  {
-			message: e?.message,
-			position: {
-			  my: "center top",
-			  at: "center top"
-			}
-		  },
-		  "warning",
-		  15000
-	  );
-	})
-	.finally(() => setLoadingDownloadBtn(false));
+    setLoadingDownloadBtn(true);
+    getSignedDoc(id as any)
+      .then((dt) => {
+        const link = document.createElement("a");
+        link.href = `data:${dt.fileType};base64,${dt.fileContent}`;
+        link.target = "_blank";
+        link.download = dt.fileName;
+        link.click();
+      })
+      .catch((e) => {
+        notify(
+          {
+            message: e?.message,
+            position: {
+              my: "center top",
+              at: "center top"
+            }
+          },
+          "warning",
+          15000
+        );
+      })
+      .finally(() => setLoadingDownloadBtn(false));
   };
-  
+
   const handleSubmit = (e: any) => {
-	setSubmitForm(true);
-	const form = formRef.current!.instance;
-	const customData =
-		dataGrid.length > 0
-			? dataGrid.map((m) => {
-			  return {
-				name: m.name,
-				value: m.value
-			  };
-			})
-			: [];
-	createAppLoanOnboardingStep2(String(id), {
-	  customData: customData,
-	  incomeProof: incomeProof ? incomeProof.split(",")[1] : null,
-	  monthlyIncome: onStep2Loan.monthlyIncome,
-	  handwrittenSalesBook: onStep2Loan?.handwrittenSalesBook
-		  ? onStep2Loan?.handwrittenSalesBook
-		  : false,
-	  debitTransaction: onStep2Loan?.debitTransaction,
-	  creditTransaction: onStep2Loan?.creditTransaction
-	}).then(
-		(res) => {
-		  // console.log("submit step 2", res);
-		  setIncomeProof("");
-		  setDataGrid([]);
-		  form.resetValues();
-		  notifySuccess(res.message);
-		  setSubmitForm(false);
-		  detailLoanApp(ID);
+    setSubmitForm(true);
+    const form = formRef.current!.instance;
+    const customData =
+      dataGrid.length > 0
+        ? dataGrid.map((m) => {
+            return {
+              name: m.name,
+              value: m.value
+            };
+          })
+        : [];
+    createAppLoanOnboardingStep2(String(id), {
+      customData: customData,
+      incomeProof: incomeProof ? incomeProof.split(",")[1] : null,
+      monthlyIncome: onStep2Loan.monthlyIncome,
+      handwrittenSalesBook: onStep2Loan?.handwrittenSalesBook
+        ? onStep2Loan?.handwrittenSalesBook
+        : false,
+      debitTransaction: onStep2Loan?.debitTransaction,
+      creditTransaction: onStep2Loan?.creditTransaction
+    }).then(
+      (res) => {
+        // console.log("submit step 2", res);
+        setIncomeProof("");
+        setDataGrid([]);
+        form.resetValues();
+        notifySuccess(res.message);
+        setSubmitForm(false);
+        detailLoanApp(ID);
 		  if(res.isCompletedStep){
-			navigate(`/loan-app/create/preview?id=${id}`);
-		  }
-		},
-		(error) => {
-		  setSubmitForm(false);
-		  notify(
-			  {
-				message: error,
-				position: {
-				  my: "center top",
-				  at: "center top"
-				}
-			  },
-			  "error",
-			  15000
-		  );
-		}
-	);
-	e.preventDefault();
+          navigate(`/loan-app/create/preview?id=${id}`);
+        }
+      },
+      (error) => {
+        setSubmitForm(false);
+        notify(
+          {
+            message: error,
+            position: {
+              my: "center top",
+              at: "center top"
+            }
+          },
+          "error",
+          15000
+        );
+      }
+    );
+    e.preventDefault();
   };
-  
+
   const onFileChanged = (e: any) => {
-	if (e.value.length > 0) {
-	  try {
-		setFileType(e.value[0].type);
-		if (fileType.includes("image/")) {
-		  Resizer.imageFileResizer(
-			  e.value[0],
-			  1772,
-			  1181,
-			  "JPEG",
-			  100,
-			  0,
-			  (uri) => {
-				setIncomeProof(uri);
-			  },
-			  "base64",
-			  900,
-			  400
-		  );
-		} else {
-		  const fileReader = new FileReader();
-		  fileReader.onload = () => {
-			setIncomeProof(fileReader.result);
-		  };
-		  fileReader.readAsDataURL(e.value[0]);
-		}
-	  } catch (err) {
-		console.log(err);
-	  }
-	}
+    if (e.value.length > 0) {
+      try {
+        setFileType(e.value[0].type);
+        if (fileType.includes("image/")) {
+          Resizer.imageFileResizer(
+            e.value[0],
+            1772,
+            1181,
+            "JPEG",
+            100,
+            0,
+            (uri) => {
+              setIncomeProof(uri);
+            },
+            "base64",
+            900,
+            400
+          );
+        } else {
+          const fileReader = new FileReader();
+          fileReader.onload = () => {
+            setIncomeProof(fileReader.result);
+          };
+          fileReader.readAsDataURL(e.value[0]);
+        }
+      } catch (err) {
+        console.log(err);
+      }
+    }
   };
-  
+
   const uploadKtpOptions = {
-	selectButtonText: "Pilih file",
-	accept: "application/pdf,image/*",
-	uploadMode: "useForm",
-	onValueChanged: onFileChanged
+    selectButtonText: "Pilih file",
+    accept: "application/pdf,image/*",
+    uploadMode: "useForm",
+    onValueChanged: onFileChanged
   };
   const onFieldDataChanged = (evt: any) => {
-	onStep2Loan[evt.dataField] = evt.value;
+    onStep2Loan[evt.dataField] = evt.value;
   };
-  
+
   return (
-	  <>
-		<LoadPanel
-			shadingColor="rgba(0,0,0,0.4)"
-			visible={submitForm}
-			showIndicator={true}
-			shading={true}
-			showPane={true}
-			hideOnOutsideClick={false}
-		/>
-		<div
-			style={{
-			  display: "flex",
-			  justifyContent: "space-between",
-			  alignItems: "center",
-			  margin: "0 15px 0"
-			}}
-		>
-		  <h2>Step 2</h2>
-		  <Button
-			  text="Download Signed Contract"
-			  type="success"
-			  stylingMode="contained"
-			  disabled={loadingDownloadBtn}
-			  onClick={downloadDocSigned}
-		  />
-		</div>
-		<div className={"content-block"}>
+    <>
+      <LoadPanel
+        shadingColor="rgba(0,0,0,0.4)"
+        visible={submitForm}
+        showIndicator={true}
+        shading={true}
+        showPane={true}
+        hideOnOutsideClick={false}
+      />
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          margin: "0 15px 0"
+        }}
+      >
+        <h2>Step 2</h2>
+        <Button
+          text="Download Signed Contract"
+          type="success"
+          stylingMode="contained"
+          disabled={loadingDownloadBtn}
+          onClick={downloadDocSigned}
+        />
+      </div>
+      <div className={"content-block"}>
 		  <FamilyCard appId={ID}/>
 
-      <DocumentCard appId={ID} />
-		  
+        <DocumentCard appId={ID} />
+
 		  <SellingQuestions appId={ID}/>
-		  
+
 		  <NeighbourQuestions appId={ID}/>
-		  
+
 		  <StreetShop appId={ID}/>
-		  
-		  <div className={"dx-card responsive-paddings next-card"}>
-			<h3>Custom Data</h3>
-			<DataGrid
-				dataSource={dataGrid}
-				columnAutoWidth={true}
-				wordWrapEnabled={false}
-				showBorders={true}
-				dateSerializationFormat={"yyyy-MM-ddTHH:mm:ss.SSSxxx"}
-				repaintChangesOnly={true}
-			>
-			  <Editing mode="popup" allowUpdating={true} allowAdding={true} allowDeleting={true}>
+
+        <div className={"dx-card responsive-paddings next-card"}>
+          <h3>Custom Data</h3>
+          <DataGrid
+            dataSource={dataGrid}
+            columnAutoWidth={true}
+            wordWrapEnabled={false}
+            showBorders={true}
+            dateSerializationFormat={"yyyy-MM-ddTHH:mm:ss.SSSxxx"}
+            repaintChangesOnly={true}
+          >
+            <Editing mode="popup" allowUpdating={true} allowAdding={true} allowDeleting={true}>
 				<PopGrid title="Custom Data Form" showTitle={true} width={360} height={320}/>
-				<FormGrid
-					showColonAfterLabel={true}
-					showValidationSummary={true}
-					validationGroup="customedata"
-					colCount={1}
-				>
-				  <SimpleItem dataField="name">
+              <FormGrid
+                showColonAfterLabel={true}
+                showValidationSummary={true}
+                validationGroup="customedata"
+                colCount={1}
+              >
+                <SimpleItem dataField="name">
 					<RequiredRule message="Nama wajib diisi"/>
-				  </SimpleItem>
-				  <SimpleItem dataField={"value"}>
+                </SimpleItem>
+                <SimpleItem dataField={"value"}>
 					<RequiredRule message="Value wajib diisi"/>
-				  </SimpleItem>
-				</FormGrid>
-			  </Editing>
-			  <Column
-				  caption={"No."}
-				  width={70}
-				  alignment={"center"}
-				  cellTemplate={function (container: any, options: any) {
-					const dom = ReactDOM.createRoot(container);
-					dom.render(options.rowIndex + 1);
-				  }}
-			  />
+                </SimpleItem>
+              </FormGrid>
+            </Editing>
+            <Column
+              caption={"No."}
+              width={70}
+              alignment={"center"}
+              cellTemplate={function (container: any, options: any) {
+                const dom = ReactDOM.createRoot(container);
+                dom.render(options.rowIndex + 1);
+              }}
+            />
 			  <Column dataField={"name"} caption={"Name"}/>
 			  <Column dataField={"value"} caption={"Value"}/>
 			  <Paging defaultPageSize={50}/>
 			  <Pager showPageSizeSelector={true} showInfo={true} allowedPageSizes={[10, 50, 100]}/>
-			</DataGrid>
-		  </div>
-		  
-		  <form action="validate" onSubmit={handleSubmit} className={"next-card"}>
-			<Form
-				ref={formRef}
-				colCount={1}
-				id="form"
-				showColonAfterLabel={true}
-				validationGroup="incomeProofData"
-				formData={onStep2Loan}
-				onFieldDataChanged={onFieldDataChanged}
-			>
-			  <GroupItem colSpan={2} cssClass={"dx-card responsive-paddings next-card"}>
-				<GroupItem caption="Financial Detail" colCount={2}>
-				  <SimpleItem
-					  dataField="monthlyIncome"
+          </DataGrid>
+        </div>
+
+        <form action="validate" onSubmit={handleSubmit} className={"next-card"}>
+          <Form
+            ref={formRef}
+            colCount={1}
+            id="form"
+            showColonAfterLabel={true}
+            validationGroup="incomeProofData"
+            formData={onStep2Loan}
+            onFieldDataChanged={onFieldDataChanged}
+          >
+            <GroupItem colSpan={2} cssClass={"dx-card responsive-paddings next-card"}>
+              <GroupItem caption="Financial Detail" colCount={2}>
+                <SimpleItem
+                  dataField="monthlyIncome"
 					  label={{text: "Penghasilan perbulan"}}
-					  editorType="dxNumberBox"
+                  editorType="dxNumberBox"
 					  editorOptions={{format: "Rp #,##0.00"}}
-				  >
+                >
 					<PatternRule message="hanya boleh angka" pattern={/^[0-9]+$/}/>
-				  </SimpleItem>
-				  <SimpleItem
-					  dataField="handwrittenSalesBook"
+                </SimpleItem>
+                <SimpleItem
+                  dataField="handwrittenSalesBook"
 					  label={{text: "Handwritten Sales book"}}
-					  editorType="dxCheckBox"
-				  />
-				  <SimpleItem
-					  dataField="debitTransaction"
+                  editorType="dxCheckBox"
+                />
+                <SimpleItem
+                  dataField="debitTransaction"
 					  label={{text: "Debit Transaksi"}}
-					  editorType="dxNumberBox"
+                  editorType="dxNumberBox"
 					  editorOptions={{format: "Rp #,##0.00"}}
-				  >
+                >
 					<PatternRule message="hanya boleh angka" pattern={/^[0-9]+$/}/>
-				  </SimpleItem>
-				  <SimpleItem
-					  dataField="creditTransaction"
+                </SimpleItem>
+                <SimpleItem
+                  dataField="creditTransaction"
 					  label={{text: "Kredit Transaksi"}}
-					  editorType="dxNumberBox"
+                  editorType="dxNumberBox"
 					  editorOptions={{format: "Rp #,##0.00"}}
-				  >
+                >
 					<PatternRule message="hanya boleh angka" pattern={/^[0-9]+$/}/>
-				  </SimpleItem>
-				  <SimpleItem
-					  dataField="incomeProof"
-					  editorType={"dxFileUploader" as any}
-					  editorOptions={uploadKtpOptions}
+                </SimpleItem>
+                <SimpleItem
+                  dataField="incomeProof"
+                  editorType={"dxFileUploader" as any}
+                  editorOptions={uploadKtpOptions}
 					  label={{text: "File"}}
-				  ></SimpleItem>
-				</GroupItem>
-				<GroupItem>
-				  {incomeProof && (
-					  <Item>
-						{fileType.includes("image/") ? (
+                ></SimpleItem>
+              </GroupItem>
+              <GroupItem>
+                {incomeProof && (
+                  <Item>
+                    {fileType.includes("image/") ? (
 							<img id="dropzone-ktp" src={incomeProof} alt="income-proof" width={"50%"}/>
-						) : (
+                    ) : (
 							<PdfViewer url={incomeProof}/>
-						)}
-					  </Item>
-				  )}
-				</GroupItem>
-			  </GroupItem>
-			  <GroupItem colSpan={2}>
-				<GroupItem colCount={2}>
-				  <ButtonItem
-					  horizontalAlignment="left"
-					  buttonOptions={{
-						text: "Kembali",
-						type: "normal",
-						onClick: () => {
-						  navigate(`/loan-app/create/step/1?id=${id}&autoNext=false`);
-						}
-					  }}
-				  />
-				  <ButtonItem
-					  horizontalAlignment="right"
-					  buttonOptions={{
-						text: "Lanjutkan",
-						type: "default",
-						useSubmitBehavior: true
-					  }}
-				  />
-				</GroupItem>
-			  </GroupItem>
-			</Form>
-		  </form>
-		</div>
-	  </>
+                    )}
+                  </Item>
+                )}
+              </GroupItem>
+            </GroupItem>
+            <GroupItem colSpan={2}>
+              <GroupItem colCount={2}>
+                <ButtonItem
+                  horizontalAlignment="left"
+                  buttonOptions={{
+                    text: "Kembali",
+                    type: "normal",
+                    onClick: () => {
+                      navigate(`/loan-app/create/step/1?id=${id}&autoNext=false`);
+                    }
+                  }}
+                />
+                <ButtonItem
+                  horizontalAlignment="right"
+                  buttonOptions={{
+                    text: "Lanjutkan",
+                    type: "default",
+                    useSubmitBehavior: true
+                  }}
+                />
+              </GroupItem>
+            </GroupItem>
+          </Form>
+        </form>
+      </div>
+
+      <Popup width={360} height={"auto"} visible={isShowRemainingPopup} showTitle={false}>
+        <div className="wrapper-popup-reminder">
+          <h5 className="title">Lengkapi Data Anda</h5>
+          <p className="description">
+            Beberapa field berikut masih kosong, harap lengkapi sebelum melanjutkan:
+          </p>
+          <div className="card">
+            <ul>
+              {missingFields.map((item, index) => (
+                <li key={index}>{item}</li>
+              ))}
+            </ul>
+          </div>
+          <Button
+            style={{ marginTop: 16 }}
+            text="Tutup"
+            type="normal"
+            onClick={() => setShowRemainingPopup(false)}
+          />
+        </div>
+      </Popup>
+    </>
   );
 }

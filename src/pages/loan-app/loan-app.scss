@@ -36,3 +36,33 @@
   white-space: normal;
   word-wrap: break-word;
 }
+
+.title {
+  font-size: 20px !important;
+  margin: 0;
+  font-weight: 600 !important;
+}
+
+.wrapper-popup-reminder {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  text-align: center;
+}
+
+.card {
+  width: 100%;
+  background-color: rgba(250, 82, 82, 0.1);
+  border: 1px solid #fa5252;
+  border-radius: 10px;
+  -webkit-border-radius: 10px;
+  -moz-border-radius: 10px;
+  -ms-border-radius: 10px;
+  -o-border-radius: 10px;
+
+  ul > li {
+    color: #fa5252;
+    text-align: left;
+  }
+}
