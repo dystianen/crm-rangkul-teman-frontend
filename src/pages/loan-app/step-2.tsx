@@ -63,10 +63,10 @@ export default function Step2Page() {
   const [isShowRemainingPopup, setShowRemainingPopup] = useState(false);
   const [missingFields, setMissingFields] = useState<string[]>([]);
 
-  const detailLoanApp = (appId: any) =>
+  const detailLoanApp = (appId: any) => {
     detailAppLoan(appId).then((res) => {
       const data = res as any;
-
+      
       // console.log("data app: ", data);
       // if (!data.privyEnabled && data.statusId === statusApp.unsigned) {
       // navigate(`/loan-app/detail/upload-signed?id=${ID}`);
@@ -77,7 +77,7 @@ export default function Step2Page() {
         setFileType(data.incomeProof.fileType);
         setIncomeProof(getFileBase64(data.incomeProof.fileType, data.incomeProof.fileContent));
       }
-
+      
       if (typeof data.monthlyIncome !== "undefined") {
         setOnStep2Loan({
           monthlyIncome: data?.monthlyIncome,
@@ -87,14 +87,16 @@ export default function Step2Page() {
         });
       }
     });
-
-  useEffect(() => {
-    detailLoanApp(ID);
-
+    
     fetchCheckPartial(ID).then((res) => {
       setMissingFields(res.messages);
       setShowRemainingPopup(res.opened);
     });
+  }
+  
+
+  useEffect(() => {
+    detailLoanApp(ID);
   }, [ID]);
 
   useEffect(() => {
@@ -162,7 +164,7 @@ export default function Step2Page() {
         notifySuccess(res.message);
         setSubmitForm(false);
         detailLoanApp(ID);
-		  if(res.isCompletedStep){
+        if(res.isCompletedStep){
           navigate(`/loan-app/create/preview?id=${id}`);
         }
       },
