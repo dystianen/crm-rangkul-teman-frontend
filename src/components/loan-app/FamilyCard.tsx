@@ -12,9 +12,14 @@ import DataGrid, {
 import DataSource from "devextreme/data/data_source";
 import { useMemo } from "react";
 import { familyListStore } from "src/api/apploan";
-import {contactFamilyStore, contactRelativeStore, selectBoxOptions, validateIdNumber} from "src/api/contact";
+import {
+  contactFamilyStore,
+  contactRelativeStore,
+  selectBoxOptions,
+  validateIdNumber
+} from "src/api/contact";
 
-const FamilyCard = ({ appId, disabled = false }: { appId: string, disabled?: boolean }) => {
+const FamilyCard = ({ appId, disabled = false }: { appId: string; disabled?: boolean }) => {
   const familyDataSource = useMemo(() => new DataSource(familyListStore(appId)), [appId]);
   const relativeOptions = useMemo(
     () => selectBoxOptions(new DataSource(contactFamilyStore), "Select Relation"),
@@ -46,7 +51,12 @@ const FamilyCard = ({ appId, disabled = false }: { appId: string, disabled?: boo
           };
         }}
       >
-        <Editing mode="popup" allowUpdating={!disabled} allowAdding={!disabled} allowDeleting={!disabled}>
+        <Editing
+          mode="popup"
+          allowUpdating={!disabled}
+          allowAdding={!disabled}
+          allowDeleting={!disabled}
+        >
           <PopGrid title="Family Form" showTitle={true} width={360} height={320} />
           <FormGrid
             showColonAfterLabel={true}
@@ -73,7 +83,17 @@ const FamilyCard = ({ appId, disabled = false }: { appId: string, disabled?: boo
                 validationCallback={asyncValidationIdNumber}
               />
             </SimpleItem>
-            <SimpleItem dataField="name">
+            <SimpleItem
+              dataField="name"
+              editorOptions={{
+                onKeyDown: (e: any) => {
+                  const key = e.event.key;
+                  if (/[0-9]/.test(key) && key !== "Backspace" && key !== "Delete") {
+                    e.event.preventDefault();
+                  }
+                }
+              }}
+            >
               <RequiredRule message="Name is required" />
             </SimpleItem>
             <SimpleItem
