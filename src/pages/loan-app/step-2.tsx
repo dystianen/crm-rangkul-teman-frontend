@@ -1,19 +1,5 @@
-import Form, {
-  ButtonItem,
-  GroupItem,
-  PatternRule,
-  RequiredRule,
-  SimpleItem
-} from "devextreme-react/form";
-import { useEffect, useRef, useState } from "react";
-
-import "devextreme-react/file-uploader";
-import queryString from "query-string";
-import { useNavigate } from "react-router";
-import { useLocation } from "react-router-dom";
-import "./loan-app.scss";
-
-import { LoadPanel } from "devextreme-react";
+import {LoadPanel, Popup} from "devextreme-react";
+import {Button} from "devextreme-react/button";
 import DataGrid, {
   Column,
   Editing,
@@ -24,19 +10,44 @@ import DataGrid, {
   Popup as PopGrid
 } from "devextreme-react/data-grid";
 import "devextreme-react/date-box";
+import "devextreme-react/file-uploader";
+import Form, {
+  ButtonItem,
+  GroupItem,
+  PatternRule,
+  RequiredRule,
+  SimpleItem
+} from "devextreme-react/form";
 import notify from "devextreme/ui/notify";
+import queryString from "query-string";
+import {useEffect, useRef, useState} from "react";
 import ReactDOM from "react-dom/client";
 import Resizer from "react-image-file-resizer";
-import {checkAccess, createAppLoanOnboardingStep2, detailAppLoan, getSignedDoc, getUnsignedDoc} from "src/api/apploan";
+import {useNavigate} from "react-router";
+import {useLocation} from "react-router-dom";
+import {
+  checkAccess,
+  createAppLoanOnboardingStep2,
+  detailAppLoan,
+  fetchCheckPartial,
+  getSignedDoc
+} from "src/api/apploan";
+import FamilyCard from "src/components/loan-app/FamilyCard";
+import NeighbourQuestions from "src/components/loan-app/NeighbourQuestions";
+import SellingQuestions from "src/components/loan-app/SellingQuestions";
+import StreetShop from "src/components/loan-app/StreetShop";
 import PdfViewer from "src/components/pdf-viewer/PdfViewer";
-import { getFileBase64 } from "../../api/helper";
-import {Button} from "devextreme-react/button";
-import {notifyWarning} from "../../utils/devExtremeUtils";
+import {getFileBase64} from "../../api/helper";
+import {notifySuccess, notifyWarning} from "../../utils/devExtremeUtils";
+import "./loan-app.scss";
+import {backofficeAccess} from "../../constants/variableConstata";
+import DocumentCard from "src/components/loan-app/DocumentCard";
 
 export default function Step2Page() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { id } = queryString.parse(location.search);
+  const {id} = queryString.parse(location.search);
+  const ID = String(id);
   const [incomeProof, setIncomeProof] = useState<any>(undefined);
   const [fileType, setFileType] = useState<string>("");
   const [dataGrid, setDataGrid] = useState<any[]>([]);
@@ -49,18 +60,24 @@ export default function Step2Page() {
   });
   const [submitForm, setSubmitForm] = useState(false);
   const [loadingDownloadBtn, setLoadingDownloadBtn] = useState(false);
+  const [isShowRemainingPopup, setShowRemainingPopup] = useState(false);
+  const [missingFields, setMissingFields] = useState<string[]>([]);
 
-
-  useEffect(() => {
-    detailAppLoan(String(id)).then((res) => {
+  const detailLoanApp = (appId: any) => {
+    detailAppLoan(appId).then((res) => {
       const data = res as any;
+      
+      // console.log("data app: ", data);
+      // if (!data.privyEnabled && data.statusId === statusApp.unsigned) {
+      // navigate(`/loan-app/detail/upload-signed?id=${ID}`);
+      // }
       const gridStore: any[] = data?.customData || [];
       setDataGrid(gridStore);
       if (data?.incomeProof) {
         setFileType(data.incomeProof.fileType);
         setIncomeProof(getFileBase64(data.incomeProof.fileType, data.incomeProof.fileContent));
       }
-
+      
       if (typeof data.monthlyIncome !== "undefined") {
         setOnStep2Loan({
           monthlyIncome: data?.monthlyIncome,
@@ -70,10 +87,20 @@ export default function Step2Page() {
         });
       }
     });
-  }, [id]);
+    
+    fetchCheckPartial(ID).then((res) => {
+      setMissingFields(res.messages);
+      setShowRemainingPopup(res.opened);
+    });
+  }
+  
 
   useEffect(() => {
-    checkAccess("0c0983ad-20b2-446d-8462-328aa64915f7").then((res) => {
+    detailLoanApp(ID);
+  }, [ID]);
+
+  useEffect(() => {
+    checkAccess(backofficeAccess.backoffice_application_step_2).then((res) => {
       if (!res) {
         navigate(`/loan-app`);
         notifyWarning("User tidak memilik akses ke menu step 2");
@@ -84,27 +111,27 @@ export default function Step2Page() {
   const downloadDocSigned = () => {
     setLoadingDownloadBtn(true);
     getSignedDoc(id as any)
-        .then((dt) => {
-          const link = document.createElement("a");
-          link.href = `data:${dt.fileType};base64,${dt.fileContent}`;
-          link.target = "_blank";
-          link.download = dt.fileName;
-          link.click();
-        })
-        .catch((e) => {
-          notify(
-              {
-                message: e?.message,
-                position: {
-                  my: "center top",
-                  at: "center top"
-                }
-              },
-              "warning",
-              15000
-          );
-        })
-        .finally(() => setLoadingDownloadBtn(false));
+      .then((dt) => {
+        const link = document.createElement("a");
+        link.href = `data:${dt.fileType};base64,${dt.fileContent}`;
+        link.target = "_blank";
+        link.download = dt.fileName;
+        link.click();
+      })
+      .catch((e) => {
+        notify(
+          {
+            message: e?.message,
+            position: {
+              my: "center top",
+              at: "center top"
+            }
+          },
+          "warning",
+          15000
+        );
+      })
+      .finally(() => setLoadingDownloadBtn(false));
   };
 
   const handleSubmit = (e: any) => {
@@ -130,10 +157,16 @@ export default function Step2Page() {
       creditTransaction: onStep2Loan?.creditTransaction
     }).then(
       (res) => {
+        // console.log("submit step 2", res);
         setIncomeProof("");
         setDataGrid([]);
         form.resetValues();
-        navigate(`/loan-app/create/preview?id=${id}`);
+        notifySuccess(res.message);
+        setSubmitForm(false);
+        detailLoanApp(ID);
+        if(res.isCompletedStep){
+          navigate(`/loan-app/create/preview?id=${id}`);
+        }
       },
       (error) => {
         setSubmitForm(false);
@@ -206,35 +239,45 @@ export default function Step2Page() {
         hideOnOutsideClick={false}
       />
       <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            margin: "0 15px 0"
-          }}
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          margin: "0 15px 0"
+        }}
       >
         <h2>Step 2</h2>
         <Button
-            text="Download Signed Contract"
-            type="success"
-            stylingMode="contained"
-            disabled={loadingDownloadBtn}
-            onClick={downloadDocSigned}
+          text="Download Signed Contract"
+          type="success"
+          stylingMode="contained"
+          disabled={loadingDownloadBtn}
+          onClick={downloadDocSigned}
         />
       </div>
       <div className={"content-block"}>
-        <div className={"dx-card responsive-paddings"}>
+		  <FamilyCard appId={ID}/>
+
+        <DocumentCard appId={ID} />
+
+		  <SellingQuestions appId={ID}/>
+
+		  <NeighbourQuestions appId={ID}/>
+
+		  <StreetShop appId={ID}/>
+
+        <div className={"dx-card responsive-paddings next-card"}>
           <h3>Custom Data</h3>
           <DataGrid
-              dataSource={dataGrid}
-              columnAutoWidth={true}
-              wordWrapEnabled={false}
-              showBorders={true}
-              dateSerializationFormat={"yyyy-MM-ddTHH:mm:ss.SSSxxx"}
-              repaintChangesOnly={true}
+            dataSource={dataGrid}
+            columnAutoWidth={true}
+            wordWrapEnabled={false}
+            showBorders={true}
+            dateSerializationFormat={"yyyy-MM-ddTHH:mm:ss.SSSxxx"}
+            repaintChangesOnly={true}
           >
             <Editing mode="popup" allowUpdating={true} allowAdding={true} allowDeleting={true}>
-              <PopGrid title="Custom Data Form" showTitle={true} width={360} height={320} />
+				<PopGrid title="Custom Data Form" showTitle={true} width={360} height={320}/>
               <FormGrid
                 showColonAfterLabel={true}
                 showValidationSummary={true}
@@ -242,10 +285,10 @@ export default function Step2Page() {
                 colCount={1}
               >
                 <SimpleItem dataField="name">
-                  <RequiredRule message="Nama wajib diisi" />
+					<RequiredRule message="Nama wajib diisi"/>
                 </SimpleItem>
                 <SimpleItem dataField={"value"}>
-                  <RequiredRule message="Value wajib diisi" />
+					<RequiredRule message="Value wajib diisi"/>
                 </SimpleItem>
               </FormGrid>
             </Editing>
@@ -258,14 +301,14 @@ export default function Step2Page() {
                 dom.render(options.rowIndex + 1);
               }}
             />
-            <Column dataField={"name"} caption={"Name"} />
-            <Column dataField={"value"} caption={"Value"} />
-            <Paging defaultPageSize={50} />
-            <Pager showPageSizeSelector={true} showInfo={true} allowedPageSizes={[10, 50, 100]} />
+			  <Column dataField={"name"} caption={"Name"}/>
+			  <Column dataField={"value"} caption={"Value"}/>
+			  <Paging defaultPageSize={50}/>
+			  <Pager showPageSizeSelector={true} showInfo={true} allowedPageSizes={[10, 50, 100]}/>
           </DataGrid>
         </div>
 
-        <form action="validate" onSubmit={handleSubmit} className={'next-card'}>
+        <form action="validate" onSubmit={handleSubmit} className={"next-card"}>
           <Form
             ref={formRef}
             colCount={1}
@@ -279,50 +322,47 @@ export default function Step2Page() {
               <GroupItem caption="Financial Detail" colCount={2}>
                 <SimpleItem
                   dataField="monthlyIncome"
-                  label={{ text: "Penghasilan perbulan" }}
+					  label={{text: "Penghasilan perbulan"}}
                   editorType="dxNumberBox"
-                  editorOptions={{ format: "Rp #,##0.00"}}
+					  editorOptions={{format: "Rp #,##0.00"}}
                 >
-                  <RequiredRule message="Penghasilan perbulan wajib diisi" />
-                  <PatternRule message="hanya boleh angka" pattern={/^[0-9]+$/} />
+					<PatternRule message="hanya boleh angka" pattern={/^[0-9]+$/}/>
                 </SimpleItem>
                 <SimpleItem
                   dataField="handwrittenSalesBook"
-                  label={{ text: "Handwritten Sales book" }}
+					  label={{text: "Handwritten Sales book"}}
                   editorType="dxCheckBox"
                 />
                 <SimpleItem
                   dataField="debitTransaction"
-                  label={{ text: "Debit Transaksi" }}
+					  label={{text: "Debit Transaksi"}}
                   editorType="dxNumberBox"
-                  editorOptions={{ format: "Rp #,##0.00"}}
+					  editorOptions={{format: "Rp #,##0.00"}}
                 >
-                  <RequiredRule message="Debit transaksi wajib diisi" />
-                  <PatternRule message="hanya boleh angka" pattern={/^[0-9]+$/} />
+					<PatternRule message="hanya boleh angka" pattern={/^[0-9]+$/}/>
                 </SimpleItem>
                 <SimpleItem
                   dataField="creditTransaction"
-                  label={{ text: "Kredit Transaksi" }}
+					  label={{text: "Kredit Transaksi"}}
                   editorType="dxNumberBox"
-                  editorOptions={{ format: "Rp #,##0.00"}}
+					  editorOptions={{format: "Rp #,##0.00"}}
                 >
-                  <RequiredRule message="Kredit transaksi wajib diisi" />
-                  <PatternRule message="hanya boleh angka" pattern={/^[0-9]+$/} />
+					<PatternRule message="hanya boleh angka" pattern={/^[0-9]+$/}/>
                 </SimpleItem>
                 <SimpleItem
                   dataField="incomeProof"
                   editorType={"dxFileUploader" as any}
                   editorOptions={uploadKtpOptions}
-                  label={{ text: "File" }}
+					  label={{text: "File"}}
                 ></SimpleItem>
               </GroupItem>
               <GroupItem>
                 {incomeProof && (
                   <Item>
                     {fileType.includes("image/") ? (
-                      <img id="dropzone-ktp" src={incomeProof} alt="income-proof" width={"50%"} />
+							<img id="dropzone-ktp" src={incomeProof} alt="income-proof" width={"50%"}/>
                     ) : (
-                      <PdfViewer url={incomeProof} />
+							<PdfViewer url={incomeProof}/>
                     )}
                   </Item>
                 )}
@@ -353,6 +393,28 @@ export default function Step2Page() {
           </Form>
         </form>
       </div>
+
+      <Popup width={360} height={"auto"} visible={isShowRemainingPopup} showTitle={false}>
+        <div className="wrapper-popup-reminder">
+          <h5 className="title">Lengkapi Data Anda</h5>
+          <p className="description">
+            Beberapa field berikut masih kosong, harap lengkapi sebelum melanjutkan:
+          </p>
+          <div className="card">
+            <ul>
+              {missingFields.map((item, index) => (
+                <li key={index}>{item}</li>
+              ))}
+            </ul>
+          </div>
+          <Button
+            style={{ marginTop: 16 }}
+            text="Tutup"
+            type="normal"
+            onClick={() => setShowRemainingPopup(false)}
+          />
+        </div>
+      </Popup>
     </>
   );
 }

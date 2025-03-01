@@ -1,6 +1,6 @@
 import React, {FC, useEffect, useRef, useState} from "react";
 import {TextBox} from "devextreme-react/text-box";
-import {AsyncRule, RequiredRule, Validator} from "devextreme-react/validator";
+import {AsyncRule, RangeRule, RequiredRule, Validator} from "devextreme-react/validator";
 import Form, {ButtonItem, PatternRule, SimpleItem, GroupItem} from "devextreme-react/form";
 import {Button} from "devextreme-react/button";
 import ValidationSummary from "devextreme-react/validation-summary";
@@ -40,11 +40,11 @@ export const ApprovePopup: FC<any> = (props, context) => {
                         });
                         navigate(`/approval2`);
                         form.resetValues();
-                    }).catch(() => setToastConfig({
+                    }).catch((e) => setToastConfig({
                         ...toastConfig,
                         isVisible: true,
                         type: 'error',
-                        message: "Failed approve application"
+                        message: e.message
                     }));
                 }
             });
@@ -54,7 +54,7 @@ export const ApprovePopup: FC<any> = (props, context) => {
     }
 
     useEffect(() => {
-        request["approvedAmount"] = data?.application?.loanAmount;
+        setRequest({approvedAmount: data?.application?.loanAmount});
     }, [data]);
 
     const onFieldDataChanged = (evt: any) => {
@@ -67,14 +67,14 @@ export const ApprovePopup: FC<any> = (props, context) => {
             message={toastConfig.message}
             type={toastConfig.type}
             onHiding={onHiding}
-            displayTime={600}
+            displayTime={15000}
         />
         <Popup
             width={360}
             height={"auto"}
             visible={popupVisible}
             onHiding={hide}
-            hideOnOutsideClick={true}
+            hideOnOutsideClick={false}
             showCloseButton={true}
             title="Approve Application">
             <form action="#">
@@ -82,8 +82,9 @@ export const ApprovePopup: FC<any> = (props, context) => {
                     ref={formRef}
                     colCount={1}
                     id="form"
+                    formData={request}
+                    showValidationSummary={true}
                     showColonAfterLabel={true}
-                    showValidationSummary={false}
                     validationGroup="approveApp"
                     onFieldDataChanged={onFieldDataChanged}
                 >
@@ -92,12 +93,11 @@ export const ApprovePopup: FC<any> = (props, context) => {
                         label={{text: "Amount"}}
                         editorType="dxNumberBox"
                         editorOptions={{
-                            value: data?.application?.loanAmount,
                             format: "Rp #,##0.00",
-                            max: data?.application?.loanAmount,
                         }}
                     >
                         <RequiredRule message="description is required"/>
+                        <RangeRule message="Approve amout tidak boleh lebih dari yang diajukan " max={data?.application?.loanAmount}/>
                     </SimpleItem>
                     <SimpleItem
                         dataField="description"
