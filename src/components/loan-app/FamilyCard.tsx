@@ -14,7 +14,6 @@ import { useMemo } from "react";
 import { familyListStore } from "src/api/apploan";
 import {
   contactFamilyStore,
-  contactRelativeStore,
   selectBoxOptions,
   validateIdNumber
 } from "src/api/contact";
@@ -116,7 +115,7 @@ const FamilyCard = ({ appId, disabled = false }: { appId: string; disabled?: boo
         <Column dataField={"idNumber"} caption={"NIK"} />
         <Column dataField={"name"} caption={"Name"} />
         <Column dataField={"typeId"} caption={"Relation Type"}>
-          <Lookup dataSource={contactRelativeStore} displayExpr="name" valueExpr="id" />
+          <Lookup dataSource={contactFamilyStore} displayExpr="name" valueExpr="id" />
         </Column>
         <Paging defaultPageSize={50} />
         <Pager showPageSizeSelector={true} showInfo={true} allowedPageSizes={[10, 50, 100]} />
