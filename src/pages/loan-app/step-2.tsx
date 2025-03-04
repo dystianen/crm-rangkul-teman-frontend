@@ -335,7 +335,7 @@ export default function Step2Page() {
                 />
                 <SimpleItem
                   dataField="debitTransaction"
-					  label={{text: "Debit Transaksi"}}
+					  label={{text: "Outcome"}}
                   editorType="dxNumberBox"
 					  editorOptions={{format: "Rp #,##0.00"}}
                 >
@@ -343,7 +343,7 @@ export default function Step2Page() {
                 </SimpleItem>
                 <SimpleItem
                   dataField="creditTransaction"
-					  label={{text: "Kredit Transaksi"}}
+					  label={{text: "Income"}}
                   editorType="dxNumberBox"
 					  editorOptions={{format: "Rp #,##0.00"}}
                 >
