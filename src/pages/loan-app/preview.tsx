@@ -183,12 +183,12 @@ export default function PreviewPage() {
                                 <GroupItem colCount={2}>
                                     <SimpleItem
                                         dataField="debitTransaction"
-                                        label={{ text: "Debit Transaksi" }}
+                                        label={{ text: "Outcome" }}
                                         editorOptions={{ format: "Rp #,##0", readOnly: true }}
                                     ></SimpleItem>
                                     <SimpleItem
                                         dataField="creditTransaction"
-                                        label={{ text: "Kredit Transaksi" }}
+                                        label={{ text: "Income" }}
                                         editorOptions={{ format: "Rp #,##0", readOnly: true }}
                                     ></SimpleItem>
                                     <SimpleItem
