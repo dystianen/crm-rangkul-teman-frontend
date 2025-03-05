@@ -84,7 +84,9 @@ const SellingQuestions: React.FC<SellingQuestionsProps> = ({ appId, disabled = f
 
   return (
     <>
-      <h3 style={{ marginBottom: 16 }}>Selling Questions</h3>
+      <div className={"dx-form-group-with-caption mb14"}>
+        <span className="dx-form-group-caption">Selling Questions</span>
+      </div>
       <DataGrid dataSource={sellingQuestions} wordWrapEnabled showBorders repaintChangesOnly>
         <Column
           caption="No."

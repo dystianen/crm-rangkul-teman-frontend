@@ -108,7 +108,7 @@ const StreetShop = ({ appId, disabled = false }: { appId: string; disabled?: boo
 
   return (
     <>
-      <div style={{ display: "flex", gap: "10px", marginBottom: isStreetShop ? 16 : 0 }}>
+      <div style={{ display: "flex", gap: "10px", marginBottom: isStreetShop ? 10 : 0 }}>
         <CheckBox
           disabled={disabled}
           value={isStreetShop}

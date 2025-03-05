@@ -42,10 +42,8 @@ export const TabFooter: FC<Props> = ({ detail }) => {
                 <FamilyCard appId={ID} disabled />
               </Tab>
               <Tab title="Questions">
-                <div className={"responsive-paddings"}>
-                  <SellingQuestions appId={ID} disabled />
-                </div>
-                <div className={"responsive-paddings"}>
+                <SellingQuestions appId={ID} disabled />
+                <div className={"next-card"}>
                   <NeighbourQuestions appId={ID} disabled />
                 </div>
               </Tab>
