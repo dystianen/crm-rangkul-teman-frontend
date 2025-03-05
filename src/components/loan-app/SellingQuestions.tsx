@@ -77,13 +77,13 @@ const SellingQuestions: React.FC<SellingQuestionsProps> = ({ appId, disabled = f
       layout="horizontal"
       displayExpr="label"
       valueExpr="value"
-      disabled={disabled || loadingStates[data.questionId]}
+      readOnly={disabled || loadingStates[data.questionId]}
       onValueChanged={(e) => handleSellingRadioChange(data.questionId, e.value)}
     />
   ));
 
   return (
-    <div className="dx-card responsive-paddings next-card">
+    <>
       <h3 style={{ marginBottom: 16 }}>Selling Questions</h3>
       <DataGrid dataSource={sellingQuestions} wordWrapEnabled showBorders repaintChangesOnly>
         <Column
@@ -104,7 +104,7 @@ const SellingQuestions: React.FC<SellingQuestionsProps> = ({ appId, disabled = f
         <Paging defaultPageSize={50} />
         <Pager showPageSizeSelector={true} showInfo={true} allowedPageSizes={[10, 50, 100]} />
       </DataGrid>
-    </div>
+    </>
   );
 };
 

@@ -1,4 +1,4 @@
-import Form, { GroupItem, SimpleItem } from "devextreme-react/form";
+import Form, { GroupItem, Item, SimpleItem } from "devextreme-react/form";
 import { useEffect, useState } from "react";
 
 import "devextreme-react/file-uploader";
@@ -92,7 +92,7 @@ export default function PreviewPage() {
                         >
                             <GroupItem
                                 colSpan={2}
-                                cssClass={"dx-card responsive-paddings next-card"}
+                                cssClass={"dx-card responsive-paddings"}
                             >
                                 <GroupItem caption="Pengajuan" colCount={2}>
                                     <SimpleItem
@@ -132,19 +132,19 @@ export default function PreviewPage() {
                                 </GroupItem>
                             </GroupItem>
 
-                            <GroupItem>
+                            <GroupItem cssClass={"dx-card responsive-paddings next-card"}>
                                 <FamilyCard appId={ID} disabled />
                             </GroupItem>
-                            <GroupItem>
+                            <GroupItem cssClass={"dx-card responsive-paddings next-card"}>
                                 <DocumentCard appId={ID} disabled />
                             </GroupItem>
-                            <GroupItem>
+                            <GroupItem cssClass={"dx-card responsive-paddings next-card"}>
                                 <SellingQuestions appId={ID} disabled />
                             </GroupItem>
-                            <GroupItem>
+                            <GroupItem cssClass={"dx-card responsive-paddings next-card"}>
                                 <NeighbourQuestions appId={ID} disabled />
                             </GroupItem>
-                            <GroupItem>
+                            <GroupItem cssClass={"dx-card responsive-paddings next-card"}>
                                 <StreetShop appId={ID} disabled />
                             </GroupItem>
 
