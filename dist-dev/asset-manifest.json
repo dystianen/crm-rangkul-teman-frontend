@@ -1,11 +1,7 @@
 {
   "files": {
     "main.css": "/static/css/main.99fa601f.css",
-<<<<<<< HEAD
-    "main.js": "/static/js/main.e9aa3a46.js",
-=======
-    "main.js": "/static/js/main.acadb635.js",
->>>>>>> hotfix/IDGEN-180
+    "main.js": "/static/js/main.257c72aa.js",
     "static/js/453.15d6e98c.chunk.js": "/static/js/453.15d6e98c.chunk.js",
     "static/media/Roboto-500.ttf": "/static/media/Roboto-500.0fcd45fbfc419c42c8b9.ttf",
     "static/media/Roboto-400.ttf": "/static/media/Roboto-400.6bede58e856278b0f8f1.ttf",
@@ -26,19 +22,11 @@
     "static/media/doc-viewer.less": "/static/media/doc-viewer.ae8da5831149a16cb570.less",
     "index.html": "/index.html",
     "main.99fa601f.css.map": "/static/css/main.99fa601f.css.map",
-<<<<<<< HEAD
-    "main.e9aa3a46.js.map": "/static/js/main.e9aa3a46.js.map",
-=======
-    "main.acadb635.js.map": "/static/js/main.acadb635.js.map",
->>>>>>> hotfix/IDGEN-180
+    "main.257c72aa.js.map": "/static/js/main.257c72aa.js.map",
     "453.15d6e98c.chunk.js.map": "/static/js/453.15d6e98c.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.99fa601f.css",
-<<<<<<< HEAD
-    "static/js/main.e9aa3a46.js"
-=======
-    "static/js/main.acadb635.js"
->>>>>>> hotfix/IDGEN-180
+    "static/js/main.257c72aa.js"
   ]
 }
