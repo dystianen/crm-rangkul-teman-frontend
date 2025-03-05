@@ -42,13 +42,6 @@ export const appStatusNotAllowToCancel: string[] = [
   ,"66ffc847-23a6-49fd-aa6f-fe370b740188"
 ];
 
-export const roleAllowToCancel: string[] = [
-  "4641a3d6-332c-4cac-aeab-34cc77b1fcb2"
-  ,"acd4322c-41a5-4131-9d77-abd972e899b1"
-  ,"de50bb98-cff6-4d1d-9991-690998062bbb"
-  ,"be3c8850-bd7b-478c-83da-bd6a384724a6"
-]
-
 
 export const statusApp = {
   approved:"8bd8aa39-059c-4c1c-a089-35a981863c89",
