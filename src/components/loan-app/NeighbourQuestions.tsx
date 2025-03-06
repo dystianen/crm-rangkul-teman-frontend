@@ -77,14 +77,16 @@ const NeighbourQuestions: React.FC<NeighbourQuestionsProps> = ({ appId, disabled
       layout="horizontal"
       displayExpr="label"
       valueExpr="value"
-      disabled={disabled || loadingStates[data.questionId]}
+      readOnly={disabled || loadingStates[data.questionId]}
       onValueChanged={(e) => handleNeighbourRadioChange(data.questionId, e.value)}
     />
   ));
 
   return (
-    <div className="dx-card responsive-paddings next-card">
-      <h3 style={{ marginBottom: 16 }}>Neighbour Questions</h3>
+    <>
+      <div className={"dx-form-group-with-caption mb14"}>
+        <span className="dx-form-group-caption">Neighbour Questions</span>
+      </div>
       <DataGrid dataSource={neighbourQuestions} wordWrapEnabled showBorders repaintChangesOnly>
         <Column
           caption="No."
@@ -104,7 +106,7 @@ const NeighbourQuestions: React.FC<NeighbourQuestionsProps> = ({ appId, disabled
         <Paging defaultPageSize={50} />
         <Pager showPageSizeSelector={true} showInfo={true} allowedPageSizes={[10, 50, 100]} />
       </DataGrid>
-    </div>
+    </>
   );
 };
 
