@@ -5,38 +5,13 @@ import Form, { GroupItem, SimpleItem } from "devextreme-react/form";
 import * as Title from "devextreme-react/toolbar";
 import { FC } from "react";
 import { useNavigate } from "react-router";
-import { getFileBase64 } from "src/api/helper";
-import PdfViewer from "src/components/pdf-viewer/PdfViewer";
+import PreviewFile from "src/components/loan-app/PreviewFile";
 import { TabFooter } from "./TabFooter";
-
-const RenderFile = ({ financialInformation }: any) => {
-  const incomeProof = financialInformation?.incomeProof;
-
-  if (!incomeProof) return null;
-
-  const { fileType, fileContent } = incomeProof;
-  const fileBase64 = getFileBase64(fileType, fileContent);
-  const isImage = fileType.includes("image/");
-
-  return (
-    <>
-      {isImage ? (
-        <img
-          id="dropzone-ktp"
-          src={fileBase64}
-          alt="Income proof document"
-          width="50%"
-          loading="lazy"
-        />
-      ) : (
-        <PdfViewer url={fileBase64} />
-      )}
-    </>
-  );
-};
 
 export const AppForm: FC<any> = ({ detail }) => {
   const navigate = useNavigate();
+  const incomeProof = detail?.financialInformation?.incomeProof;
+
   return (
     <div className={"content-block"}>
       <Title.Toolbar className={"dx-card"}>
@@ -223,11 +198,13 @@ export const AppForm: FC<any> = ({ detail }) => {
             />
           </GroupItem>
 
-          <GroupItem caption="Income proof" colCount={1}>
-            <SimpleItem>
-              <RenderFile financialInformation={detail.financialInformation} />
-            </SimpleItem>
-          </GroupItem>
+          {incomeProof && (
+            <GroupItem caption="Income proof" colCount={1}>
+              <SimpleItem>
+                <PreviewFile file={incomeProof} />
+              </SimpleItem>
+            </GroupItem>
+          )}
         </Form>
       </div>
       <div className={"dx-card responsive-paddings next-card"}>
