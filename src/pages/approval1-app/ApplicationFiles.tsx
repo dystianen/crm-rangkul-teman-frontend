@@ -27,6 +27,7 @@ export const ApplicationFiles: FC<any> = ({id}) => {
                 caption={'Tanggal Dibuat'}
                 dataType={'date'}
                 format={'dd MMM yyyy HH:mm:ss'}
+                width={200}
                 calculateFilterExpression={function (
                     value: any,
                     selectedFilterOperations: any,
@@ -46,6 +47,7 @@ export const ApplicationFiles: FC<any> = ({id}) => {
                 caption={'Tanggal Diubah'}
                 dataType={'date'}
                 format={'dd MMM yyyy HH:mm:ss'}
+                width={200}
                 calculateFilterExpression={function (
                     value: any,
                     selectedFilterOperations: any,
