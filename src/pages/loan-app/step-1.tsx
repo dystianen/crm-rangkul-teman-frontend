@@ -352,9 +352,11 @@ export default function Step1Page() {
                     onKeyDown: (e: any) => {
                       const key = e.event.key;
                       e.value = String.fromCharCode(e.event.keyCode);
+
                       let forbiddenChars = ['!','@','#','$','%','^','&','*','(',')'];
                       if (forbiddenChars.includes(key))
                         e.event.preventDefault();
+
                       if (!/[0-9]/.test(e.value) && key !== "Backspace" && key !== "Delete")
                         e.event.preventDefault();
                     }
