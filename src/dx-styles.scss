@@ -121,6 +121,7 @@
   .dx-tabs {
     .dx-tabs-wrapper {
       display: flex;
+      gap: 16px;
 
       .dx-item {
         flex: 1 1 auto;
