@@ -41,9 +41,7 @@ import * as downloadFile from "save-file";
 import {useAuth} from "../../contexts/auth";
 import {
     appStatusIncomplete,
-    appStatusNotAllowToCancel,
-    backofficeAccess,
-    roleAllowToCancel
+    backofficeAccess
 } from "../../constants/variableConstata";
 import {confirmNotify, notifyError, notifySuccess} from "../../utils/devExtremeUtils";
 import "./loan-app.scss";
@@ -218,9 +216,8 @@ export default function Index() {
                     onToolbarPreparing={(e)=>onToolbarPreparing(e,isPengajuanVisible)}
                     editing={{
                         allowUpdating: (options: any) => {
-                            let found = appStatusNotAllowToCancel.some(x => x === options.row.data.statusId);
-                            let userFound = (typeof user?.roles !== "undefined") && user?.roles.some((role:string) => roleAllowToCancel.includes(role));
-                            return !found && userFound;
+                            let allowAccess = (typeof user?.userAccess !== "undefined") && user?.userAccess.some((access:string) => access === backofficeAccess.backoffice_application_canceling);
+                            return options.row.data.statusIsActive && allowAccess;
                         },
                     }}
                 >

@@ -347,9 +347,21 @@ export default function Step1Page() {
                   colSpan={3}
                   dataField="bankAccNumber"
                   label={{ text: "Nomor Rekening" }}
-                  editorOptions={{ disabled: isDableBankIdBankAccNumber }}
+                  editorOptions={{
+                    disabled: isDableBankIdBankAccNumber,
+                    onKeyDown: (e: any) => {
+                      const key = e.event.key;
+                      e.value = String.fromCharCode(e.event.keyCode);
+                      let forbiddenChars = ['!','@','#','$','%','^','&','*','(',')'];
+                      if (forbiddenChars.includes(key))
+                        e.event.preventDefault();
+                      if (!/[0-9]/.test(e.value) && key !== "Backspace" && key !== "Delete")
+                        e.event.preventDefault();
+                    }
+                  }}
                 >
                   <RequiredRule message="Nomor rekening wajib diisi" />
+                  <PatternRule message="Nomor Rekening hanya boleh angka" pattern={/^[0-9]+$/}/>
                 </SimpleItem>
               </GroupItem>
 
