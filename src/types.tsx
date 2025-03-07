@@ -37,6 +37,7 @@ export interface User {
     branches?: string[]
     steps?: Step[]
     roles?: string[]
+    userAccess?: string[]
 }
 
 export interface Step {
