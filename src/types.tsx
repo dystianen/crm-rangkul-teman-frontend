@@ -36,7 +36,7 @@ export interface User {
     contactId?: string
     branches?: string[]
     steps?: Step[]
-    roles?: string[]
+    roles: string[]
     userAccess?: string[]
 }
 

@@ -1,10 +1,16 @@
 import CustomStore from "devextreme/data/custom_store";
 import qs from "qs";
-import type { TReqCreateLeads, TResCheckEkyc, TResContactOCR, TResInfoEkyc } from "../interfaces/contactDto";
+import type {
+  TReqCreateLeads,
+  TResCheckEkyc,
+  TResContactOCR,
+  TResInfoEkyc
+} from "../interfaces/contactDto";
 import { FilterPss, setFilterPss } from "../interfaces/IFilterPss";
 import { customStore } from "../model/customStore";
 import { dataRawCustomStore } from "../model/datagrid";
 import { ajaxGet, ajaxPatch, ajaxPost } from "./http.api";
+import { API_PATH } from "./path_url";
 
 export const contactListStore = customStore({ loadUrl: "/api/contact" });
 
@@ -149,15 +155,20 @@ export const validateEmail = async (payload: any) => {
   return resp?.data;
 };
 
-export const processWithoutEkyc = async (payload: { contactId: string }): Promise<TResCheckEkyc> => {
+export const processWithoutEkyc = async (payload: {
+  contactId: string;
+}): Promise<TResCheckEkyc> => {
   const resp = await ajaxPost(`/api/contact/without/ekyc`, payload);
   return resp.data;
 };
 
-export const contactOCR = async (payload: { contactId: string, ktp: string }): Promise<TResContactOCR> => {
+export const contactOCR = async (payload: {
+  contactId: string;
+  ktp: string;
+}): Promise<TResContactOCR> => {
   const resp = await ajaxPost(`/api/contact/ocr`, payload);
   return resp.data;
-}
+};
 
 export const processCancel = async (contactId: string): Promise<any> => {
   const resp = await ajaxGet(`/api/contact/ekyc/cancel/${contactId}`);
@@ -166,7 +177,7 @@ export const processCancel = async (contactId: string): Promise<any> => {
 
 export const activityTypeStore = dataRawCustomStore(`/api/contact/data/activityType?`);
 export const activityResultStore = (id: string | null) => {
-  if(id == null) {
+  if (id == null) {
     return dataRawCustomStore(`/api/contact/data/activityResult?`);
   }
   return dataRawCustomStore(`/api/contact/data/activityResult/${id}?`);
@@ -191,7 +202,7 @@ export const contactActivityListStore = (id: string) =>
       const resp = await ajaxGet(`/api/contact/activity/${id}?${qs.stringify(paramSearch)}`);
       return resp;
     },
-    cacheRawData: true,
+    cacheRawData: true
     // insert: async (values: any) => {
     //   const resp = await ajaxPost("/api/contact/activity/create", values);
     //   console.log("insert", resp);
@@ -224,3 +235,7 @@ export const districtStore = (cityId: string) =>
   dataRawCustomStore(`/api/data/district/${cityId}?`);
 export const subDistrictStore = (districtId: string) =>
   dataRawCustomStore(`/api/data/subDistrict/${districtId}?`);
+
+export const salesOfferingStore = dataRawCustomStore(`${API_PATH.CONTACT}/data/salesOffering?`);
+export const purposeVisitStore = dataRawCustomStore(`${API_PATH.CONTACT}/data/purposeVisit?`);
+export const purposeCallStore = dataRawCustomStore(`${API_PATH.CONTACT}/data/purposeCall?`);

@@ -21,10 +21,16 @@ function AuthProvider(props: React.PropsWithChildren<unknown>) {
     const signIn = useCallback(async (email: string, password: string) => {
         const result = await sendSignInRequest(email, password);
         if (!result?.mustChangePwd) {
-            setUser(result.data);
+            const userData = await getUser();
+            if (userData?.isOk) {
+                setUser(userData.data);
+            } else {
+                setUser(result.data); 
+            }
         }
         return result;
     }, []);
+    
 
     const signOut = useCallback(() => {
         logOut().then((result) => {
