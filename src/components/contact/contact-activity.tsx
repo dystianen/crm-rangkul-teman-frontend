@@ -120,12 +120,10 @@ class ContactActivity extends React.PureComponent<Iprops, Istate> {
               options: {
                 hint: "Add new",
                 icon: "add",
-                onClick: function (e: any) {
+                onClick: function () {
                   that.onShowActivityForm({
                     contactId: that.props.contactId,
-                    typeId: selectedTypeId,
-                    resultId: "",
-                    comment: ""
+                    typeId: selectedTypeId
                   });
                 }
               }

@@ -30,6 +30,15 @@ export interface IContactActivity {
   comment?: string;
   resultId?: string;
   typeId?: string;
+  currentGeoposition?: boolean;
+  ptpAmount?: number;
+  ptpDate?: string;
+  photo?: string;
+  purposeVisitId?: string;
+  purposeCallId?: string;
+  latitude?: string;
+  longitude?: string;
+  salesOfferingId?: string;
 }
 
 interface ActivityContactProps {
@@ -59,7 +68,6 @@ export default function ActivityContactForm(props: ActivityContactProps) {
     latitude: "",
     longitude: ""
   });
-
   const [photo, setPhoto] = useState("");
 
   const {
@@ -77,13 +85,19 @@ export default function ActivityContactForm(props: ActivityContactProps) {
     setLoading(true);
     console.log({ activityContactData });
     event.preventDefault();
+    delete activityContactData.currentGeoposition;
+    const payload = {
+      ...activityContactData,
+      photo,
+      latitude: geoposition.latitude,
+      longitude: geoposition.longitude,
+      ptpAmount: Number(activityContactData.ptpAmount)
+    };
+
     if (activityContactData.id) {
-      await ajaxPatch(
-        `/api/contact/activity/update/${activityContactData.id}`,
-        activityContactData
-      );
+      await ajaxPatch(`/api/contact/activity/update/${activityContactData.id}`, payload);
     } else {
-      await ajaxPost("/api/contact/activity/create", activityContactData);
+      await ajaxPost("/api/contact/activity/create", payload);
     }
 
     setLoading(false);
@@ -120,7 +134,10 @@ export default function ActivityContactForm(props: ActivityContactProps) {
       setResultDataOption(
         selectBoxOptions(new DataSource(activityResultStore(evt.value)), "Select Result")
       );
-      activityContactData["resultId"] = undefined;
+      setActivityContactData((prev) => ({
+        ...prev,
+        resultId: undefined
+      }));
     }
 
     // Street Shop
@@ -145,8 +162,10 @@ export default function ActivityContactForm(props: ActivityContactProps) {
       }
     }
 
-    // @ts-expect-error
-    activityContactData[evt.dataField] = evt.value;
+    setActivityContactData((prev) => ({
+      ...prev,
+      [evt.dataField]: evt.value
+    }));
   };
 
   useEffect(() => {
@@ -201,8 +220,8 @@ export default function ActivityContactForm(props: ActivityContactProps) {
     purposeOfVisit: (isSalesAgent || isVerificator || isSalesApprover1 || isWABABot) && !isCall,
     purposeOfCall: (isSalesAgent || isVerificator || isSalesApprover1 || isWABABot) && isCall,
     salesOffering: isSalesAgent || isVerificator || isSalesApprover1 || isWABABot,
-    ptpDate: (isSoftCollector || isCollectionManager || isHeadOfCollection) && isCall,
-    ptpAmount: (isSoftCollector || isCollectionManager || isHeadOfCollection) && isCall,
+    ptpDate: isFieldCollector || isSoftCollector || isCollectionManager || isHeadOfCollection,
+    ptpAmount: isFieldCollector || isSoftCollector || isCollectionManager || isHeadOfCollection,
     currentGeoposition: isFieldVisit || isVisit
   };
 
@@ -221,7 +240,6 @@ export default function ActivityContactForm(props: ActivityContactProps) {
     >
       <form onSubmit={onSubmit}>
         <Form
-          ref={props.formActivityRef}
           id="form"
           showColonAfterLabel={true}
           showValidationSummary={true}
@@ -255,7 +273,6 @@ export default function ActivityContactForm(props: ActivityContactProps) {
           <SimpleItem
             dataField="ptpDate"
             editorType={"dxDateBox"}
-            editorOptions={uploadPhotoOptions}
             label={{ text: "PTP Date" }}
             visible={fieldVisibility.ptpDate}
           >
@@ -265,7 +282,6 @@ export default function ActivityContactForm(props: ActivityContactProps) {
           <SimpleItem
             dataField="ptpAmount"
             editorType="dxTextBox"
-            editorOptions={uploadPhotoOptions}
             label={{ text: "PTP Amount" }}
             visible={fieldVisibility.ptpAmount}
           >
@@ -273,7 +289,7 @@ export default function ActivityContactForm(props: ActivityContactProps) {
           </SimpleItem>
 
           <SimpleItem
-            dataField="purposeOfVisit"
+            dataField="purposeVisitId"
             label={{ text: "Purpose of Visit" }}
             editorType="dxSelectBox"
             editorOptions={purposeVisitOptions}
@@ -281,7 +297,7 @@ export default function ActivityContactForm(props: ActivityContactProps) {
           />
 
           <SimpleItem
-            dataField="purposeOfCall"
+            dataField="purposeCallId"
             label={{ text: "Purpose of Call" }}
             editorType="dxSelectBox"
             editorOptions={purposeCallOptions}
@@ -289,7 +305,7 @@ export default function ActivityContactForm(props: ActivityContactProps) {
           />
 
           <SimpleItem
-            dataField="salesOffering"
+            dataField="salesOfferingId"
             label={{ text: "Sales Offering" }}
             editorType="dxSelectBox"
             editorOptions={salesOfferingOptions}
@@ -305,7 +321,9 @@ export default function ActivityContactForm(props: ActivityContactProps) {
           >
             <RequiredRule message="Current geoposition is required" />
           </SimpleItem>
-          <Item>{geoposition.isStreetShop && <GoogleMapsLocation center={center} />}</Item>
+          <Item visible={geoposition.isStreetShop}>
+            <GoogleMapsLocation center={center} />
+          </Item>
 
           <SimpleItem
             dataField="photo"
