@@ -8,6 +8,7 @@ import Form, {
   SimpleItem
 } from "devextreme-react/form";
 import DataSource from "devextreme/data/data_source";
+import { ClickEvent } from "devextreme/ui/button";
 import React, { Ref, useCallback, useEffect, useState } from "react";
 import { ajaxPatch, ajaxPost } from "src/api/http.api";
 import useUserRole from "src/utils/configUserRole.util";
@@ -53,7 +54,7 @@ export default function ActivityContactForm(props: ActivityContactProps) {
     props.activityContactData
   );
   const [center, setCenter] = useState(defaultCenter);
-  const [streetShopData, setStreetShopData] = useState({
+  const [geoposition, setGeoposition] = useState({
     isStreetShop: false,
     latitude: "",
     longitude: ""
@@ -109,6 +110,10 @@ export default function ActivityContactForm(props: ActivityContactProps) {
     "Select Purpose Visit"
   );
 
+  const resetGeoposition = () => {
+    setGeoposition({ isStreetShop: false, latitude: "", longitude: "" });
+  };
+
   const onFieldAppDataChanged = (evt: any) => {
     // Activity Type
     if (evt.dataField === "typeId" && evt.value != null) {
@@ -128,7 +133,7 @@ export default function ActivityContactForm(props: ActivityContactProps) {
             const lng = position.coords.longitude;
             setCenter({ lat, lng });
 
-            setStreetShopData({
+            setGeoposition({
               isStreetShop: true,
               latitude: lat.toString(),
               longitude: lng.toString()
@@ -136,7 +141,7 @@ export default function ActivityContactForm(props: ActivityContactProps) {
           });
         }
       } else {
-        setStreetShopData({ isStreetShop: false, latitude: "", longitude: "" });
+        resetGeoposition();
       }
     }
 
@@ -168,6 +173,12 @@ export default function ActivityContactForm(props: ActivityContactProps) {
     accept: "image/*",
     uploadMode: "useForm",
     onValueChanged: onFileChanged
+  };
+
+  const handleCloseModal = (e: ClickEvent) => {
+    resetGeoposition();
+    setActivityContactData(props.activityContactData);
+    props.onCloseModal(e);
   };
 
   const isFieldVisit = activityContactData.typeId === "86ebc4dd-0d23-43c0-a337-cdbf72271c73";
@@ -204,7 +215,6 @@ export default function ActivityContactForm(props: ActivityContactProps) {
     <Popup
       visible={props.isModalVisible}
       title="Activity Form"
-      onHiding={props.onCloseModal}
       width={window.innerWidth <= 600 ? "auto" : 500}
       maxHeight={600}
       fullScreen={window.innerWidth <= 600}
@@ -295,7 +305,7 @@ export default function ActivityContactForm(props: ActivityContactProps) {
           >
             <RequiredRule message="Current geoposition is required" />
           </SimpleItem>
-          <Item>{streetShopData.isStreetShop && <GoogleMapsLocation center={center} />}</Item>
+          <Item>{geoposition.isStreetShop && <GoogleMapsLocation center={center} />}</Item>
 
           <SimpleItem
             dataField="photo"
@@ -324,7 +334,7 @@ export default function ActivityContactForm(props: ActivityContactProps) {
             colCount={2}
           >
             <ButtonItem horizontalAlignment="left">
-              <ButtonOptions width={"100%"} onClick={props.onCloseModal}>
+              <ButtonOptions width={"100%"} onClick={handleCloseModal}>
                 <span className="dx-button-text">Tutup</span>
               </ButtonOptions>
             </ButtonItem>
