@@ -21,6 +21,7 @@ import {
   selectBoxOptions
 } from "../../api/contact";
 import GoogleMapsLocation from "../google-maps-location/GoogleMapsLocation";
+import "./activity-form.scss";
 
 export interface IContactActivity {
   contactId?: string;
@@ -118,7 +119,7 @@ export default function ActivityContactForm(props: ActivityContactProps) {
     }
 
     // Street Shop
-    if (evt.dataField === "streetShop" && evt.value != null) {
+    if (evt.dataField === "currentGeoposition" && evt.value != null) {
       const checked = evt.value;
       if (checked) {
         if (navigator.geolocation) {
@@ -286,13 +287,13 @@ export default function ActivityContactForm(props: ActivityContactProps) {
           />
 
           <SimpleItem
-            dataField="streetShop"
+            dataField="currentGeoposition"
             editorType={"dxCheckBox"}
-            editorOptions={{ text: "Street Shop: *" }}
+            editorOptions={{ text: "Current Geoposition: *" }}
             label={{ visible: false }}
             visible={fieldVisibility.currentGeoposition}
           >
-            <RequiredRule message="Street shop location is required" />
+            <RequiredRule message="Current geoposition is required" />
           </SimpleItem>
           <Item>{streetShopData.isStreetShop && <GoogleMapsLocation center={center} />}</Item>
 
