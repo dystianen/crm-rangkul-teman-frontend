@@ -3,11 +3,13 @@ import Form, {
   ButtonItem,
   ButtonOptions,
   GroupItem,
+  Item,
   RequiredRule,
   SimpleItem
 } from "devextreme-react/form";
 import DataSource from "devextreme/data/data_source";
 import React, { Ref, useCallback, useEffect, useState } from "react";
+import { ajaxPatch, ajaxPost } from "src/api/http.api";
 import useUserRole from "src/utils/configUserRole.util";
 import imageCompress from "src/utils/imageCompress.util";
 import {
@@ -18,7 +20,7 @@ import {
   salesOfferingStore,
   selectBoxOptions
 } from "../../api/contact";
-import { ajaxPatch, ajaxPost } from "../../api/http.api";
+import GoogleMapsLocation from "../google-maps-location/GoogleMapsLocation";
 
 export interface IContactActivity {
   contactId?: string;
@@ -38,47 +40,40 @@ interface ActivityContactProps {
   formActivityRef?: Ref<any>;
 }
 
+const defaultCenter = {
+  lat: -6.2262903,
+  lng: 106.8325905
+};
+
 export default function ActivityContactForm(props: ActivityContactProps) {
   const [loading, setLoading] = useState(false);
   const [resultDataOption, setResultDataOption] = useState<any>({});
   const [activityContactData, setActivityContactData] = useState<IContactActivity>(
     props.activityContactData
   );
+  const [center, setCenter] = useState(defaultCenter);
   const [streetShopData, setStreetShopData] = useState({
     isStreetShop: false,
     latitude: "",
     longitude: ""
   });
 
-  const handleChangeStreetShop = (newData: {
-    isStreetShop: boolean;
-    latitude: string;
-    longitude: string;
-  }) => {
-    setStreetShopData(newData);
-  };
-
-  console.log("🚀 ~ ActivityContactForm ~ activityContactData:", activityContactData);
   const [photo, setPhoto] = useState("");
 
   const {
-    isAccountant,
     isCollectionManager,
     isFieldCollector,
     isHeadOfCollection,
-    isInternalManager,
-    isPartner,
     isSalesAgent,
     isSalesApprover1,
     isSoftCollector,
-    isSuperAdministrator,
     isVerificator,
-    isVerificatorSupervisor,
     isWABABot
   } = useUserRole();
 
   const onSubmit = async (event: any) => {
     setLoading(true);
+    console.log({ activityContactData });
     event.preventDefault();
     if (activityContactData.id) {
       await ajaxPatch(
@@ -114,12 +109,36 @@ export default function ActivityContactForm(props: ActivityContactProps) {
   );
 
   const onFieldAppDataChanged = (evt: any) => {
+    // Activity Type
     if (evt.dataField === "typeId" && evt.value != null) {
       setResultDataOption(
         selectBoxOptions(new DataSource(activityResultStore(evt.value)), "Select Result")
       );
       activityContactData["resultId"] = undefined;
     }
+
+    // Street Shop
+    if (evt.dataField === "streetShop" && evt.value != null) {
+      const checked = evt.value;
+      if (checked) {
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition((position) => {
+            const lat = position.coords.latitude;
+            const lng = position.coords.longitude;
+            setCenter({ lat, lng });
+
+            setStreetShopData({
+              isStreetShop: true,
+              latitude: lat.toString(),
+              longitude: lng.toString()
+            });
+          });
+        }
+      } else {
+        setStreetShopData({ isStreetShop: false, latitude: "", longitude: "" });
+      }
+    }
+
     // @ts-expect-error
     activityContactData[evt.dataField] = evt.value;
   };
@@ -151,10 +170,10 @@ export default function ActivityContactForm(props: ActivityContactProps) {
   };
 
   const isFieldVisit = activityContactData.typeId === "86ebc4dd-0d23-43c0-a337-cdbf72271c73";
+  const isVisit = activityContactData.typeId === "b531afb1-bab2-4e29-9959-fa6fe4dea023";
   const isCall = activityContactData.typeId === "738e2341-4103-458c-8d56-a765d3e64738";
   const isPTP = activityContactData.resultId === "5d5c08f0-7ee7-4ecb-95a9-6804df059c19";
 
-  // Contoh aturan role untuk setiap field
   const fieldVisibility = {
     typeId: true,
     resultId: true,
@@ -167,11 +186,12 @@ export default function ActivityContactForm(props: ActivityContactProps) {
         isVerificator ||
         isSalesApprover1) &&
       !isCall,
-    purposeOfVisit: isSalesAgent || isVerificator || isSalesApprover1 || isWABABot,
-    purposeOfCall: isSalesAgent || isVerificator || isSalesApprover1 || isWABABot,
+    purposeOfVisit: (isSalesAgent || isVerificator || isSalesApprover1 || isWABABot) && !isCall,
+    purposeOfCall: (isSalesAgent || isVerificator || isSalesApprover1 || isWABABot) && isCall,
     salesOffering: isSalesAgent || isVerificator || isSalesApprover1 || isWABABot,
     ptpDate: (isSoftCollector || isCollectionManager || isHeadOfCollection) && isCall,
-    ptpAmount: (isSoftCollector || isCollectionManager || isHeadOfCollection) && isCall
+    ptpAmount: (isSoftCollector || isCollectionManager || isHeadOfCollection) && isCall,
+    currentGeoposition: isFieldVisit || isVisit
   };
 
   const fieldRequired = {
@@ -184,8 +204,8 @@ export default function ActivityContactForm(props: ActivityContactProps) {
       visible={props.isModalVisible}
       title="Activity Form"
       onHiding={props.onCloseModal}
-      width={window.innerWidth <= 600 ? "auto" : "60%"}
-      height="auto"
+      width={window.innerWidth <= 600 ? "auto" : 500}
+      maxHeight={600}
       fullScreen={window.innerWidth <= 600}
     >
       <form onSubmit={onSubmit}>
@@ -221,73 +241,80 @@ export default function ActivityContactForm(props: ActivityContactProps) {
             <RequiredRule message="Result is required" />
           </SimpleItem>
 
-          {fieldVisibility.ptpDate && (
-            <SimpleItem
-              dataField="ptpDate"
-              editorType={"dxDateBox"}
-              editorOptions={uploadPhotoOptions}
-              label={{ text: "PTP Date" }}
-            >
-              {fieldRequired.ptpDate && <RequiredRule message="PTP Date is required" />}
-            </SimpleItem>
-          )}
+          <SimpleItem
+            dataField="ptpDate"
+            editorType={"dxDateBox"}
+            editorOptions={uploadPhotoOptions}
+            label={{ text: "PTP Date" }}
+            visible={fieldVisibility.ptpDate}
+          >
+            {fieldRequired.ptpDate && <RequiredRule message="PTP Date is required" />}
+          </SimpleItem>
 
-          {fieldVisibility.ptpAmount && (
-            <SimpleItem
-              dataField="ptpAmount"
-              editorType="dxTextBox"
-              editorOptions={uploadPhotoOptions}
-              label={{ text: "PTP Amount" }}
-            >
-              {fieldRequired.ptpAmount && <RequiredRule message="PTP Amount is required" />}
-            </SimpleItem>
-          )}
+          <SimpleItem
+            dataField="ptpAmount"
+            editorType="dxTextBox"
+            editorOptions={uploadPhotoOptions}
+            label={{ text: "PTP Amount" }}
+            visible={fieldVisibility.ptpAmount}
+          >
+            {fieldRequired.ptpAmount && <RequiredRule message="PTP Amount is required" />}
+          </SimpleItem>
 
-          {fieldVisibility.purposeOfVisit && (
-            <SimpleItem
-              dataField="purposeOfVisit"
-              label={{ text: "Purpose of Visit" }}
-              editorType="dxSelectBox"
-              editorOptions={purposeVisitOptions}
-            />
-          )}
+          <SimpleItem
+            dataField="purposeOfVisit"
+            label={{ text: "Purpose of Visit" }}
+            editorType="dxSelectBox"
+            editorOptions={purposeVisitOptions}
+            visible={fieldVisibility.purposeOfVisit}
+          />
 
-          {fieldVisibility.purposeOfCall && (
-            <SimpleItem
-              dataField="purposeOfCall"
-              label={{ text: "Purpose of Call" }}
-              editorType="dxSelectBox"
-              editorOptions={purposeCallOptions}
-            />
-          )}
+          <SimpleItem
+            dataField="purposeOfCall"
+            label={{ text: "Purpose of Call" }}
+            editorType="dxSelectBox"
+            editorOptions={purposeCallOptions}
+            visible={fieldVisibility.purposeOfCall}
+          />
 
-          {fieldVisibility.salesOffering && (
-            <SimpleItem
-              dataField="salesOffering"
-              label={{ text: "Sales Offering" }}
-              editorType="dxSelectBox"
-              editorOptions={salesOfferingOptions}
-            />
-          )}
+          <SimpleItem
+            dataField="salesOffering"
+            label={{ text: "Sales Offering" }}
+            editorType="dxSelectBox"
+            editorOptions={salesOfferingOptions}
+            visible={fieldVisibility.salesOffering}
+          />
 
-          {fieldVisibility.comment && (
-            <SimpleItem dataField="comment" label={{ text: "Comment" }} editorType="dxTextArea" />
-          )}
+          <SimpleItem
+            dataField="streetShop"
+            editorType={"dxCheckBox"}
+            editorOptions={{ text: "Street Shop: *" }}
+            label={{ visible: false }}
+            visible={fieldVisibility.currentGeoposition}
+          >
+            <RequiredRule message="Street shop location is required" />
+          </SimpleItem>
+          <Item>{streetShopData.isStreetShop && <GoogleMapsLocation center={center} />}</Item>
 
-          {fieldVisibility.photo && (
-            <SimpleItem
-              dataField="photo"
-              editorType={"dxFileUploader" as any}
-              editorOptions={uploadPhotoOptions}
-              label={{ text: "Photo" }}
-            >
-              <RequiredRule message="Photo is required" />
-            </SimpleItem>
-          )}
+          <SimpleItem
+            dataField="photo"
+            editorType={"dxFileUploader" as any}
+            editorOptions={uploadPhotoOptions}
+            label={{ text: "Photo" }}
+            visible={fieldVisibility.photo}
+          >
+            <RequiredRule message="Photo is required" />
+          </SimpleItem>
+          <Item visible={photo !== ""}>
+            <img src={photo} alt="foto" width="250px" style={{ marginTop: -16 }} />
+          </Item>
 
-          {/* <SimpleItem>
-            <StreetShop streetShopData={streetShopData} onChange={handleChangeStreetShop} />
-          </SimpleItem> */}
+          <SimpleItem
+            dataField="comment"
+            label={{ text: "Comment" }}
+            editorType="dxTextArea"
+            visible={fieldVisibility.comment}
+          />
 
           <GroupItem
             cssClass={

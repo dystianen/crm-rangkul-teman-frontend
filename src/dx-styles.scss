@@ -119,12 +119,29 @@
   }
 
   .dx-tabs {
+    overflow-x: auto;
+    white-space: nowrap;
+
     .dx-tabs-wrapper {
       display: flex;
       gap: 16px;
+      overflow-x: auto;
+      scrollbar-width: thin;
+
+      &::-webkit-scrollbar {
+        height: 6px;
+      }
 
       .dx-item {
-        flex: 1 1 auto;
+        min-width: max-content;
+
+        // Default: Mobile & Tablet (flex: 0 0 auto)
+        flex: 0 0 auto;
+
+        // Desktop (≥1024px): flex: 1
+        @media (min-width: 1024px) {
+          flex: 1 1 auto;
+        }
       }
 
       .dx-tab-content,
@@ -253,4 +270,11 @@ body {
 
 .dx-datagrid .dx-row > td {
   word-wrap: break-word;
+}
+
+.dx-fileuploader-wrapper {
+  padding: 0 !important;
+}
+.dx-fileuploader-input-wrapper::after {
+  padding-bottom: 0 !important;
 }
