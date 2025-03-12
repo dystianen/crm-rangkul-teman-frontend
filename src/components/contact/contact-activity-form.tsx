@@ -9,18 +9,20 @@ import Form, {
 } from "devextreme-react/form";
 import DataSource from "devextreme/data/data_source";
 import { ClickEvent } from "devextreme/ui/button";
-import React, { Ref, useCallback, useEffect, useState } from "react";
-import { ajaxPatch, ajaxPost } from "src/api/http.api";
-import useUserRole from "src/utils/configUserRole.util";
-import imageCompress from "src/utils/imageCompress.util";
+import { useCallback, useEffect, useState } from "react";
 import {
   activityResultStore,
   activityTypeStore,
+  getFile,
   purposeCallStore,
   purposeVisitStore,
   salesOfferingStore,
   selectBoxOptions
-} from "../../api/contact";
+} from "src/api/contact";
+import { ajaxPatch, ajaxPost } from "src/api/http.api";
+import useUserRole from "src/utils/configUserRole.util";
+import { convertToUTCString } from "src/utils/dateUtils";
+import imageCompress from "src/utils/imageCompress.util";
 import GoogleMapsLocation from "../google-maps-location/GoogleMapsLocation";
 import "./activity-form.scss";
 
@@ -34,6 +36,7 @@ export interface IContactActivity {
   ptpAmount?: number;
   ptpDate?: string;
   photo?: string;
+  image?: string;
   purposeVisitId?: string;
   purposeCallId?: string;
   latitude?: string;
@@ -42,13 +45,10 @@ export interface IContactActivity {
 }
 
 interface ActivityContactProps {
-  children?: React.ReactChild | React.ReactChild[];
-  className?: string;
   activityContactData: IContactActivity;
   isModalVisible: boolean;
   onSubmit: (e: any) => void;
   onCloseModal: (e: any) => void;
-  formActivityRef?: Ref<any>;
 }
 
 const defaultCenter = {
@@ -68,7 +68,24 @@ export default function ActivityContactForm(props: ActivityContactProps) {
     latitude: "",
     longitude: ""
   });
-  const [photo, setPhoto] = useState("");
+  const [image, setImage] = useState("");
+
+  useEffect(() => {
+    const data = props.activityContactData;
+    if (data.image) {
+      getFile(data.image)
+        .then((response) => setImage(response))
+        .catch((error) => console.error("ERROR:: ", error));
+    }
+
+    if (data.latitude && data.longitude) {
+      setGeoposition({
+        isStreetShop: true,
+        latitude: data.latitude,
+        longitude: data.longitude
+      });
+    }
+  }, [props.activityContactData]);
 
   const {
     isCollectionManager,
@@ -82,34 +99,34 @@ export default function ActivityContactForm(props: ActivityContactProps) {
   } = useUserRole();
 
   const onSubmit = async (event: any) => {
-    setLoading(true);
-    console.log({ activityContactData });
-    event.preventDefault();
-    delete activityContactData.currentGeoposition;
-    const payload = {
-      ...activityContactData,
-      photo,
-      latitude: geoposition.latitude,
-      longitude: geoposition.longitude,
-      ptpAmount: Number(activityContactData.ptpAmount)
-    };
+    try {
+      setLoading(true);
+      event.preventDefault();
+      delete activityContactData.currentGeoposition;
+      const payload = {
+        ...activityContactData,
+        photo: image,
+        latitude: geoposition.latitude,
+        longitude: geoposition.longitude,
+        ptpAmount: Number(activityContactData.ptpAmount),
+        ptpDate: convertToUTCString(new Date(activityContactData.ptpDate || ""))
+      };
 
-    if (activityContactData.id) {
-      await ajaxPatch(`/api/contact/activity/update/${activityContactData.id}`, payload);
-    } else {
-      await ajaxPost("/api/contact/activity/create", payload);
+      if (activityContactData.id) {
+        await ajaxPatch(`/api/contact/activity/update/${activityContactData.id}`, payload);
+      } else {
+        await ajaxPost("/api/contact/activity/create", payload);
+      }
+
+      setLoading(false);
+      resetGeoposition();
+      setImage("");
+      props.onSubmit(event);
+    } catch (err) {
+      setLoading(false);
     }
-
-    setLoading(false);
-    setActivityContactData({
-      contactId: undefined,
-      id: undefined,
-      comment: undefined,
-      resultId: undefined,
-      typeId: undefined
-    });
-    props.onSubmit(event);
   };
+
   const typeOptions = selectBoxOptions(new DataSource(activityTypeStore), "Select Type");
   const salesOfferingOptions = selectBoxOptions(
     new DataSource(salesOfferingStore),
@@ -128,7 +145,9 @@ export default function ActivityContactForm(props: ActivityContactProps) {
     setGeoposition({ isStreetShop: false, latitude: "", longitude: "" });
   };
 
-  const onFieldAppDataChanged = (evt: any) => {
+  const onFieldAppDataChanged = useCallback((evt: any) => {
+    if (!evt || !evt.dataField) return;
+
     // Activity Type
     if (evt.dataField === "typeId" && evt.value != null) {
       setResultDataOption(
@@ -138,35 +157,39 @@ export default function ActivityContactForm(props: ActivityContactProps) {
         ...prev,
         resultId: undefined
       }));
+      return;
     }
 
     // Street Shop
     if (evt.dataField === "currentGeoposition" && evt.value != null) {
       const checked = evt.value;
-      if (checked) {
-        if (navigator.geolocation) {
-          navigator.geolocation.getCurrentPosition((position) => {
+      if (checked && navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition((position) => {
+          setGeoposition((prev) => {
+            const lat = position.coords.latitude.toString();
+            const lng = position.coords.longitude.toString();
+            return prev.latitude !== lat || prev.longitude !== lng
+              ? { isStreetShop: true, latitude: lat, longitude: lng }
+              : prev;
+          });
+
+          setCenter((prev) => {
             const lat = position.coords.latitude;
             const lng = position.coords.longitude;
-            setCenter({ lat, lng });
-
-            setGeoposition({
-              isStreetShop: true,
-              latitude: lat.toString(),
-              longitude: lng.toString()
-            });
+            return prev.lat !== lat || prev.lng !== lng ? { lat, lng } : prev;
           });
-        }
+        });
       } else {
         resetGeoposition();
       }
+      return;
     }
 
     setActivityContactData((prev) => ({
       ...prev,
       [evt.dataField]: evt.value
     }));
-  };
+  }, []);
 
   useEffect(() => {
     setActivityContactData((prevContact) => ({ ...prevContact, ...props.activityContactData }));
@@ -183,7 +206,7 @@ export default function ActivityContactForm(props: ActivityContactProps) {
   const onFileChanged = useCallback(async (e: any) => {
     if (e.value.length > 0) {
       const uri = await imageCompress(e.value[0]);
-      setPhoto(uri.base64);
+      setImage(uri.base64);
     }
   }, []);
 
@@ -275,6 +298,11 @@ export default function ActivityContactForm(props: ActivityContactProps) {
             editorType={"dxDateBox"}
             label={{ text: "PTP Date" }}
             visible={fieldVisibility.ptpDate}
+            editorOptions={{
+              type: "date",
+              pickerType: "calender",
+              displayFormat: "dd/MM/yyyy"
+            }}
           >
             {fieldRequired.ptpDate && <RequiredRule message="PTP Date is required" />}
           </SimpleItem>
@@ -284,6 +312,21 @@ export default function ActivityContactForm(props: ActivityContactProps) {
             editorType="dxTextBox"
             label={{ text: "PTP Amount" }}
             visible={fieldVisibility.ptpAmount}
+            editorOptions={{
+              value: activityContactData.ptpAmount || "",
+              onKeyDown: (e: any) => {
+                const key = e.event.key;
+                e.value = String.fromCharCode(e.event.keyCode);
+                if (
+                  !/[0-9]/.test(e.value) &&
+                  key !== "Control" &&
+                  key !== "v" &&
+                  key !== "Backspace" &&
+                  key !== "Delete"
+                )
+                  e.event.preventDefault();
+              }
+            }}
           >
             {fieldRequired.ptpAmount && <RequiredRule message="PTP Amount is required" />}
           </SimpleItem>
@@ -334,8 +377,8 @@ export default function ActivityContactForm(props: ActivityContactProps) {
           >
             <RequiredRule message="Photo is required" />
           </SimpleItem>
-          <Item visible={photo !== ""}>
-            <img src={photo} alt="foto" width="250px" style={{ marginTop: -16 }} />
+          <Item visible={image !== ""}>
+            <img src={image} alt="foto" width="250px" style={{ marginTop: -16 }} />
           </Item>
 
           <SimpleItem

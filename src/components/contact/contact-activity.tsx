@@ -1,12 +1,11 @@
 import { DataGrid } from "devextreme-react";
 import { Column, Pager, Paging, Scrolling } from "devextreme-react/data-grid";
 import DataSource from "devextreme/data/data_source";
+import type dxDataGrid from "devextreme/ui/data_grid";
 import moment from "moment-timezone";
 import React, { RefObject } from "react";
 import { activityTypeStore, contactActivityListStore } from "../../api/contact";
 import { filterOperation } from "../../constants/FilterOperation";
-
-import type dxDataGrid from "devextreme/ui/data_grid";
 import ActivityContactForm, { IContactActivity } from "./contact-activity-form";
 
 interface Iprops {
@@ -87,7 +86,6 @@ class ContactActivity extends React.PureComponent<Iprops, Istate> {
   };
 
   onSubmitActivity = (e: any) => {
-    console.log("onSubmitActivity ", e);
     this.onCloseActivityForm();
   };
 
@@ -123,7 +121,19 @@ class ContactActivity extends React.PureComponent<Iprops, Istate> {
                 onClick: function () {
                   that.onShowActivityForm({
                     contactId: that.props.contactId,
-                    typeId: selectedTypeId
+                    typeId: selectedTypeId,
+                    id: "",
+                    comment: "",
+                    resultId: "",
+                    currentGeoposition: false,
+                    ptpAmount: 0,
+                    ptpDate: "",
+                    photo: "",
+                    purposeVisitId: "",
+                    purposeCallId: "",
+                    latitude: "",
+                    longitude: "",
+                    salesOfferingId: ""
                   });
                 }
               }
@@ -167,7 +177,10 @@ class ContactActivity extends React.PureComponent<Iprops, Istate> {
                 onClick: function (e: any) {
                   that.onShowActivityForm({
                     ...e.row.data,
-                    comment: e.row.data.name
+                    comment: e.row.data.name,
+                    photo: "",
+                    image: e.row.data.photo.replace(/^\/+/, ""),
+                    currentGeoposition: e.row.data.latitude && e.row.data.longitude
                   });
                   e.event.preventDefault();
                 }

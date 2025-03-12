@@ -135,11 +135,11 @@
       .dx-item {
         min-width: max-content;
 
-        // Default: Mobile & Tablet (flex: 0 0 auto)
+        // Default: Mobile
         flex: 0 0 auto;
 
-        // Desktop (≥1024px): flex: 1
-        @media (min-width: 1024px) {
+        // Desktop (≥768px): flex: 1
+        @media (min-width: 768px) {
           flex: 1 1 auto;
         }
       }
