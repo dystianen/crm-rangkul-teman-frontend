@@ -13,7 +13,6 @@ import { useCallback, useEffect, useState } from "react";
 import {
   activityResultStore,
   activityTypeStore,
-  getFile,
   purposeCallStore,
   purposeVisitStore,
   salesOfferingStore,
@@ -56,6 +55,10 @@ const defaultCenter = {
   lng: 106.8325905
 };
 
+const isBase64 = (str: string) => {
+  return /^data:image\/(png|jpg|jpeg|gif|webp);base64,/.test(str);
+};
+
 export default function ActivityContactForm(props: ActivityContactProps) {
   const [loading, setLoading] = useState(false);
   const [resultDataOption, setResultDataOption] = useState<any>({});
@@ -73,11 +76,8 @@ export default function ActivityContactForm(props: ActivityContactProps) {
   useEffect(() => {
     const data = props.activityContactData;
     if (data.image) {
-      getFile(data.image)
-        .then((response) => setImage(response))
-        .catch((error) => console.error("ERROR:: ", error));
+      setImage(data.image);
     }
-
     if (data.latitude && data.longitude) {
       setGeoposition({
         isStreetShop: true,
@@ -100,20 +100,29 @@ export default function ActivityContactForm(props: ActivityContactProps) {
 
   const onSubmit = async (event: any) => {
     try {
-      setLoading(true);
       event.preventDefault();
-      delete activityContactData.currentGeoposition;
-      const payload = {
-        ...activityContactData,
+      setLoading(true);
+
+      const updatedData = { ...activityContactData };
+      delete updatedData.currentGeoposition;
+
+      const payload: any = {
+        ...updatedData,
         photo: image,
         latitude: geoposition.latitude,
         longitude: geoposition.longitude,
-        ptpAmount: Number(activityContactData.ptpAmount),
-        ptpDate: convertToUTCString(new Date(activityContactData.ptpDate || ""))
+        ptpAmount: Number(updatedData.ptpAmount),
+        ptpDate: updatedData.ptpDate ? convertToUTCString(new Date(updatedData.ptpDate)) : null
       };
 
-      if (activityContactData.id) {
-        await ajaxPatch(`/api/contact/activity/update/${activityContactData.id}`, payload);
+      if (image === updatedData.image || !isBase64(image)) {
+        delete payload.photo;
+      }
+
+      delete payload.image;
+
+      if (updatedData.id) {
+        await ajaxPatch(`/api/contact/activity/update/${updatedData.id}`, payload);
       } else {
         await ajaxPost("/api/contact/activity/create", payload);
       }
@@ -155,13 +164,26 @@ export default function ActivityContactForm(props: ActivityContactProps) {
       );
       setActivityContactData((prev) => ({
         ...prev,
-        resultId: undefined
+        resultId: "",
+        comment: "",
+        currentGeoposition: false,
+        ptpAmount: 0,
+        ptpDate: "",
+        photo: "",
+        purposeVisitId: "",
+        purposeCallId: "",
+        latitude: "",
+        longitude: "",
+        salesOfferingId: ""
       }));
+      setImage("");
+      resetGeoposition();
       return;
     }
 
     // Street Shop
     if (evt.dataField === "currentGeoposition" && evt.value != null) {
+      console.log("masuk field");
       const checked = evt.value;
       if (checked && navigator.geolocation) {
         navigator.geolocation.getCurrentPosition((position) => {
@@ -258,7 +280,7 @@ export default function ActivityContactForm(props: ActivityContactProps) {
       visible={props.isModalVisible}
       title="Activity Form"
       width={window.innerWidth <= 600 ? "auto" : 500}
-      maxHeight={600}
+      maxHeight={700}
       fullScreen={window.innerWidth <= 600}
     >
       <form onSubmit={onSubmit}>
@@ -364,7 +386,7 @@ export default function ActivityContactForm(props: ActivityContactProps) {
           >
             <RequiredRule message="Current geoposition is required" />
           </SimpleItem>
-          <Item visible={geoposition.isStreetShop}>
+          <Item visible={geoposition.isStreetShop && fieldVisibility.currentGeoposition}>
             <GoogleMapsLocation center={center} />
           </Item>
 
@@ -375,9 +397,9 @@ export default function ActivityContactForm(props: ActivityContactProps) {
             label={{ text: "Photo" }}
             visible={fieldVisibility.photo}
           >
-            <RequiredRule message="Photo is required" />
+            {!activityContactData.image && <RequiredRule message="Photo is required" />}
           </SimpleItem>
-          <Item visible={image !== ""}>
+          <Item visible={image !== "" && fieldVisibility.photo}>
             <img src={image} alt="foto" width="250px" style={{ marginTop: -16 }} />
           </Item>
 

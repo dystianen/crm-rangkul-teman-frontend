@@ -176,11 +176,21 @@ class ContactActivity extends React.PureComponent<Iprops, Istate> {
                 name: "edit",
                 onClick: function (e: any) {
                   that.onShowActivityForm({
-                    ...e.row.data,
-                    comment: e.row.data.name,
+                    id: e.row.data.id,
+                    contactId: e.row.data.contactId || "",
+                    resultId: e.row.data.resultId || "",
+                    typeId: e.row.data.typeId || "",
+                    comment: e.row.data.name || "",
                     photo: "",
-                    image: e.row.data.photo.replace(/^\/+/, ""),
-                    currentGeoposition: e.row.data.latitude && e.row.data.longitude
+                    image: `${process.env.REACT_APP_BACKEND}/api/file/get${e.row.data.photo}` || "",
+                    currentGeoposition: e.row.data.latitude !== "" && e.row.data.longitude !== "",
+                    latitude: e.row.data.latitude || "",
+                    longitude: e.row.data.longitude || "",
+                    ptpDate: e.row.data.ptpDate || new Date().toISOString(),
+                    ptpAmount: e.row.data.ptpAmount || 0,
+                    purposeVisitId: e.row.data.purposeVisitId || "",
+                    purposeCallId: e.row.data.purposeCallId || "",
+                    salesOfferingId: e.row.data.salesOfferingId || ""
                   });
                   e.event.preventDefault();
                 }
