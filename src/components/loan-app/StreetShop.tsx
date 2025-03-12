@@ -153,7 +153,9 @@ const StreetShop = ({ appId, disabled = false }: { appId: string; disabled?: boo
               {convertToDMS(center.lat, center.lng)}
             </a>
             <Button
-              onClick={() => copyToClipboard(convertToDMS(center.lat, center.lng))}
+              onClick={() =>
+                copyToClipboard(`https://www.google.com/maps?q=${center.lat},${center.lng}`)
+              }
               icon="copy"
             />
           </div>
