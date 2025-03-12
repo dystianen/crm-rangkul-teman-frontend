@@ -1,16 +1,25 @@
-import { GoogleMap, Marker, useJsApiLoader } from "@react-google-maps/api";
 import { Button, CheckBox, Popup } from "devextreme-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { getStreetShop, submitStreetShop } from "src/api/apploan";
-
-const containerStyle = {
-  width: "100%",
-  height: "500px"
-};
+import { notifySuccess } from "src/utils/devExtremeUtils";
 
 const defaultCenter = {
   lat: -6.2262903,
   lng: 106.8325905
+};
+
+// 🔹 Fungsi untuk mengonversi koordinat desimal ke derajat-menit-detik (DMS)
+const convertToDMS = (lat: number, lng: number) => {
+  const toDMS = (value: number, direction1: string, direction2: string) => {
+    const absValue = Math.abs(value);
+    const degrees = Math.floor(absValue);
+    const minutes = Math.floor((absValue - degrees) * 60);
+    const seconds = ((absValue - degrees - minutes / 60) * 3600).toFixed(1);
+    const direction = value >= 0 ? direction1 : direction2;
+    return `${degrees}°${minutes}'${seconds}"${direction}`;
+  };
+
+  return `${toDMS(lat, "N", "S")} ${toDMS(lng, "E", "W")}`;
 };
 
 const StreetShop = ({ appId, disabled = false }: { appId: string; disabled?: boolean }) => {
@@ -27,19 +36,6 @@ const StreetShop = ({ appId, disabled = false }: { appId: string; disabled?: boo
       });
     });
   }, [appId]);
-
-  const { isLoaded } = useJsApiLoader({
-    id: "google-map-script",
-    googleMapsApiKey: `${process.env.REACT_APP_GOOGLE_MAPS_API_KEY}`
-  });
-
-  const onLoad = useCallback(
-    function callback(map: any) {
-      const bounds = new window.google.maps.LatLngBounds(center);
-      map.fitBounds(bounds);
-    },
-    [center]
-  );
 
   const isHandlingPopup = useRef(false);
   const handleChangeStreetShop = useCallback(
@@ -106,6 +102,12 @@ const StreetShop = ({ appId, disabled = false }: { appId: string; disabled?: boo
     });
   }, [appId]);
 
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text).then(() => {
+      notifySuccess("Copied to clipboard!");
+    });
+  };
+
   return (
     <>
       <div style={{ display: "flex", gap: "10px", marginBottom: isStreetShop ? 10 : 0 }}>
@@ -121,20 +123,42 @@ const StreetShop = ({ appId, disabled = false }: { appId: string; disabled?: boo
         <h3>Street Shop</h3>
       </div>
 
-      {isStreetShop && isLoaded ? (
-        <GoogleMap
-          mapContainerStyle={containerStyle}
-          center={center}
-          zoom={15}
-          onLoad={onLoad}
-          options={{
-            disableDoubleClickZoom: false,
-            draggable: false
-          }}
-        >
-          <Marker position={center} />
-        </GoogleMap>
-      ) : null}
+      {isStreetShop && (
+        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          <strong>Location:</strong>
+          <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+            <a
+              href={`https://www.google.com/maps?q=${center.lat},${center.lng}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "5px",
+                color: "blue",
+                textDecoration: "underline",
+                cursor: "pointer",
+                border: "1px solid #ddd",
+                padding: "3px 8px",
+                borderRadius: "5px",
+                backgroundColor: "#f8f9fa"
+              }}
+            >
+              <img
+                src="/assets/images/ic_google_maps.png"
+                alt="Google Maps"
+                width={10}
+                style={{ display: "inline-block" }}
+              />
+              {convertToDMS(center.lat, center.lng)}
+            </a>
+            <Button
+              onClick={() => copyToClipboard(convertToDMS(center.lat, center.lng))}
+              icon="copy"
+            />
+          </div>
+        </div>
+      )}
 
       <Popup width={360} height={"auto"} visible={isShowPopupConfirm} showTitle={false}>
         <div className="wrapper-popup-waiting">
@@ -144,7 +168,7 @@ const StreetShop = ({ appId, disabled = false }: { appId: string; disabled?: boo
 
           <div style={{ display: "flex", gap: "10px" }}>
             <Button text="Cancel" type="default" onClick={handleCancelChangeGeoPos} />
-            <Button text="yes" type="normal" onClick={handleYesChangeGeoPos} />
+            <Button text="Yes" type="normal" onClick={handleYesChangeGeoPos} />
           </div>
         </div>
       </Popup>
