@@ -57,3 +57,15 @@
 .reject-reason input {
   background-color: rgba(250, 82, 82, 0.2);
 }
+
+.popup-contact-activity {
+  width: 40%;
+  height: auto;
+}
+
+@media screen and (max-width: 480px) {
+  .popup-contact-activity {
+    width: auto;
+    height: auto;
+  }
+}
