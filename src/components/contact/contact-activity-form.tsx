@@ -32,7 +32,7 @@ export interface IContactActivity {
   resultId?: string;
   typeId?: string;
   currentGeoposition?: boolean;
-  ptpAmount?: number;
+  ptpAmount?: string;
   ptpDate?: string;
   photo?: string;
   image?: string;
@@ -111,7 +111,7 @@ export default function ActivityContactForm(props: ActivityContactProps) {
         photo: image,
         latitude: geoposition.latitude,
         longitude: geoposition.longitude,
-        ptpAmount: Number(updatedData.ptpAmount),
+        ptpAmount: updatedData.ptpAmount ? Number(updatedData.ptpAmount) : null,
         ptpDate: updatedData.ptpDate ? convertToUTCString(new Date(updatedData.ptpDate)) : null
       };
 
@@ -167,7 +167,7 @@ export default function ActivityContactForm(props: ActivityContactProps) {
         resultId: "",
         comment: "",
         currentGeoposition: false,
-        ptpAmount: 0,
+        ptpAmount: "",
         ptpDate: "",
         photo: "",
         purposeVisitId: "",
