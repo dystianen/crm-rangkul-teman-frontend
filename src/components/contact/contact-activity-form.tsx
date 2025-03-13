@@ -280,6 +280,7 @@ export default function ActivityContactForm(props: ActivityContactProps) {
       visible={props.isModalVisible}
       title="Activity Form"
       width={window.innerWidth <= 600 ? "auto" : 500}
+      height={"auto"}
       maxHeight={700}
       fullScreen={window.innerWidth <= 600}
     >
