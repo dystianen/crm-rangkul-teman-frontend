@@ -2,7 +2,6 @@ import React, {FC, useEffect, useRef, useState} from "react";
 import {AsyncRule, RequiredRule, Validator} from "devextreme-react/validator";
 import Form, {Item, ButtonItem, PatternRule, SimpleItem, GroupItem} from "devextreme-react/form";
 import { Popup } from "devextreme-react";
-import {Toast} from 'devextreme-react/toast';
 import DataSource from "devextreme/data/data_source";
 import {calc, frequencyStore, submit} from "../../api/restructure_v2";
 import {notifyError, notifySuccess} from "../../utils/devExtremeUtils";
@@ -47,13 +46,7 @@ export const RestructurePopupV2: FC<any> = (props, context) => {
 
     const formRef = useRef<Form>(null);
     const [request, setRequest] = useState<restructureData>({});
-    const [schedule, setSchedule] = useState<schedule[]>([]);
     const {popupVisible, hide, data} = props;
-    const [toastConfig, setToastConfig] = useState<any>({
-        isVisible: false,
-        type: 'info',
-        message: '',
-    });
 
     const onFormSubmit = (e: any) => {
         const form = formRef.current!.instance;
@@ -125,18 +118,7 @@ export const RestructurePopupV2: FC<any> = (props, context) => {
         }
     }, [props]);
 
-    useEffect(() => {
-
-    }, [request]);
-
     return (<>
-        <Toast
-            visible={toastConfig.isVisible}
-            message={toastConfig.message}
-            type={toastConfig.type}
-            onHiding={onHiding}
-            displayTime={600}
-        />
         <Popup
             width={480}
             visible={popupVisible}
@@ -271,7 +253,6 @@ export const RestructurePopupV2: FC<any> = (props, context) => {
                             repaintChangesOnly={true}
                         >
                             <Scrolling showScrollbar={"always"} />
-
                             <Column dataField={"period"} caption={"Cicilan Ke."} alignment={"center"} width={100} />
                             <Column
                                 dataField={"paymentDate"}
@@ -308,7 +289,7 @@ export const RestructurePopupV2: FC<any> = (props, context) => {
                         horizontalAlignment="left"
                         buttonOptions={{
                             width: "100%",
-                            text: "SUBMIT",
+                            text: "Submit",
                             type: "success",
                             useSubmitBehavior: true,
                         }}
@@ -318,10 +299,4 @@ export const RestructurePopupV2: FC<any> = (props, context) => {
         </Popup>
     </>);
 
-    function onHiding() {
-        setToastConfig({
-            ...toastConfig,
-            isVisible: false,
-        });
-    }
 }
