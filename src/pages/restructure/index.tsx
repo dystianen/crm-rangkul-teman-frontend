@@ -6,6 +6,8 @@ import {filterOperation} from "../../constants/FilterOperation";
 import {downloadExcel} from "../../api/http.api";
 import * as downloadFile from "save-file";
 import {restructureV2ListStore} from "../../api/restructure_v2";
+import ReactDOM from "react-dom/client";
+import {OnClickLink} from "../../components/alink";
 
 export const RestructureListPage: FC = () => {
     const navigate = useNavigate();
@@ -82,6 +84,11 @@ export const RestructureListPage: FC = () => {
                         dataField={"seqId"}
                         caption={"#NO"}
                         width={90}
+                        cellTemplate={function (container: any, options: any) {
+                            const dom = ReactDOM.createRoot(container);
+                            dom.render(<OnClickLink
+                                onClick={() => navigate(`/restructure/detail?id=${options.data.id}`)}>{options.data.seqId}</OnClickLink>);
+                        }}
                         filterOperations={filterOperation.numeric}
                     />
                     <Column
@@ -123,26 +130,20 @@ export const RestructureListPage: FC = () => {
                         filterOperations={filterOperation.date}
                     />
                     <Column
-                        dataField={"contactName"}
+                        dataField={"categoryName"}
                         caption={"Nama"}
                         width={190}
                         filterOperations={filterOperation.string}
                     />
                     <Column
-                        dataField={"contactPhone"}
-                        caption={"No. HP"}
-                        filterOperations={filterOperation.string}
-                    />
-                    <Column
-                        dataField={"contactEmail"}
-                        caption={"Email"}
-                        filterOperations={filterOperation.string}
-                    />
-                    <Column
-                        dataField={"amount"}
-                        caption={"Jumlah Bayar"}
-                        filterOperations={filterOperation.numeric}
-                        format="Rp #,##0.00"
+                        dataField={"isActive"}
+                        caption={"Active"}
+                        filterOperations={filterOperation.boolean}
+                        cellTemplate={function (container: any, options: any) {
+                            const dom = ReactDOM.createRoot(container);
+                            const active = options.data.isActive ? "true" : "false";
+                            dom.render(active);
+                        }}
                     />
                     <Column
                         dataField={"statusName"}
@@ -150,9 +151,69 @@ export const RestructureListPage: FC = () => {
                         filterOperations={filterOperation.string}
                     />
                     <Column
-                        dataField={"branchName"}
-                        caption={"Cabang"}
+                        dataField={"frequencyName"}
+                        caption={"Frequency"}
                         alignment={"left"}
+                        filterOperations={filterOperation.string}
+                    />
+                    <Column
+                        alignment={"center"}
+                        dataField={"contractNumber"}
+                        caption={"#No.Pinjaman"}
+                        cellTemplate={function (container: any, options: any) {
+                            const dom = ReactDOM.createRoot(container);
+                            dom.render(<OnClickLink
+                                onClick={() => navigate(`/contract/detail?id=${options.data.contractId}`)}>{options.data.contractNumber}</OnClickLink>);
+                        }}
+                        filterOperations={filterOperation.numeric}
+                    />
+                    <Column
+                        dataField={"initialPayment"}
+                        caption={"Initial Payment"}
+                        filterOperations={filterOperation.numeric}
+                        format="Rp #,##0.00"
+                    />
+                    <Column
+                        dataField={"validFrom"}
+                        caption={"Berlaku Dari"}
+                        dataType={"date"}
+                        format={"dd MMM yyyy"}
+                        calculateFilterExpression={(
+                            value: any,
+                            selectedFilterOperations: any,
+                            target: any
+                        )=> {
+                            const column = this as any;
+                            return column.defaultCalculateFilterExpression.apply(this, [
+                                new Date(value),
+                                selectedFilterOperations,
+                                target,
+                            ]);
+                        }}
+                        filterOperations={filterOperation.date}
+                    />
+                    <Column
+                        dataField={"validUntil"}
+                        caption={"Berlaku Sampai"}
+                        dataType={"date"}
+                        format={"dd MMM yyyy"}
+                        calculateFilterExpression={(
+                            value: any,
+                            selectedFilterOperations: any,
+                            target: any
+                        )=> {
+                            const column = this as any;
+                            return column.defaultCalculateFilterExpression.apply(this, [
+                                new Date(value),
+                                selectedFilterOperations,
+                                target,
+                            ]);
+                        }}
+                        filterOperations={filterOperation.date}
+                    />
+                    <Column
+                        dataField={"branchName"}
+                        caption={"Nama Cabang"}
                         filterOperations={filterOperation.string}
                     />
 

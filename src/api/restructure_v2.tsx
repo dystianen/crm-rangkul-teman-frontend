@@ -2,7 +2,7 @@ import {ajaxGet, ajaxPost} from "./http.api";
 import {dataRawCustomStore} from "../model/datagrid";
 import {customStore} from "../model/customStore";
 
-export const restructureV2ListStore = customStore({ loadUrl: "/api/trx/contract/restructure" });
+export const restructureV2ListStore = customStore({ loadUrl: "/api/trx/contract/restructure/v2" });
 export const frequencyStore = dataRawCustomStore(`/api/trx/contract/restructure/v2/frequency?`);
 
 export const calc = async (payload: any): Promise<any> => {

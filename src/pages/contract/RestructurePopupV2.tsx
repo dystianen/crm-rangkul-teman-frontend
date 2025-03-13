@@ -46,6 +46,7 @@ export const RestructurePopupV2: FC<any> = (props, context) => {
 
     const formRef = useRef<Form>(null);
     const [request, setRequest] = useState<restructureData>({});
+    const [schedule, setSchedule] = useState<schedule[]>([]);
     const {popupVisible, hide, data} = props;
 
     const onFormSubmit = (e: any) => {
@@ -89,6 +90,7 @@ export const RestructurePopupV2: FC<any> = (props, context) => {
             request["numPayments"] = rest.numPayments;
             if (typeof rest.schedule !== "undefined") {
                 request["schedule"] = rest.schedule;
+                setSchedule(rest.schedule);
             }
         });
     }
@@ -244,7 +246,7 @@ export const RestructurePopupV2: FC<any> = (props, context) => {
                     </GroupItem>
                     <GroupItem caption={"Schedule"} colCount={1}>
                         <DataGrid
-                            dataSource={request.schedule}
+                            dataSource={schedule}
                             remoteOperations={true}
                             columnAutoWidth={true}
                             wordWrapEnabled={false}

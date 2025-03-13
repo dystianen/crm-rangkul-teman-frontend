@@ -28,7 +28,9 @@ import {
   Step2Page,
   TransactionDetailPage,
   TransactionPage,
-  UploadSignedPage
+  UploadSignedPage,
+  RestructureListPage,
+  RestructureDetailPage,
 } from "./pages";
 import CreateEditContactLeads from "./pages/contact/CreateEditContactLeads";
 
@@ -218,6 +220,18 @@ const routes = [
     path: "/whatsapp/chat",
     title: "Chat",
     element: ChatPage
+  },
+  {
+    ID: 29,
+    path: "/restructure",
+    title: "Restruktur",
+    element: RestructureListPage
+  },
+  {
+    ID: 30,
+    path: "/restructure/detail",
+    title: "Detil Restruktur",
+    element: RestructureDetailPage
   }
 ];
 
