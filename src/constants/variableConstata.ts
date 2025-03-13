@@ -92,4 +92,12 @@ export const backofficeAccess = {
   backoffice_contact_activity_type_collection:"c5b4c4eb-899a-490b-a534-0e6ec8545e24",
   backoffice_contact_activity_type_sales:"8fc25c7b-2bfe-4210-ada4-6e2a1d19cc8c",
   backoffice_utility:"a5662435-91f0-47cc-9fa0-d06d318cf5cf",
+  backoffice_restructure_read:"c7f0e9ce-21aa-4b3d-adb9-476b6ae81c67",
+  backoffice_restructure_approve:"ac1f09b9-94cf-44b4-ae69-95ed1e6ed801",
+  backoffice_restructure_reject:"dfc1382f-6dd3-4fa2-9f18-82f9b8383c94",
+}
+
+export const restructure_category = {
+  restruktur:"3a4a01a6-a050-4aa2-a191-b1c7a2869aeb",
+  restructure2:"07f484b1-81e4-4c10-b570-626669eeb842",
 }

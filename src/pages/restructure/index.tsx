@@ -131,7 +131,7 @@ export const RestructureListPage: FC = () => {
                     />
                     <Column
                         dataField={"categoryName"}
-                        caption={"Nama"}
+                        caption={"Tipe"}
                         width={190}
                         filterOperations={filterOperation.string}
                     />

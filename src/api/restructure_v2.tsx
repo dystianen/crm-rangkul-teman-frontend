@@ -20,6 +20,11 @@ export const getDetail = async (id: any): Promise<any> => {
     return resp.data;
 };
 
+export const getActivity = async (id: any): Promise<any> => {
+    const resp = await ajaxGet(`/api/trx/contract/restructure/v2/activity/${id}`);
+    return resp.data;
+};
+
 export const approve = async (id: any, payload: any): Promise<any> => {
     const resp = await ajaxPost(`/api/trx/contract/restructure/v2/approve/${id}`, payload);
     return resp.data;
