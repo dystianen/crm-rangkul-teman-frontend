@@ -83,9 +83,7 @@ export default function Step1Page() {
       e.event.preventDefault();
       return;
     }
-    if ((typeof onboardingLoan.bankId !== "undefined" && onboardingLoan.bankId.length > 1)  && (typeof onboardingLoan.bankAccNumber !=="undefined" && onboardingLoan.bankAccNumber.length > 1)) {
-      sendBankCheck();
-    }
+    sendBankCheck();
     e.event.preventDefault();
   },[onboardingLoan]);
   
