@@ -25,12 +25,12 @@ export const getActivity = async (id: any): Promise<any> => {
     return resp.data;
 };
 
-export const approve = async (id: any, payload: any): Promise<any> => {
-    const resp = await ajaxPost(`/api/trx/contract/restructure/v2/approve/${id}`, payload);
+export const approve = async (payload: any): Promise<any> => {
+    const resp = await ajaxPost(`/api/trx/contract/restructure/v2/approve`, payload);
     return resp.data;
 };
 
-export const reject = async (id: any, payload: any): Promise<any> => {
-    const resp = await ajaxPost(`/api/trx/contract/restructure/v2/reject/${id}`, payload);
+export const reject = async (payload: any): Promise<any> => {
+    const resp = await ajaxPost(`/api/trx/contract/restructure/v2/reject`, payload);
     return resp.data;
 };

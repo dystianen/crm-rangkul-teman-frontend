@@ -7,6 +7,8 @@ import * as Title from "devextreme-react/toolbar";
 import {RestructureFormV2} from "./restructure_formv2";
 import {restructure_category} from "../../constants/variableConstata";
 import {DropDownButton} from "devextreme-react/drop-down-button";
+import {ApproveRestructurePopup} from "./approve_pop";
+import {RejectRestructurePopup} from "./reject_pop";
 
 
 export const RestructureDetailPage: FC = () => {
@@ -73,6 +75,11 @@ export const RestructureDetailPage: FC = () => {
                         <RestructureFormV2 restructure={restructure} setRestructure={setRestructure}/>}
                 </div>
             </div>
+
+            <ApproveRestructurePopup detail={setRestructure} data={restructure} popupVisible={popupApproveVisible}
+                                     hide={() => setPopupApproveVisible(false)}/>
+            <RejectRestructurePopup detail={setRestructure} data={restructure} popupVisible={popupRejectVisible}
+                                    hide={() => setPopupRejectVisible(false)}/>
         </>
     );
 }
