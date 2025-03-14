@@ -246,7 +246,8 @@ export default function ActivityContactForm(props: ActivityContactProps) {
   };
 
   const isFieldVisit = activityContactData.typeId === "86ebc4dd-0d23-43c0-a337-cdbf72271c73";
-  const isVisit = activityContactData.typeId === "b531afb1-bab2-4e29-9959-fa6fe4dea023";
+  const isVisitSales = activityContactData.typeId === "b531afb1-bab2-4e29-9959-fa6fe4dea023";
+  const isVisitVerificator = activityContactData.typeId === "819f0cfe-80b8-480c-8d2d-52dd0aa99b7e";
   const isCall = activityContactData.typeId === "738e2341-4103-458c-8d56-a765d3e64738";
   const isPTP = activityContactData.resultId === "5d5c08f0-7ee7-4ecb-95a9-6804df059c19";
 
@@ -262,12 +263,13 @@ export default function ActivityContactForm(props: ActivityContactProps) {
         isVerificator ||
         isSalesApprover1) &&
       !isCall,
-    purposeOfVisit: (isSalesAgent || isVerificator || isSalesApprover1 || isWABABot) && !isCall,
+    purposeOfVisit:
+      (isSalesAgent || isVerificator || isSalesApprover1 || isWABABot) && isVisitSales,
     purposeOfCall: (isSalesAgent || isVerificator || isSalesApprover1 || isWABABot) && isCall,
-    salesOffering: isSalesAgent || isVerificator || isSalesApprover1 || isWABABot,
+    salesOffering: (isSalesAgent || isVerificator || isSalesApprover1 || isWABABot) && isVisitSales,
     ptpDate: isFieldCollector || isSoftCollector || isCollectionManager || isHeadOfCollection,
     ptpAmount: isFieldCollector || isSoftCollector || isCollectionManager || isHeadOfCollection,
-    currentGeoposition: isFieldVisit || isVisit
+    currentGeoposition: isFieldVisit || isVisitSales || isVisitVerificator
   };
 
   const fieldRequired = {
