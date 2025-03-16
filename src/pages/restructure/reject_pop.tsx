@@ -58,6 +58,7 @@ export const RejectRestructurePopup: FC<any> = (props, context) => {
     return (<>
         <Popup
             width={480}
+            height={"auto"}
             visible={popupVisible}
             onHiding={hide}
             showCloseButton={true}
@@ -70,7 +71,7 @@ export const RejectRestructurePopup: FC<any> = (props, context) => {
                     formData={request}
                     showColonAfterLabel={true}
                     showValidationSummary={true}
-                    validationGroup="restructureApprovalForm"
+                    validationGroup="restructureRejectForm"
                     onFieldDataChanged={onFieldDataChanged}
                 >
                     <SimpleItem

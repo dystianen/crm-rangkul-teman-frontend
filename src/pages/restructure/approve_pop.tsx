@@ -58,6 +58,7 @@ export const ApproveRestructurePopup: FC<any> = (props, context) => {
     return (<>
         <Popup
             width={480}
+            height={"auto"}
             visible={popupVisible}
             onHiding={hide}
             showCloseButton={true}

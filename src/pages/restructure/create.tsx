@@ -288,6 +288,7 @@ export const RestructureCreatePage: FC = () => {
 						if (!/[0-9]/.test(e.value) && key !== "Backspace" && key !== "Delete")
 						  e.event.preventDefault();
 					  },
+					  format: "Rp #,##0",
 					}}
 				>
 				  <CustomRule
