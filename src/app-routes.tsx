@@ -31,6 +31,7 @@ import {
   UploadSignedPage,
   RestructureListPage,
   RestructureDetailPage,
+  RestructureCreatePage,
 } from "./pages";
 import CreateEditContactLeads from "./pages/contact/CreateEditContactLeads";
 
@@ -232,6 +233,12 @@ const routes = [
     path: "/restructure/detail",
     title: "Detil Restruktur",
     element: RestructureDetailPage
+  },
+  {
+    ID: 31,
+    path: "/restructure/create",
+    title: "Create Restruktur",
+    element: RestructureCreatePage
   }
 ];
 

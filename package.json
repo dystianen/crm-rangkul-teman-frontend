@@ -5,6 +5,7 @@
   "scripts": {
     "local": "env-cmd -f ./.env.local react-scripts start",
     "dev": "env-cmd -f ./.env.dev react-scripts start",
+    "restructure": "env-cmd -f ./.env.restructure react-scripts start",
     "prod": "env-cmd -f ./.env.prod react-scripts start",
     "build:dev": "env-cmd -f ./.env.dev react-scripts build",
     "build:prod": "env-cmd -f ./.env.prod react-scripts build",

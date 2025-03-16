@@ -101,3 +101,10 @@ export const restructure_category = {
   restruktur:"3a4a01a6-a050-4aa2-a191-b1c7a2869aeb",
   restructure2:"07f484b1-81e4-4c10-b570-626669eeb842",
 }
+
+
+export const restructure_max_periods = {
+  "4be35245-f515-4c22-a8e4-9b36bf7d20b4": 156,
+  "76ae8eaa-9721-4e55-b16a-12a12b272288": 78,
+  "f1bd3cec-d445-4967-bcff-a50f4be64fb1": 36
+}

@@ -14,7 +14,7 @@ import {ContractFiles} from "./ContractFiles";
 import {AppLoanDetailRequest, initAppLoanDetailValue} from "../../interfaces/appLoanOnboarding";
 import {Button} from "devextreme-react/button";
 import {RestructurePopup} from "./RestructurePopup";
-import {RestructurePopupV2} from "./RestructurePopupV2";
+import {RestructurePopupV2} from "../restructure/RestructurePopupV2";
 
 export interface Contract {
     id: string;
@@ -123,7 +123,7 @@ export const ContractDetailPage: React.FC = () => {
                         if(e.itemData=="Restruktur") {
                             setPopupRestructureVisible(true);
                         } else if(e.itemData=="Restructure 2.0") {
-                            setPopupRestructureV2Visible(true);
+                            navigate(`/restructure/create?id=${id}`);
                         }
                     }}
                     width={230}
