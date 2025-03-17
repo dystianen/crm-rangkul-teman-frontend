@@ -172,6 +172,7 @@ export default function ActivityContactForm(props: ActivityContactProps) {
         ptpAmount: "",
         ptpDate: "",
         photo: "",
+        image: "",
         purposeVisitId: "",
         purposeCallId: "",
         latitude: "",
@@ -185,7 +186,6 @@ export default function ActivityContactForm(props: ActivityContactProps) {
 
     // Street Shop
     if (evt.dataField === "currentGeoposition" && evt.value != null) {
-      console.log("masuk field");
       const checked = evt.value;
       if (checked && navigator.geolocation) {
         navigator.geolocation.getCurrentPosition((position) => {
