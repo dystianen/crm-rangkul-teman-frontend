@@ -84,7 +84,6 @@ export default function Step1Page() {
       return;
     }
     sendBankCheck();
-    e.event.preventDefault();
   };
   
   const handleCheckSigning = useCallback(
