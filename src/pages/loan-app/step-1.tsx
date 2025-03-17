@@ -1,10 +1,10 @@
 import { Client } from "@stomp/stompjs";
-import { Popup } from "devextreme-react";
+import {LoadIndicator, Popup} from "devextreme-react";
 import { Button } from "devextreme-react/button";
 import "devextreme-react/date-box";
 import "devextreme-react/file-uploader";
 import Form, {
-  ButtonItem,
+  ButtonItem, ButtonOptions,
   GroupItem,
   PatternRule,
   RequiredRule,
@@ -59,21 +59,20 @@ export default function Step1Page() {
   const [isShowWaitingPopup, setShowWaitingPopup] = useState(false);
   const [isDisableButtonNext, setDisableButtonNext] = useState(true);
   const [isDableBankIdBankAccNumber, setDisableBankIdBankAccNumber] = useState(false);
-
   const formRef = useRef<Form>(null);
   
   useEffect(() => {
     checkAccess(backofficeAccess.backoffice_application_step_2).then((res) => setAccessStep2(res));
   }, []);
   
-  const handleCheckBankAccount = useCallback((e: any)=>{
+  const handleCheckBankAccount = (e: any)=> {
     console.log("handle check bank account ",e, onboardingLoan);
-    if(typeof onboardingLoan.bankId !== "undefined" && onboardingLoan.bankId.length == 0) {
+    if(typeof onboardingLoan.bankId === "undefined") {
       notifyWarning("belum memilih bank!!");
       e.event.preventDefault();
       return;
     }
-    if(typeof onboardingLoan.bankAccNumber !=="undefined" && onboardingLoan.bankAccNumber.length == 0) {
+    if(typeof onboardingLoan.bankAccNumber ==="undefined") {
       notifyWarning("belum mengisi nomor rekening!!");
       e.event.preventDefault();
       return;
@@ -83,9 +82,10 @@ export default function Step1Page() {
       e.event.preventDefault();
       return;
     }
-    sendBankCheck();
+    
     e.event.preventDefault();
-  },[onboardingLoan]);
+    sendBankCheck();
+  };
   
   const handleCheckSigning = useCallback(
     (intervalId: NodeJS.Timeout) => {
@@ -179,32 +179,35 @@ export default function Step1Page() {
   
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     setSubmitForm(true);
-    createAppLoanOnboardingStep1(id as string, onboardingLoan).then(
-      (st1) => {
-        if (st1.isWaitingSigning) {
-          setAutoNext(true);
-          setShowWaitingPopup(true);
-
-          const intervalId = setInterval(() => {
-            handleCheckSigning(intervalId);
-          }, 5000);
-
-          handleCheckSigning(intervalId);
-        } else {
-          if (!accessStep2) {
-            notifySuccess("Berhasil submit data");
-            navigate(`/loan-app`);
-          } else {
-            navigate(`/loan-app/create/step/2?id=${id}`);
+    const form = formRef.current!.instance;
+    const {isValid} = form.validate();
+    if(isValid) {
+      createAppLoanOnboardingStep1(id as string, onboardingLoan).then(
+          (st1) => {
+            if (st1.isWaitingSigning) {
+              setAutoNext(true);
+              setShowWaitingPopup(true);
+              
+              const intervalId = setInterval(() => {
+                handleCheckSigning(intervalId);
+              }, 5000);
+              
+              handleCheckSigning(intervalId);
+            } else {
+              if (!accessStep2) {
+                notifySuccess("Berhasil submit data");
+                navigate(`/loan-app`);
+              } else {
+                navigate(`/loan-app/create/step/2?id=${id}`);
+              }
+            }
+          },
+          (error) => {
+            setSubmitForm(false);
+            notifyError(error);
           }
-        }
-      },
-      (error) => {
-        setSubmitForm(false);
-        notifyError(error);
-      }
-    ).finally(()=>setSubmitForm(false));
-
+      ).finally(()=>setSubmitForm(false));
+    }
     e.preventDefault();
   };
 
@@ -218,7 +221,7 @@ export default function Step1Page() {
         }));
       }
     }
-
+    
     // if (dataField === "bankId" || dataField === "bankAccNumber") {
     //   sendBankCheck();
     // }
@@ -369,40 +372,41 @@ export default function Step1Page() {
                 >
                   <RequiredRule message="Bank wajib diisi" />
                 </SimpleItem>
-                <SimpleItem
-                    colSpan={3}
-                    dataField="bankAccNumber"
-                    label={{ text: "Nomor Rekening" }}
-                    editorOptions={{
-                      disabled: isDableBankIdBankAccNumber,
-                      onKeyDown: (e: any) => {
-                        const key = e.event.key;
-                        e.value = String.fromCharCode(e.event.keyCode);
-                        let forbiddenChars = ['!','@','#','$','%','^','&','*','(',')'];
-                        if (forbiddenChars.includes(key))
-                          e.event.preventDefault();
-                        if (!/[0-9]/.test(e.value) && key !== "Backspace" && key !== "Delete")
-                          e.event.preventDefault();
-                      },
-                      buttons: [
-                        {
-                          name: 'password',
-                          location: 'after',
-                          options: {
-                            stylingMode: 'contained',
-                            type: "default",
-                            text: 'Periksa',
-                            onClick: handleCheckBankAccount
-                          },
+                <GroupItem colCount={3}>
+                  <SimpleItem
+                      colSpan={2}
+                      dataField="bankAccNumber"
+                      label={{ text: "Nomor Rekening" }}
+                      editorOptions={{
+                        disabled: isDableBankIdBankAccNumber,
+                        onKeyDown: (e: any) => {
+                          const key = e.event.key;
+                          e.value = String.fromCharCode(e.event.keyCode);
+                          let forbiddenChars = ['!','@','#','$','%','^','&','*','(',')'];
+                          if (forbiddenChars.includes(key))
+                            e.event.preventDefault();
+                          if (!/[0-9]/.test(e.value) && key !== "Backspace" && key !== "Delete")
+                            e.event.preventDefault();
                         },
-                      ],
-                      
-                    }}
-                >
-                  <RequiredRule message="Nomor rekening wajib diisi" />
-                  <PatternRule message="Nomor Rekening hanya boleh angka" pattern={/^[0-9]+$/}/>
-                </SimpleItem>
-            
+                      }}
+                  >
+                    <RequiredRule message="Nomor rekening wajib diisi" />
+                    <PatternRule message="Nomor Rekening hanya boleh angka" pattern={/^[0-9]+$/}/>
+                  </SimpleItem>
+                  <ButtonItem horizontalAlignment={"center"} verticalAlignment={"center"}>
+                    <ButtonOptions
+                        type="default"
+                        width={"100%"}
+                        disabled={isDableBankIdBankAccNumber}
+                        onClick={handleCheckBankAccount}
+                    >
+                      <div className="button-options">
+                        <LoadIndicator width="20px" height="20px" visible={isDableBankIdBankAccNumber} />
+                        <span className="dx-button-text">Periksa</span>
+                      </div>
+                    </ButtonOptions>
+                  </ButtonItem>
+                </GroupItem>
               </GroupItem>
 
               <GroupItem caption="Informasi tambahan" colCount={2}>

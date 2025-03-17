@@ -129,6 +129,7 @@ class ContactActivity extends React.PureComponent<Iprops, Istate> {
                     ptpAmount: "",
                     ptpDate: "",
                     photo: "",
+                    image: "",
                     purposeVisitId: "",
                     purposeCallId: "",
                     latitude: "",
