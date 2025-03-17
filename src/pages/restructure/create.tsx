@@ -224,6 +224,7 @@ export const RestructureCreatePage: FC = () => {
 			  <SimpleItem
 				  dataField="initialAmount"
 				  label={{text: " ", showColon: false}}
+				  editorType={"dxNumberBox"}
 				  editorOptions={{
 					onKeyDown: (e: any) => {
 					  const key = e.event.key;
@@ -278,6 +279,7 @@ export const RestructureCreatePage: FC = () => {
 				<SimpleItem
 					dataField="repaymentSetting.paymentAmount"
 					label={{text: "Payment amount"}}
+					editorType={"dxNumberBox"}
 					editorOptions={{
 					  onKeyDown: (e: any) => {
 						const key = e.event.key;
