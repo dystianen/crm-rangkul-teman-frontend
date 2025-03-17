@@ -21,6 +21,7 @@ import {
 import { ajaxPatch, ajaxPost } from "src/api/http.api";
 import useUserRole from "src/utils/configUserRole.util";
 import { convertToUTCString } from "src/utils/dateUtils";
+import { notifyError } from "src/utils/devExtremeUtils";
 import imageCompress from "src/utils/imageCompress.util";
 import GoogleMapsLocation from "../google-maps-location/GoogleMapsLocation";
 import "./activity-form.scss";
@@ -99,8 +100,8 @@ export default function ActivityContactForm(props: ActivityContactProps) {
   } = useUserRole();
 
   const onSubmit = async (event: any) => {
+    event.preventDefault();
     try {
-      event.preventDefault();
       setLoading(true);
 
       const updatedData = { ...activityContactData };
@@ -132,6 +133,7 @@ export default function ActivityContactForm(props: ActivityContactProps) {
       setImage("");
       props.onSubmit(event);
     } catch (err) {
+      notifyError(err as string);
       setLoading(false);
     }
   };
@@ -207,10 +209,16 @@ export default function ActivityContactForm(props: ActivityContactProps) {
       return;
     }
 
-    setActivityContactData((prev) => ({
-      ...prev,
-      [evt.dataField]: evt.value
-    }));
+    if (evt.dataField === "resultId" && evt.value !== null) {
+      setActivityContactData((prev) => ({
+        ...prev,
+        resultId: evt.value
+      }));
+    }
+
+    // Menghindari rendering ulang yg menyebabkan scroll ke atas
+    // @ts-expect-error
+    activityContactData[evt.dataField] = evt.value;
   }, []);
 
   useEffect(() => {
@@ -266,7 +274,8 @@ export default function ActivityContactForm(props: ActivityContactProps) {
     purposeOfVisit:
       (isSalesAgent || isVerificator || isSalesApprover1 || isWABABot) && isVisitSales,
     purposeOfCall: (isSalesAgent || isVerificator || isSalesApprover1 || isWABABot) && isCall,
-    salesOffering: (isSalesAgent || isVerificator || isSalesApprover1 || isWABABot) && isVisitSales,
+    salesOffering:
+      (isSalesAgent || isVerificator || isSalesApprover1 || isWABABot) && (isVisitSales || isCall),
     ptpDate: isFieldCollector || isSoftCollector || isCollectionManager || isHeadOfCollection,
     ptpAmount: isFieldCollector || isSoftCollector || isCollectionManager || isHeadOfCollection,
     currentGeoposition: isFieldVisit || isVisitSales || isVisitVerificator
