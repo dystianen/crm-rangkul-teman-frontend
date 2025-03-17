@@ -66,7 +66,7 @@ export default function Step1Page() {
     checkAccess(backofficeAccess.backoffice_application_step_2).then((res) => setAccessStep2(res));
   }, []);
   
-  const handleCheckBankAccount = useCallback((e: any)=>{
+  const handleCheckBankAccount = (e: any)=> {
     console.log("handle check bank account ",e, onboardingLoan);
     if(typeof onboardingLoan.bankId !== "undefined" && onboardingLoan.bankId.length == 0) {
       notifyWarning("belum memilih bank!!");
@@ -85,7 +85,7 @@ export default function Step1Page() {
     }
     sendBankCheck();
     e.event.preventDefault();
-  },[onboardingLoan]);
+  };
   
   const handleCheckSigning = useCallback(
     (intervalId: NodeJS.Timeout) => {
