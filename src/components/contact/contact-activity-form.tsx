@@ -21,6 +21,7 @@ import {
 import { ajaxPatch, ajaxPost } from "src/api/http.api";
 import useUserRole from "src/utils/configUserRole.util";
 import { convertToUTCString } from "src/utils/dateUtils";
+import { notifyError } from "src/utils/devExtremeUtils";
 import imageCompress from "src/utils/imageCompress.util";
 import GoogleMapsLocation from "../google-maps-location/GoogleMapsLocation";
 import "./activity-form.scss";
@@ -131,7 +132,8 @@ export default function ActivityContactForm(props: ActivityContactProps) {
       resetGeoposition();
       setImage("");
       props.onSubmit(event);
-    } catch (err) {
+    } catch (err: any) {
+      notifyError(err);
       setLoading(false);
     }
   };
@@ -266,7 +268,8 @@ export default function ActivityContactForm(props: ActivityContactProps) {
     purposeOfVisit:
       (isSalesAgent || isVerificator || isSalesApprover1 || isWABABot) && isVisitSales,
     purposeOfCall: (isSalesAgent || isVerificator || isSalesApprover1 || isWABABot) && isCall,
-    salesOffering: (isSalesAgent || isVerificator || isSalesApprover1 || isWABABot) && isVisitSales,
+    salesOffering:
+      (isSalesAgent || isVerificator || isSalesApprover1 || isWABABot) && (isVisitSales || isCall),
     ptpDate: isFieldCollector || isSoftCollector || isCollectionManager || isHeadOfCollection,
     ptpAmount: isFieldCollector || isSoftCollector || isCollectionManager || isHeadOfCollection,
     currentGeoposition: isFieldVisit || isVisitSales || isVisitVerificator
