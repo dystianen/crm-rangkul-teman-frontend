@@ -46,6 +46,12 @@ export const submitAppLoan = async (id: string): Promise<any> => {
   return resp.data;
 };
 
+
+export const bankCheckValid = async (payload: any): Promise<any> => {
+  const resp = await ajaxPost(`${API_PATH.BANK_CHECK}`, payload);
+  return resp.data;
+};
+
 export const checkAccess = async (accessId: string): Promise<boolean> => {
   const resp = await ajaxGet(`${API_PATH.PROFILE_ACCESS}/${accessId}`);
   return resp;
