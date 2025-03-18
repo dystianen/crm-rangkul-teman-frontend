@@ -12,13 +12,13 @@ import Form, {
 } from "devextreme-react/form";
 import { LoadPanel } from "devextreme-react/load-panel";
 import DataSource from "devextreme/data/data_source";
-import { FieldDataChangedEvent } from "devextreme/ui/form";
 import queryString from "query-string";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 import { useLocation } from "react-router-dom";
 import SockJS from "sockjs-client";
 import {
+  bankCheckValid,
   checkAccess,
   checkStatusSigning,
   createAppLoanOnboardingStep1,
@@ -83,7 +83,6 @@ export default function Step1Page() {
       return;
     }
     
-    e.event.preventDefault();
     sendBankCheck();
   };
   
@@ -211,16 +210,18 @@ export default function Step1Page() {
     e.preventDefault();
   };
 
-  const onFieldDataChanged = (evt: FieldDataChangedEvent) => {
+  const onFieldDataChanged = (evt: any) => {
     const { dataField, value } = evt;
-    if (dataField) {
-      if (dataField in onboardingLoan) {
-        setOnboardingLoan((prevState) => ({
-          ...prevState,
-          [dataField]: value
-        }));
-      }
-    }
+    // if (dataField) {
+    //   if (dataField in onboardingLoan) {
+    //     setOnboardingLoan((prevState) => ({
+    //       ...prevState,
+    //       [dataField]: value
+    //     }));
+    //   }
+    // }
+    
+    onboardingLoan[dataField] = value;
     
     // if (dataField === "bankId" || dataField === "bankAccNumber") {
     //   sendBankCheck();
@@ -250,7 +251,7 @@ export default function Step1Page() {
 
               if (res.success) {
                 if(res?.error){
-                  notifyError(res.message);
+                  notifyWarning(res.message);
                 } else {
                   notifySuccess(res.message);
                 }
@@ -284,21 +285,26 @@ export default function Step1Page() {
       bankAccountNumber: onboardingLoan.bankAccNumber
     };
     console.log("Sending bank account check:", payload);
+    bankCheckValid(payload).then((rest)=>{
+      console.log("submit bankchecking", rest);
+      setDisableBankIdBankAccNumber(rest?.isWaiting);
+      setDisableButtonNext(rest?.isWaiting);
+    });
     const stompClient = stompClientRef.current;
     if (stompClient && stompClient.connected) {
-      if (
-        onboardingLoan.bankId != null &&
-        onboardingLoan.bankId.length > 0 &&
-        onboardingLoan.bankAccNumber != null &&
-        onboardingLoan.bankAccNumber.length > 0
-      ) {
-        stompClient.publish({
-          destination: `/api/bankAccountCheck/${id}`,
-          body: JSON.stringify(payload)
-        });
-      }
-    } else {
-      console.error("Stomp client is not connected");
+    //   if (
+    //     onboardingLoan.bankId != null &&
+    //     onboardingLoan.bankId.length > 0 &&
+    //     onboardingLoan.bankAccNumber != null &&
+    //     onboardingLoan.bankAccNumber.length > 0
+    //   ) {
+    //     stompClient.publish({
+    //       destination: `/api/bankAccountCheck/${id}`,
+    //       body: JSON.stringify(payload)
+    //     });
+    //   }
+    // } else {
+    //   console.error("Stomp client is not connected");
     }
   };
 
