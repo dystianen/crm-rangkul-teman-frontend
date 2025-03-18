@@ -257,7 +257,7 @@ export default function Step1Page() {
                 }
                 setDisableButtonNext(false);
               } else {
-                notifyError(res.message);
+                notifyWarning(res.message);
                 setDisableButtonNext(true);
               }
             }
