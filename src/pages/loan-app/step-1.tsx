@@ -287,6 +287,7 @@ export default function Step1Page() {
     console.log("Sending bank account check:", payload);
     bankCheckValid(payload).then((rest)=>{
       console.log("submit bankchecking", rest);
+      setDisableButtonNext(rest?.isWaiting);
     });
     // const stompClient = stompClientRef.current;
     // if (stompClient && stompClient.connected) {
