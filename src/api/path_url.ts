@@ -6,6 +6,7 @@ export enum API_PATH {
   PROFILE_ACCESS = '/api/profile/check/access',
   USER_MENU = '/api/bo/general/mainmenu',
   APPLICATION = "/api/trx/application",
+  BANK_CHECK = "/api/trx/bank/checking",
   APPROVAL = '/api/trx/approval',
   CONTRACT = '/api/trx/contract',
   DISBURSE = '/api/trx/disburse',
