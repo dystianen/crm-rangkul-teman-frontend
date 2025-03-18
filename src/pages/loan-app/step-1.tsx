@@ -257,7 +257,7 @@ export default function Step1Page() {
                 }
                 setDisableButtonNext(false);
               } else {
-                notifyError(res.message);
+                notifyWarning(res.message);
                 setDisableButtonNext(true);
               }
             }
@@ -287,10 +287,11 @@ export default function Step1Page() {
     console.log("Sending bank account check:", payload);
     bankCheckValid(payload).then((rest)=>{
       console.log("submit bankchecking", rest);
+      setDisableBankIdBankAccNumber(rest?.isWaiting);
       setDisableButtonNext(rest?.isWaiting);
     });
-    // const stompClient = stompClientRef.current;
-    // if (stompClient && stompClient.connected) {
+    const stompClient = stompClientRef.current;
+    if (stompClient && stompClient.connected) {
     //   if (
     //     onboardingLoan.bankId != null &&
     //     onboardingLoan.bankId.length > 0 &&
@@ -304,7 +305,7 @@ export default function Step1Page() {
     //   }
     // } else {
     //   console.error("Stomp client is not connected");
-    // }
+    }
   };
 
   return (
