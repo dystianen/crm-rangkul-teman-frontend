@@ -251,13 +251,13 @@ export default function Step1Page() {
 
               if (res.success) {
                 if(res?.error){
-                  notifyError(res.message);
+                  notifyWarning(res.message);
                 } else {
                   notifySuccess(res.message);
                 }
                 setDisableButtonNext(false);
               } else {
-                notifyWarning(res.message);
+                notifyError(res.message);
                 setDisableButtonNext(true);
               }
             }
