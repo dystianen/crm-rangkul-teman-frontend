@@ -31,7 +31,8 @@ const StreetShop = ({ appId, disabled = false }: { appId: string; disabled?: boo
     <>
       <div style={{ display: "flex", gap: "10px", marginBottom: 0 }}>
         <CheckBox
-          disabled={disabled || isLoading}
+          disabled={isLoading}
+          readOnly={disabled}
           value={isStreetShop}
           onValueChanged={(e) => {
             handleChangeStreetShop(e.value);
