@@ -67,9 +67,9 @@ export const RestructureDetailFormPage = (props: any) => {
 			  >
 			  </SimpleItem>
 			  <SimpleItem
-				  dataField="discount"
 				  label={{text: " ", showColon: false}}
 				  editorOptions={{
+					  value: restructure.discount*100,
 					  readOnly: true,
 				  }}
 			  />
