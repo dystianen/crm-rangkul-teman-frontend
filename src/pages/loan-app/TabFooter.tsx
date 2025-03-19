@@ -6,6 +6,7 @@ import BusinessAddress from "src/components/loan-app/BusinessAddress";
 import FamilyCard from "src/components/loan-app/FamilyCard";
 import NeighbourQuestions from "src/components/loan-app/NeighbourQuestions";
 import SellingQuestions from "src/components/loan-app/SellingQuestions";
+import StreetShop from "src/components/loan-app/StreetShop";
 import { ApplicationFiles } from "../approval1-app/ApplicationFiles";
 import { ApprovalHistory } from "../approval1-app/ApprovalHistory";
 
@@ -45,11 +46,15 @@ export const TabFooter: FC<Props> = ({ detail }) => {
                   <NeighbourQuestions appId={ID} disabled />
                 </div>
               </Tab>
-              {detail?.contactStreetShop?.isStreetShop && (
-                <Tab title="Business Address">
+              <Tab title="Additional Information">
+                <div className={"dx-card responsive-paddings next-card"}>
+                  <StreetShop appId={ID} disabled />
+                </div>
+
+                <div className={"dx-card responsive-paddings next-card"}>
                   <BusinessAddress appId={ID} disabled />
-                </Tab>
-              )}
+                </div>
+              </Tab>
             </TabbedItem>
           </Form>
         </div>
