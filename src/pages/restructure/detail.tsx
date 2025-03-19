@@ -11,6 +11,7 @@ import {ApproveRestructurePopup} from "./approve_pop";
 import {RejectRestructurePopup} from "./reject_pop";
 import {confirm} from "devextreme/ui/dialog";
 import {notifyError, notifySuccess} from "../../utils/devExtremeUtils";
+import {RestructureDetailFormPage} from "./restructure_detail";
 
 
 export const RestructureDetailPage: FC = () => {
@@ -78,7 +79,7 @@ export const RestructureDetailPage: FC = () => {
                 </Title.Toolbar>
                 <div className="form__tabs">
                     {(restructure?.categoryId === restructure_category.restructure2) &&
-                        <RestructureFormV2 restructure={restructure} setRestructure={setRestructure}/>}
+                        <RestructureDetailFormPage restructure={restructure} setRestructure={setRestructure}/>}
                 </div>
             </div>
 
