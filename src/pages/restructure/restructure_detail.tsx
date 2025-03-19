@@ -38,6 +38,12 @@ export const RestructureDetailFormPage = (props: any) => {
 		  <GroupItem colSpan={2} caption="Balance" colCount={2} cssClass={"dx-card responsive-paddings next-card"}>
 			<GroupItem>
 				<SimpleItem>
+					Restructure Active : {restructure.isActive ? "true": "false"}
+				</SimpleItem>
+				<SimpleItem>
+					Restructure Status : {restructure.statusName}
+				</SimpleItem>
+				<SimpleItem>
 					No. Pinjaman : {restructure.contractNumber}
 				</SimpleItem>
 			  <SimpleItem>
