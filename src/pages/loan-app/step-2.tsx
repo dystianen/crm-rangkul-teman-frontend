@@ -32,6 +32,7 @@ import {
   fetchCheckPartial,
   getSignedDoc
 } from "src/api/apploan";
+import BusinessAddress from "src/components/loan-app/BusinessAddress";
 import DocumentCard from "src/components/loan-app/DocumentCard";
 import FamilyCard from "src/components/loan-app/FamilyCard";
 import NeighbourQuestions from "src/components/loan-app/NeighbourQuestions";
@@ -276,6 +277,10 @@ export default function Step2Page() {
         </div>
 
         <div className={"dx-card responsive-paddings next-card"}>
+          <BusinessAddress appId={ID} />
+        </div>
+
+        <div className={"dx-card responsive-paddings next-card"}>
           <h3>Custom Data</h3>
           <DataGrid
             dataSource={dataGrid}
@@ -344,7 +349,7 @@ export default function Step2Page() {
                 />
                 <SimpleItem
                   dataField="debitTransaction"
-					  label={{text: "Outcome"}}
+                  label={{ text: "Outcome" }}
                   editorType="dxNumberBox"
                   editorOptions={{ format: "Rp #,##0.00" }}
                 >
@@ -352,7 +357,7 @@ export default function Step2Page() {
                 </SimpleItem>
                 <SimpleItem
                   dataField="creditTransaction"
-					  label={{text: "Income"}}
+                  label={{ text: "Income" }}
                   editorType="dxNumberBox"
                   editorOptions={{ format: "Rp #,##0.00" }}
                 >
