@@ -261,3 +261,12 @@ export const dateHandler = (date: Date | string) => {
     }
     return dateByHourAndMin;
 };
+
+/**
+ * Mengonversi tanggal ke format UTC tanpa offset zona waktu.
+ * @param datetime Tanggal dalam bentuk `Date` atau `string`.
+ * @returns String dengan format `YYYY-MM-DDTHH:mm:ssZ` dalam UTC.
+ */
+export function convertToUTCString(datetime: Date | string): string {
+    return moment(datetime).utc().format('YYYY-MM-DDTHH:mm:ss[Z]');
+}

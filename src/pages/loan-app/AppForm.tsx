@@ -5,10 +5,13 @@ import Form, { GroupItem, SimpleItem } from "devextreme-react/form";
 import * as Title from "devextreme-react/toolbar";
 import { FC } from "react";
 import { useNavigate } from "react-router";
+import PreviewFile from "src/components/loan-app/PreviewFile";
 import { TabFooter } from "./TabFooter";
 
 export const AppForm: FC<any> = ({ detail }) => {
   const navigate = useNavigate();
+  const incomeProof = detail?.financialInformation?.incomeProof;
+
   return (
     <div className={"content-block"}>
       <Title.Toolbar className={"dx-card"}>
@@ -27,7 +30,7 @@ export const AppForm: FC<any> = ({ detail }) => {
       <div className={"form__tabs dx-card responsive-paddings"}>
         <Form colCount={1} id="form" formData={detail} showColonAfterLabel={true}>
           <GroupItem colSpan={2}>
-            <GroupItem caption={"Detil Pengajuan"} colCount={2}>
+            <GroupItem caption={"Application Details"} colCount={2}>
               <SimpleItem
                 dataField="application.idSeq"
                 label={{ text: "No. Pengajuan #" }}
@@ -148,26 +151,60 @@ export const AppForm: FC<any> = ({ detail }) => {
         </Form>
       </div>
       <div className={"dx-card responsive-paddings next-card"}>
-        <Form colCount={1} id="form4" formData={detail} showColonAfterLabel={true}>
-          <GroupItem colSpan={2}>
-            <GroupItem caption="Informasi Tambahan" colCount={2}>
-              <SimpleItem
-                dataField="additionalInformation.loanPurpose"
-                label={{ text: "Tujuan Pinjaman" }}
-                editorOptions={{
-                  readOnly: true
-                }}
-              />
-              <SimpleItem
-                dataField="additionalInformation.monthlyIncome"
-                label={{ text: "Pendapatan bulanan" }}
-                editorOptions={{
-                  readOnly: true,
-                  format: "Rp #,##0.00"
-                }}
-              />
-            </GroupItem>
+        <Form
+          colCount={1}
+          id="form4"
+          formData={detail.financialInformation}
+          showColonAfterLabel={true}
+        >
+          <GroupItem caption="Financial Details" colCount={2}>
+            <SimpleItem
+              dataField="loanPurpose"
+              label={{ text: "Tujuan Pinjaman" }}
+              editorOptions={{
+                readOnly: true
+              }}
+            />
+            <SimpleItem
+              dataField="monthlyIncome"
+              label={{ text: "Pendapatan bulanan" }}
+              editorOptions={{
+                readOnly: true,
+                format: "Rp #,##0.00"
+              }}
+            />
+            <SimpleItem
+              dataField="monthlyIncome"
+              label={{ text: "Penghasilan perbulan" }}
+              editorType="dxNumberBox"
+              editorOptions={{ format: "Rp #,##0.00" }}
+            />
+            <SimpleItem
+              dataField="handwrittenSalesBook"
+              label={{ text: "Handwritten Sales book" }}
+              editorType="dxCheckBox"
+            />
+            <SimpleItem
+              dataField="debitTransaction"
+              label={{ text: "Debit Transaksi" }}
+              editorType="dxNumberBox"
+              editorOptions={{ format: "Rp #,##0.00" }}
+            />
+            <SimpleItem
+              dataField="creditTransaction"
+              label={{ text: "Kredit Transaksi" }}
+              editorType="dxNumberBox"
+              editorOptions={{ format: "Rp #,##0.00" }}
+            />
           </GroupItem>
+
+          {incomeProof && (
+            <GroupItem caption="Income proof" colCount={1}>
+              <SimpleItem>
+                <PreviewFile file={incomeProof} />
+              </SimpleItem>
+            </GroupItem>
+          )}
         </Form>
       </div>
       <div className={"dx-card responsive-paddings next-card"}>
@@ -192,7 +229,7 @@ export const AppForm: FC<any> = ({ detail }) => {
           <Pager showPageSizeSelector={true} showInfo={true} allowedPageSizes={[10, 50, 100]} />
         </DataGrid>
       </div>
-      <TabFooter />
+      <TabFooter detail={detail} />
     </div>
   );
 };

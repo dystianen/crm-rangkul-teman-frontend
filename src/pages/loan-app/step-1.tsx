@@ -1,10 +1,10 @@
 import { Client } from "@stomp/stompjs";
-import { Popup } from "devextreme-react";
+import {LoadIndicator, Popup} from "devextreme-react";
 import { Button } from "devextreme-react/button";
 import "devextreme-react/date-box";
 import "devextreme-react/file-uploader";
 import Form, {
-  ButtonItem,
+  ButtonItem, ButtonOptions,
   GroupItem,
   PatternRule,
   RequiredRule,
@@ -12,13 +12,13 @@ import Form, {
 } from "devextreme-react/form";
 import { LoadPanel } from "devextreme-react/load-panel";
 import DataSource from "devextreme/data/data_source";
-import { FieldDataChangedEvent } from "devextreme/ui/form";
 import queryString from "query-string";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 import { useLocation } from "react-router-dom";
 import SockJS from "sockjs-client";
 import {
+  bankCheckValid,
   checkAccess,
   checkStatusSigning,
   createAppLoanOnboardingStep1,
@@ -41,6 +41,7 @@ import { notifyError, notifySuccess, notifyWarning } from "../../utils/devExtrem
 import "./loan-app.scss";
 import {backofficeAccess} from "../../constants/variableConstata";
 
+
 export default function Step1Page() {
   const navigate = useNavigate();
   const { loanapp } = store.getState();
@@ -56,20 +57,39 @@ export default function Step1Page() {
   const [submitForm, setSubmitForm] = useState(false);
   const [loadingDownloadBtn, setLoadingDownloadBtn] = useState(false);
   const [isShowWaitingPopup, setShowWaitingPopup] = useState(false);
-  const [isDisableButtonNext, setDisableButtonNext] = useState(false);
+  const [isDisableButtonNext, setDisableButtonNext] = useState(true);
   const [isDableBankIdBankAccNumber, setDisableBankIdBankAccNumber] = useState(false);
-
   const formRef = useRef<Form>(null);
   
   useEffect(() => {
     checkAccess(backofficeAccess.backoffice_application_step_2).then((res) => setAccessStep2(res));
   }, []);
   
+  const handleCheckBankAccount = (e: any)=> {
+    console.log("handle check bank account ",e, onboardingLoan);
+    if(typeof onboardingLoan.bankId === "undefined") {
+      notifyWarning("belum memilih bank!!");
+      e.event.preventDefault();
+      return;
+    }
+    if(typeof onboardingLoan.bankAccNumber ==="undefined") {
+      notifyWarning("belum mengisi nomor rekening!!");
+      e.event.preventDefault();
+      return;
+    }
+    if(onboardingLoan.bankId == null || onboardingLoan.bankAccNumber == null){
+      notifyWarning("pastikan sudah memilih bank dan mengisi nomor rekening!!");
+      e.event.preventDefault();
+      return;
+    }
+    
+    sendBankCheck();
+  };
+  
   const handleCheckSigning = useCallback(
     (intervalId: NodeJS.Timeout) => {
       checkStatusSigning(idData).then((res) => {
         setShowWaitingPopup(res);
-        setDisableButtonNext(res);
 
         if (!res) {
           clearInterval(intervalId);
@@ -100,6 +120,11 @@ export default function Step1Page() {
         monthlyIncome: data.monthlyIncome
       };
       setOnboardingLoan(map);
+      if(typeof res?.bankCheck !== "undefined") {
+        setDisableButtonNext(!res.bankCheck);
+      } else {
+        setDisableButtonNext(true);
+      }
     });
 
     const intervalId = setInterval(() => {
@@ -153,49 +178,54 @@ export default function Step1Page() {
   
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     setSubmitForm(true);
-    createAppLoanOnboardingStep1(id as string, onboardingLoan).then(
-      (st1) => {
-        if (st1.isWaitingSigning) {
-          setAutoNext(true);
-          setShowWaitingPopup(true);
-
-          const intervalId = setInterval(() => {
-            handleCheckSigning(intervalId);
-          }, 5000);
-
-          handleCheckSigning(intervalId);
-        } else {
-          if (!accessStep2) {
-            notifySuccess("Berhasil submit data");
-            navigate(`/loan-app`);
-          } else {
-            navigate(`/loan-app/create/step/2?id=${id}`);
+    const form = formRef.current!.instance;
+    const {isValid} = form.validate();
+    if(isValid) {
+      createAppLoanOnboardingStep1(id as string, onboardingLoan).then(
+          (st1) => {
+            if (st1.isWaitingSigning) {
+              setAutoNext(true);
+              setShowWaitingPopup(true);
+              
+              const intervalId = setInterval(() => {
+                handleCheckSigning(intervalId);
+              }, 5000);
+              
+              handleCheckSigning(intervalId);
+            } else {
+              if (!accessStep2) {
+                notifySuccess("Berhasil submit data");
+                navigate(`/loan-app`);
+              } else {
+                navigate(`/loan-app/create/step/2?id=${id}`);
+              }
+            }
+          },
+          (error) => {
+            setSubmitForm(false);
+            notifyError(error);
           }
-        }
-      },
-      (error) => {
-        setSubmitForm(false);
-        notifyError(error);
-      }
-    ).finally(()=>setSubmitForm(false));
-
+      ).finally(()=>setSubmitForm(false));
+    }
     e.preventDefault();
   };
 
-  const onFieldDataChanged = (evt: FieldDataChangedEvent) => {
+  const onFieldDataChanged = (evt: any) => {
     const { dataField, value } = evt;
-    if (dataField) {
-      if (dataField in onboardingLoan) {
-        setOnboardingLoan((prevState) => ({
-          ...prevState,
-          [dataField]: value
-        }));
-      }
-    }
-
-    if (dataField === "bankId" || dataField === "bankAccNumber") {
-      sendBankCheck();
-    }
+    // if (dataField) {
+    //   if (dataField in onboardingLoan) {
+    //     setOnboardingLoan((prevState) => ({
+    //       ...prevState,
+    //       [dataField]: value
+    //     }));
+    //   }
+    // }
+    
+    onboardingLoan[dataField] = value;
+    
+    // if (dataField === "bankId" || dataField === "bankAccNumber") {
+    //   sendBankCheck();
+    // }
   };
 
   const stompClientRef = useRef<any>(null);
@@ -221,7 +251,7 @@ export default function Step1Page() {
 
               if (res.success) {
                 if(res?.error){
-                  notifyError(res.message);
+                  notifyWarning(res.message);
                 } else {
                   notifySuccess(res.message);
                 }
@@ -255,21 +285,26 @@ export default function Step1Page() {
       bankAccountNumber: onboardingLoan.bankAccNumber
     };
     console.log("Sending bank account check:", payload);
+    bankCheckValid(payload).then((rest)=>{
+      console.log("submit bankchecking", rest);
+      setDisableBankIdBankAccNumber(rest?.isWaiting);
+      setDisableButtonNext(rest?.isWaiting);
+    });
     const stompClient = stompClientRef.current;
     if (stompClient && stompClient.connected) {
-      if (
-        onboardingLoan.bankId != null &&
-        onboardingLoan.bankId.length > 0 &&
-        onboardingLoan.bankAccNumber != null &&
-        onboardingLoan.bankAccNumber.length > 0
-      ) {
-        stompClient.publish({
-          destination: `/api/bankAccountCheck/${id}`,
-          body: JSON.stringify(payload)
-        });
-      }
-    } else {
-      console.error("Stomp client is not connected");
+    //   if (
+    //     onboardingLoan.bankId != null &&
+    //     onboardingLoan.bankId.length > 0 &&
+    //     onboardingLoan.bankAccNumber != null &&
+    //     onboardingLoan.bankAccNumber.length > 0
+    //   ) {
+    //     stompClient.publish({
+    //       destination: `/api/bankAccountCheck/${id}`,
+    //       body: JSON.stringify(payload)
+    //     });
+    //   }
+    // } else {
+    //   console.error("Stomp client is not connected");
     }
   };
 
@@ -343,26 +378,41 @@ export default function Step1Page() {
                 >
                   <RequiredRule message="Bank wajib diisi" />
                 </SimpleItem>
-                <SimpleItem
-                  colSpan={3}
-                  dataField="bankAccNumber"
-                  label={{ text: "Nomor Rekening" }}
-                  editorOptions={{
-                    disabled: isDableBankIdBankAccNumber,
-                    onKeyDown: (e: any) => {
-                      const key = e.event.key;
-                      e.value = String.fromCharCode(e.event.keyCode);
-                      let forbiddenChars = ['!','@','#','$','%','^','&','*','(',')'];
-                      if (forbiddenChars.includes(key))
-                        e.event.preventDefault();
-                      if (!/[0-9]/.test(e.value) && key !== "Backspace" && key !== "Delete")
-                        e.event.preventDefault();
-                    }
-                  }}
-                >
-                  <RequiredRule message="Nomor rekening wajib diisi" />
-                  <PatternRule message="Nomor Rekening hanya boleh angka" pattern={/^[0-9]+$/}/>
-                </SimpleItem>
+                <GroupItem colCount={3}>
+                  <SimpleItem
+                      colSpan={2}
+                      dataField="bankAccNumber"
+                      label={{ text: "Nomor Rekening" }}
+                      editorOptions={{
+                        disabled: isDableBankIdBankAccNumber,
+                        onKeyDown: (e: any) => {
+                          const key = e.event.key;
+                          e.value = String.fromCharCode(e.event.keyCode);
+                          let forbiddenChars = ['!','@','#','$','%','^','&','*','(',')'];
+                          if (forbiddenChars.includes(key))
+                            e.event.preventDefault();
+                          if (!/[0-9]/.test(e.value) && key !== "Backspace" && key !== "Delete")
+                            e.event.preventDefault();
+                        },
+                      }}
+                  >
+                    <RequiredRule message="Nomor rekening wajib diisi" />
+                    <PatternRule message="Nomor Rekening hanya boleh angka" pattern={/^[0-9]+$/}/>
+                  </SimpleItem>
+                  <ButtonItem horizontalAlignment={"center"} verticalAlignment={"center"}>
+                    <ButtonOptions
+                        type="default"
+                        width={"100%"}
+                        disabled={isDableBankIdBankAccNumber}
+                        onClick={handleCheckBankAccount}
+                    >
+                      <div className="button-options">
+                        <LoadIndicator width="20px" height="20px" visible={isDableBankIdBankAccNumber} />
+                        <span className="dx-button-text">Periksa</span>
+                      </div>
+                    </ButtonOptions>
+                  </ButtonItem>
+                </GroupItem>
               </GroupItem>
 
               <GroupItem caption="Informasi tambahan" colCount={2}>

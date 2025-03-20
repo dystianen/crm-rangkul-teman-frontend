@@ -83,69 +83,68 @@ const DocumentCard: React.FC<DocumentCardProps> = ({ appId, disabled = false }) 
 
   return (
     <>
-      <div className="dx-card responsive-paddings next-card">
-        <h3 style={{ marginBottom: disabled ? 16 : 0 }}>Documents</h3>
-        <DataGrid
-          dataSource={documentListStore}
-          columnAutoWidth
-          wordWrapEnabled={false}
-          showBorders
-          dateSerializationFormat="yyyy-MM-ddTHH:mm:ss.SSSxxx"
-          repaintChangesOnly
-          {...(!disabled && {
-            onToolbarPreparing: (e: any) => {
-              const items = e.toolbarOptions.items;
-              items.unshift({
-                location: "after",
-                widget: "dxButton",
-                options: {
-                  hint: "Add new",
-                  icon: "add",
-                  onClick: handleOpen
-                }
-              });
-            },
-            editing: {
-              allowUpdating: true,
-              allowDeleting: true
-            }
-          })}
-        >
-          <Column
-            caption="No."
-            width={70}
-            alignment="center"
-            allowSorting={false}
-            cellTemplate={(container, options) => {
-              container.innerText = options.rowIndex + 1;
-            }}
-          />
-          <Column dataField="typeName" caption="File Type" allowSorting={false} />
-          <Column
-            dataField="typeId"
-            caption="File"
-            cellRender={({ data }) => <ButtonDocCell data={data} />}
-            allowSorting={false}
-          />
-          <Column
-            type={"buttons"}
-            buttons={[
-              {
-                name: "edit",
-                onClick: function (e: any) {
-                  handleOpen(e.row.data);
-                  e.event.preventDefault();
-                }
-              },
-              {
-                name: "delete"
+      <h3 style={{ marginBottom: disabled ? 16 : 0 }}>Documents</h3>
+      <DataGrid
+        dataSource={documentListStore}
+        columnAutoWidth
+        wordWrapEnabled={false}
+        showBorders
+        dateSerializationFormat="yyyy-MM-ddTHH:mm:ss.SSSxxx"
+        repaintChangesOnly
+        {...(!disabled && {
+          onToolbarPreparing: (e: any) => {
+            const items = e.toolbarOptions.items;
+            items.unshift({
+              location: "after",
+              widget: "dxButton",
+              options: {
+                hint: "Add new",
+                icon: "add",
+                onClick: handleOpen
               }
-            ]}
-          />
-          <Paging defaultPageSize={50} />
-          <Pager showPageSizeSelector showInfo allowedPageSizes={[10, 50, 100]} />
-        </DataGrid>
-      </div>
+            });
+          },
+          editing: {
+            allowUpdating: true,
+            allowDeleting: true
+          }
+        })}
+      >
+        <Column
+          caption="No."
+          width={70}
+          alignment="center"
+          allowSorting={false}
+          cellTemplate={(container, options) => {
+            container.innerText = options.rowIndex + 1;
+          }}
+        />
+        <Column dataField="typeName" caption="File Type" allowSorting={false} />
+        <Column
+          dataField="typeId"
+          caption="File"
+          cellRender={({ data }) => <ButtonDocCell data={data} />}
+          allowSorting={false}
+        />
+        <Column
+          type={"buttons"}
+          buttons={[
+            {
+              name: "edit",
+              onClick: function (e: any) {
+                handleOpen(e.row.data);
+                e.event.preventDefault();
+              }
+            },
+            {
+              name: "delete"
+            }
+          ]}
+        />
+        <Paging defaultPageSize={50} />
+        <Pager showPageSizeSelector showInfo allowedPageSizes={[10, 50, 100]} />
+      </DataGrid>
+
       <DocumentForm
         appId={appId}
         documentData={formData}

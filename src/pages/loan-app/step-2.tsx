@@ -1,5 +1,5 @@
-import {LoadPanel, Popup} from "devextreme-react";
-import {Button} from "devextreme-react/button";
+import { LoadPanel, Popup } from "devextreme-react";
+import { Button } from "devextreme-react/button";
 import DataGrid, {
   Column,
   Editing,
@@ -20,11 +20,11 @@ import Form, {
 } from "devextreme-react/form";
 import notify from "devextreme/ui/notify";
 import queryString from "query-string";
-import {useEffect, useRef, useState} from "react";
+import { useEffect, useRef, useState } from "react";
 import ReactDOM from "react-dom/client";
 import Resizer from "react-image-file-resizer";
-import {useNavigate} from "react-router";
-import {useLocation} from "react-router-dom";
+import { useNavigate } from "react-router";
+import { useLocation } from "react-router-dom";
 import {
   checkAccess,
   createAppLoanOnboardingStep2,
@@ -32,21 +32,22 @@ import {
   fetchCheckPartial,
   getSignedDoc
 } from "src/api/apploan";
+import BusinessAddress from "src/components/loan-app/BusinessAddress";
+import DocumentCard from "src/components/loan-app/DocumentCard";
 import FamilyCard from "src/components/loan-app/FamilyCard";
 import NeighbourQuestions from "src/components/loan-app/NeighbourQuestions";
 import SellingQuestions from "src/components/loan-app/SellingQuestions";
 import StreetShop from "src/components/loan-app/StreetShop";
 import PdfViewer from "src/components/pdf-viewer/PdfViewer";
-import {getFileBase64} from "../../api/helper";
-import {notifySuccess, notifyWarning} from "../../utils/devExtremeUtils";
+import { getFileBase64 } from "../../api/helper";
+import { backofficeAccess } from "../../constants/variableConstata";
+import { notifySuccess, notifyWarning } from "../../utils/devExtremeUtils";
 import "./loan-app.scss";
-import {backofficeAccess} from "../../constants/variableConstata";
-import DocumentCard from "src/components/loan-app/DocumentCard";
 
 export default function Step2Page() {
   const navigate = useNavigate();
   const location = useLocation();
-  const {id} = queryString.parse(location.search);
+  const { id } = queryString.parse(location.search);
   const ID = String(id);
   const [incomeProof, setIncomeProof] = useState<any>(undefined);
   const [fileType, setFileType] = useState<string>("");
@@ -66,7 +67,7 @@ export default function Step2Page() {
   const detailLoanApp = (appId: any) => {
     detailAppLoan(appId).then((res) => {
       const data = res as any;
-      
+
       // console.log("data app: ", data);
       // if (!data.privyEnabled && data.statusId === statusApp.unsigned) {
       // navigate(`/loan-app/detail/upload-signed?id=${ID}`);
@@ -77,7 +78,7 @@ export default function Step2Page() {
         setFileType(data.incomeProof.fileType);
         setIncomeProof(getFileBase64(data.incomeProof.fileType, data.incomeProof.fileContent));
       }
-      
+
       if (typeof data.monthlyIncome !== "undefined") {
         setOnStep2Loan({
           monthlyIncome: data?.monthlyIncome,
@@ -87,13 +88,12 @@ export default function Step2Page() {
         });
       }
     });
-    
+
     fetchCheckPartial(ID).then((res) => {
       setMissingFields(res.messages);
       setShowRemainingPopup(res.opened);
     });
-  }
-  
+  };
 
   useEffect(() => {
     detailLoanApp(ID);
@@ -164,7 +164,7 @@ export default function Step2Page() {
         notifySuccess(res.message);
         setSubmitForm(false);
         detailLoanApp(ID);
-        if(res.isCompletedStep){
+        if (res.isCompletedStep) {
           navigate(`/loan-app/create/preview?id=${id}`);
         }
       },
@@ -256,15 +256,29 @@ export default function Step2Page() {
         />
       </div>
       <div className={"content-block"}>
-		  <FamilyCard appId={ID}/>
+        <div className={"dx-card responsive-paddings"}>
+          <FamilyCard appId={ID} />
+        </div>
 
-        <DocumentCard appId={ID} />
+        <div className={"dx-card responsive-paddings next-card"}>
+          <DocumentCard appId={ID} />
+        </div>
 
-		  <SellingQuestions appId={ID}/>
+        <div className={"dx-card responsive-paddings next-card"}>
+          <SellingQuestions appId={ID} />
+        </div>
 
-		  <NeighbourQuestions appId={ID}/>
+        <div className={"dx-card responsive-paddings next-card"}>
+          <NeighbourQuestions appId={ID} />
+        </div>
 
-		  <StreetShop appId={ID}/>
+        <div className={"dx-card responsive-paddings next-card"}>
+          <StreetShop appId={ID} />
+        </div>
+
+        <div className={"dx-card responsive-paddings next-card"}>
+          <BusinessAddress appId={ID} />
+        </div>
 
         <div className={"dx-card responsive-paddings next-card"}>
           <h3>Custom Data</h3>
@@ -277,7 +291,7 @@ export default function Step2Page() {
             repaintChangesOnly={true}
           >
             <Editing mode="popup" allowUpdating={true} allowAdding={true} allowDeleting={true}>
-				<PopGrid title="Custom Data Form" showTitle={true} width={360} height={320}/>
+              <PopGrid title="Custom Data Form" showTitle={true} width={360} height={320} />
               <FormGrid
                 showColonAfterLabel={true}
                 showValidationSummary={true}
@@ -285,10 +299,10 @@ export default function Step2Page() {
                 colCount={1}
               >
                 <SimpleItem dataField="name">
-					<RequiredRule message="Nama wajib diisi"/>
+                  <RequiredRule message="Nama wajib diisi" />
                 </SimpleItem>
                 <SimpleItem dataField={"value"}>
-					<RequiredRule message="Value wajib diisi"/>
+                  <RequiredRule message="Value wajib diisi" />
                 </SimpleItem>
               </FormGrid>
             </Editing>
@@ -301,10 +315,10 @@ export default function Step2Page() {
                 dom.render(options.rowIndex + 1);
               }}
             />
-			  <Column dataField={"name"} caption={"Name"}/>
-			  <Column dataField={"value"} caption={"Value"}/>
-			  <Paging defaultPageSize={50}/>
-			  <Pager showPageSizeSelector={true} showInfo={true} allowedPageSizes={[10, 50, 100]}/>
+            <Column dataField={"name"} caption={"Name"} />
+            <Column dataField={"value"} caption={"Value"} />
+            <Paging defaultPageSize={50} />
+            <Pager showPageSizeSelector={true} showInfo={true} allowedPageSizes={[10, 50, 100]} />
           </DataGrid>
         </div>
 
@@ -322,47 +336,47 @@ export default function Step2Page() {
               <GroupItem caption="Financial Detail" colCount={2}>
                 <SimpleItem
                   dataField="monthlyIncome"
-					  label={{text: "Penghasilan perbulan"}}
+                  label={{ text: "Penghasilan perbulan" }}
                   editorType="dxNumberBox"
-					  editorOptions={{format: "Rp #,##0.00"}}
+                  editorOptions={{ format: "Rp #,##0.00" }}
                 >
-					<PatternRule message="hanya boleh angka" pattern={/^[0-9]+$/}/>
+                  <PatternRule message="hanya boleh angka" pattern={/^[0-9]+$/} />
                 </SimpleItem>
                 <SimpleItem
                   dataField="handwrittenSalesBook"
-					  label={{text: "Handwritten Sales book"}}
+                  label={{ text: "Handwritten Sales book" }}
                   editorType="dxCheckBox"
                 />
                 <SimpleItem
                   dataField="debitTransaction"
-					  label={{text: "Outcome"}}
+                  label={{ text: "Outcome" }}
                   editorType="dxNumberBox"
-					  editorOptions={{format: "Rp #,##0.00"}}
+                  editorOptions={{ format: "Rp #,##0.00" }}
                 >
-					<PatternRule message="hanya boleh angka" pattern={/^[0-9]+$/}/>
+                  <PatternRule message="hanya boleh angka" pattern={/^[0-9]+$/} />
                 </SimpleItem>
                 <SimpleItem
                   dataField="creditTransaction"
-					  label={{text: "Income"}}
+                  label={{ text: "Income" }}
                   editorType="dxNumberBox"
-					  editorOptions={{format: "Rp #,##0.00"}}
+                  editorOptions={{ format: "Rp #,##0.00" }}
                 >
-					<PatternRule message="hanya boleh angka" pattern={/^[0-9]+$/}/>
+                  <PatternRule message="hanya boleh angka" pattern={/^[0-9]+$/} />
                 </SimpleItem>
                 <SimpleItem
                   dataField="incomeProof"
                   editorType={"dxFileUploader" as any}
                   editorOptions={uploadKtpOptions}
-					  label={{text: "File"}}
+                  label={{ text: "File" }}
                 ></SimpleItem>
               </GroupItem>
               <GroupItem>
                 {incomeProof && (
                   <Item>
                     {fileType.includes("image/") ? (
-							<img id="dropzone-ktp" src={incomeProof} alt="income-proof" width={"50%"}/>
+                      <img id="dropzone-ktp" src={incomeProof} alt="income-proof" width={"50%"} />
                     ) : (
-							<PdfViewer url={incomeProof}/>
+                      <PdfViewer url={incomeProof} />
                     )}
                   </Item>
                 )}

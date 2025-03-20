@@ -12,11 +12,7 @@ import DataGrid, {
 import DataSource from "devextreme/data/data_source";
 import { useMemo } from "react";
 import { familyListStore } from "src/api/apploan";
-import {
-  contactFamilyStore,
-  selectBoxOptions,
-  validateIdNumber
-} from "src/api/contact";
+import { contactFamilyStore, selectBoxOptions, validateIdNumber } from "src/api/contact";
 
 const FamilyCard = ({ appId, disabled = false }: { appId: string; disabled?: boolean }) => {
   const familyDataSource = useMemo(() => new DataSource(familyListStore(appId)), [appId]);
@@ -34,8 +30,10 @@ const FamilyCard = ({ appId, disabled = false }: { appId: string; disabled?: boo
   };
 
   return (
-    <div className={"dx-card responsive-paddings"}>
-      <h3 style={{ marginBottom: 16 }}>Family</h3>
+    <>
+      <div className={`dx-form-group-with-caption ${disabled ? "mb14" : ""}`}>
+        <span className="dx-form-group-caption">Family</span>
+      </div>
       <DataGrid
         dataSource={familyDataSource}
         columnAutoWidth={true}
@@ -120,7 +118,7 @@ const FamilyCard = ({ appId, disabled = false }: { appId: string; disabled?: boo
         <Paging defaultPageSize={50} />
         <Pager showPageSizeSelector={true} showInfo={true} allowedPageSizes={[10, 50, 100]} />
       </DataGrid>
-    </div>
+    </>
   );
 };
 
