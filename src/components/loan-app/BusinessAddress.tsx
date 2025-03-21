@@ -21,21 +21,26 @@ const BusinessAddress = ({ appId, disabled = false }: { appId: string; disabled?
   const [center, setCenter] = useState({ lat: 0, lng: 0 });
   const [isShowPopupConfirm, setShowPopupConfirm] = useState(false);
   const [isLoadingSave, setLoadingSave] = useState(false);
+  const [isAvailable, setAvailable] = useState(false);
 
   useEffect(() => {
     fetchGeoLocation(appId)
       .then((res) => {
+        setAvailable(true);
         setCenter({
           lat: res.latitude,
           lng: res.longitude
         });
       })
       .catch((err) => {
-        if (err.message.includes("404")) {
+        if (!disabled && err.message.includes("404")) {
+          setAvailable(true);
           handleSubmitLocation();
+        } else {
+          setAvailable(false);
         }
       });
-  }, [appId]);
+  }, [appId, disabled]);
 
   const handleSubmitLocation = useCallback(
     (fromButton = false) => {
@@ -92,41 +97,47 @@ const BusinessAddress = ({ appId, disabled = false }: { appId: string; disabled?
 
       <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
         <strong>Geo Location:</strong>
-        <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-          <a
-            href={`https://www.google.com/maps?q=${center.lat},${center.lng}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "5px",
-              color: "blue",
-              textDecoration: "underline",
-              cursor: "pointer",
-              border: "1px solid #ddd",
-              padding: "3px 8px",
-              borderRadius: "5px",
-              backgroundColor: "#f8f9fa"
-            }}
-          >
-            <img
-              src="/assets/images/ic_google_maps.png"
-              alt="Google Maps"
-              width={10}
-              style={{ display: "inline-block" }}
-            />
-            {convertToDMS(center.lat, center.lng)}
-          </a>
-          <Button
-            onClick={() =>
-              copyToClipboard(`https://www.google.com/maps?q=${center.lat},${center.lng}`)
-            }
-            icon="copy"
-          />
-        </div>
+        {isAvailable ? (
+          <>
+            <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+              <a
+                href={`https://www.google.com/maps?q=${center.lat},${center.lng}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "5px",
+                  color: "blue",
+                  textDecoration: "underline",
+                  cursor: "pointer",
+                  border: "1px solid #ddd",
+                  padding: "3px 8px",
+                  borderRadius: "5px",
+                  backgroundColor: "#f8f9fa"
+                }}
+              >
+                <img
+                  src="/assets/images/ic_google_maps.png"
+                  alt="Google Maps"
+                  width={10}
+                  style={{ display: "inline-block" }}
+                />
+                {convertToDMS(center.lat, center.lng)}
+              </a>
+              <Button
+                onClick={() =>
+                  copyToClipboard(`https://www.google.com/maps?q=${center.lat},${center.lng}`)
+                }
+                icon="copy"
+              />
+            </div>
 
-        <Button text="Update Location" visible={!disabled} onClick={handleUpdateLocation} />
+            <Button text="Update Location" visible={!disabled} onClick={handleUpdateLocation} />
+          </>
+        ) : (
+          <p>Tidak tersedia</p>
+        )}
       </div>
 
       <Popup width={360} height={"auto"} visible={isShowPopupConfirm} showTitle={false}>
