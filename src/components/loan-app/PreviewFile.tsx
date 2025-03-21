@@ -4,7 +4,7 @@ import { getFileBase64 } from "src/api/helper";
 import PdfViewer from "../pdf-viewer/PdfViewer";
 
 const PreviewFile = ({ file }: any) => {
-  const [isPopupVisible, setIsPopupVisible] = useState(false);
+  const [isPopupVisible, setPopupVisible] = useState(false);
 
   if (!file) return null;
 
@@ -12,40 +12,68 @@ const PreviewFile = ({ file }: any) => {
   const fileBase64 = getFileBase64(fileType, fileContent);
   const isImage = fileType.includes("image/");
 
+  const handleClickDetail = () => {
+    setPopupVisible(true);
+  };
+
   return (
     <>
       {isImage ? (
-        <>
-          {/* Gambar Kecil */}
-          <img
-            src={fileBase64}
-            alt="Income proof document"
-            width="300px"
-            loading="lazy"
-            style={{ cursor: "pointer" }}
-            onClick={() => setIsPopupVisible(true)}
-          />
-
-          {/* Popup untuk Memperbesar Gambar */}
-          <Popup
-            visible={isPopupVisible}
-            onHiding={() => setIsPopupVisible(false)}
-            showTitle={false}
-            width="auto"
-            height="auto"
-            dragEnabled={false}
-            hideOnOutsideClick={true}
-          >
-            <img
-              src={fileBase64}
-              alt="Income proof document"
-              style={{ maxWidth: "100%", maxHeight: "80vh" }}
-            />
-          </Popup>
-        </>
+        <div
+          style={{
+            position: "relative",
+            display: "inline-block",
+            cursor: "pointer"
+          }}
+          onClick={handleClickDetail}
+        >
+          <img src={fileBase64} alt="Income proof document" width="300px" loading="lazy" />
+        </div>
       ) : (
-        <PdfViewer url={fileBase64} />
+        <div
+          className="dx-card responsive-paddings preview-file-pdf"
+          style={{
+            height: 350,
+            overflowY: "auto",
+            cursor: "pointer"
+          }}
+          onClick={handleClickDetail}
+        >
+          <div
+            style={{
+              position: "relative",
+              overflow: "hidden"
+            }}
+          >
+            <PdfViewer url={fileBase64} />
+          </div>
+        </div>
       )}
+
+      {/* Popup untuk Memperbesar Gambar/PDF */}
+      <Popup
+        visible={isPopupVisible}
+        onHiding={() => setPopupVisible(false)}
+        showTitle={false}
+        dragEnabled={false}
+        hideOnOutsideClick={true}
+        maxWidth={700}
+        height={"auto"}
+        maxHeight={"80vh"}
+      >
+        <div
+          style={{
+            position: "relative",
+            overflow: "hidden"
+          }}
+        >
+          {isImage ? (
+            <img src={fileBase64} alt="Income proof document" style={{ maxWidth: "100%" }} />
+          ) : (
+            <PdfViewer url={fileBase64} />
+          )}
+        </div>
+      </Popup>
     </>
   );
 };
