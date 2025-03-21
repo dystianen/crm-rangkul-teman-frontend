@@ -93,3 +93,15 @@ export const backofficeAccess = {
   backoffice_contact_activity_type_sales:"8fc25c7b-2bfe-4210-ada4-6e2a1d19cc8c",
   backoffice_utility:"a5662435-91f0-47cc-9fa0-d06d318cf5cf",
 }
+
+export const contactActivityFieldForm = {
+  RESULT: "ACTIVITY_TYPE_RESULT",
+  PHOTO: "PHOTO",
+  CURRENT_GEO_POSITION: "CURRENT_GEO_POSITION",
+  COMMENT: "COMMENT",
+  PTP_DATE: "PTP_DATE",
+  PTP_AMOUNT: "PTP_AMOUNT",
+  PURPOSE_OF_VISIT: "PURPOSE_OF_VISIT",
+  SALES_OFFERING: "SALES_OFFERING",
+  PURPOSE_OF_CALL: "PURPOSE_OF_CALL",
+}
