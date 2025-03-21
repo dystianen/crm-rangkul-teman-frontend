@@ -19,14 +19,14 @@ const convertToDMS = (lat: number, lng: number) => {
 
 const BusinessAddress = ({ appId, disabled = false }: { appId: string; disabled?: boolean }) => {
   const [center, setCenter] = useState({ lat: 0, lng: 0 });
+  const isAvailable = center.lat !== 0 && center.lng !== 0;
+
   const [isShowPopupConfirm, setShowPopupConfirm] = useState(false);
   const [isLoadingSave, setLoadingSave] = useState(false);
-  const [isAvailable, setAvailable] = useState(false);
 
   useEffect(() => {
     fetchGeoLocation(appId)
       .then((res) => {
-        setAvailable(true);
         setCenter({
           lat: res.latitude,
           lng: res.longitude
@@ -34,10 +34,7 @@ const BusinessAddress = ({ appId, disabled = false }: { appId: string; disabled?
       })
       .catch((err) => {
         if (!disabled && err.message.includes("404")) {
-          setAvailable(true);
           handleSubmitLocation();
-        } else {
-          setAvailable(false);
         }
       });
   }, [appId, disabled]);

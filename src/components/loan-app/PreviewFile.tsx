@@ -31,10 +31,9 @@ const PreviewFile = ({ file }: any) => {
         </div>
       ) : (
         <div
-          className="dx-card responsive-paddings"
+          className="dx-card responsive-paddings preview-file-pdf"
           style={{
             height: 350,
-            width: 350,
             overflowY: "auto",
             cursor: "pointer"
           }}
