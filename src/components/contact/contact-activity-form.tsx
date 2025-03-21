@@ -72,7 +72,7 @@ interface FieldAvailable{
 interface FieldForm {
   comment: FieldAvailable;
   categoryId: FieldAvailable;
-  resultId?: FieldAvailable;
+  resultId: FieldAvailable;
   typeId: FieldAvailable;
   currentGeoposition: FieldAvailable;
   ptpAmount: FieldAvailable;
@@ -215,9 +215,11 @@ export default function ActivityContactForm(props: ActivityContactProps) {
       delete payload.image;
 
       if (updatedData.id) {
-        await ajaxPatch(`/api/contact/activity/update/${updatedData.id}`, payload);
+        await ajaxPatch(`/api/contact/activity/update/${updatedData.id}`, payload).then(
+            ()=>setFieldForm(resetFieldForm));
       } else {
-        await ajaxPost("/api/contact/activity/create", payload);
+        await ajaxPost("/api/contact/activity/create", payload).then(
+            ()=>setFieldForm(resetFieldForm));
       }
 
       setLoading(false);
@@ -248,117 +250,8 @@ export default function ActivityContactForm(props: ActivityContactProps) {
   const resetGeoposition = () => {
     setGeoposition({ isStreetShop: false, latitude: "", longitude: "" });
   };
-
-
-  const [resultFieldForm, setResultFieldForm] = useState<FieldAvailable>({
-      visible: false,
-      isRequired: false,
-      displayOrder: 0,
-  });
-
+  
   const onFieldAppDataChanged = useCallback((evt: any) => {
-    if (!evt || !evt.dataField) return;
-
-    if (evt.dataField === "categoryId" && evt.value != null) {
-      const selectOptions = selectBoxOptions(new DataSource(activityTypeByCategoryStore(evt.value)), "Select Activity Type");
-      setTypeOptions(selectOptions);
-    }
-
-    // Activity Type
-    if (evt.dataField === "typeId" && evt.value != null) {
-      setResultDataOption(
-        selectBoxOptions(new DataSource(activityResultByTypeStore(evt.value)), "Select Result")
-      );
-
-      activityTypeFieldForm(evt.value).then((rs)=> {
-          let newFieldForm = resetFieldForm;
-
-          let result = rs.find((f:any)=>f.field===contactActivityFieldForm.RESULT);
-          setResultFieldForm({
-              visible: (typeof result !== "undefined"), displayOrder: 1, isRequired: (typeof result !== "undefined") && result.isRequired
-          });
-
-          newFieldForm["photo"] = {
-              visible: (typeof result !== "undefined"), displayOrder: (typeof result !== "undefined") && result.displayOrder, isRequired: (typeof result !== "undefined") && result.isRequired
-          };
-
-          let photo = rs.find((f:any)=>f.field===contactActivityFieldForm.PHOTO);
-          newFieldForm["photo"] = {
-              visible: (typeof photo !== "undefined"), displayOrder: (typeof photo !== "undefined") && photo.displayOrder, isRequired: (typeof photo !== "undefined") && photo.isRequired
-          };
-
-          let currentPosition = rs.find((f:any)=>f.field===contactActivityFieldForm.CURRENT_GEO_POSITION);
-          newFieldForm["currentGeoposition"] = {
-              visible: (typeof currentPosition !== "undefined"), displayOrder: (typeof currentPosition !== "undefined") && currentPosition.displayOrder, isRequired: (typeof currentPosition !== "undefined") && currentPosition.isRequired
-          };
-
-          
-
-        for (let i = 0; i < rs.length; i++) {
-
-            if (contactActivityFieldForm.COMMENT === rs[i].field) {
-                newFieldForm["comment"] = {
-                    visible: true, displayOrder: rs[i].displayOrder, isRequired: rs[i].isRequired
-                };
-            } else {
-                newFieldForm["comment"] = {
-                    visible: false, displayOrder: rs[i].displayOrder, isRequired: rs[i].isRequired
-                };
-            }
-
-            if (contactActivityFieldForm.PTP_DATE === rs[i].field) {
-                newFieldForm["ptpDate"] = {
-                    visible: true, displayOrder: rs[i].displayOrder, isRequired: rs[i].isRequired
-                };
-            } else {
-                newFieldForm["ptpDate"] = {
-                    visible: false, displayOrder: rs[i].displayOrder, isRequired: rs[i].isRequired
-                };
-            }
-            if (contactActivityFieldForm.PTP_AMOUNT === rs[i].field) {
-                newFieldForm["ptpAmount"] = {
-                    visible: true, displayOrder: rs[i].displayOrder, isRequired: rs[i].isRequired
-                };
-            } else {
-                newFieldForm["ptpAmount"] = {
-                    visible: false, displayOrder: rs[i].displayOrder, isRequired: rs[i].isRequired
-                };
-            }
-            if (contactActivityFieldForm.PURPOSE_OF_VISIT === rs[i].field) {
-                newFieldForm["purposeVisitId"] = {
-                    visible: true, displayOrder: rs[i].displayOrder, isRequired: rs[i].isRequired
-                };
-            } else {
-                newFieldForm["purposeVisitId"] = {
-                    visible: false, displayOrder: rs[i].displayOrder, isRequired: rs[i].isRequired
-                };
-            }
-            if (contactActivityFieldForm.PURPOSE_OF_CALL === rs[i].field) {
-                newFieldForm["purposeCallId"] = {
-                    visible: true, displayOrder: rs[i].displayOrder, isRequired: rs[i].isRequired
-                };
-            } else {
-                newFieldForm["purposeCallId"] = {
-                    visible: false, displayOrder: rs[i].displayOrder, isRequired: rs[i].isRequired
-                };
-            }
-
-            if (contactActivityFieldForm.SALES_OFFERING === rs[i].field) {
-                newFieldForm["salesOfferingId"] = {
-                    visible: true, displayOrder: rs[i].displayOrder, isRequired: rs[i].isRequired
-                };
-            } else {
-                newFieldForm["salesOfferingId"] = {
-                    visible: false, displayOrder: rs[i].displayOrder, isRequired: rs[i].isRequired
-                };
-            }
-        }
-
-        setFieldForm(newFieldForm);
-        console.log("field form: ",newFieldForm);
-      });
-    }
-
     // Street Shop
     if (evt.dataField === "currentGeoposition" && evt.value != null) {
       const checked = evt.value;
@@ -424,9 +317,76 @@ export default function ActivityContactForm(props: ActivityContactProps) {
   const handleCloseModal = (e: ClickEvent) => {
     resetGeoposition();
     setActivityContactData(props.activityContactData);
+    setFieldForm(resetFieldForm);
     props.onCloseModal(e);
   };
 
+  
+  const onChangeCategory = (e:any) => {
+    console.log("onChangeCategory", e);
+    if(e.value != null && e.value.length > 0){
+      const selectOptions = selectBoxOptions(new DataSource(activityTypeByCategoryStore(e.value)), "Select Activity Type");
+      setTypeOptions(selectOptions);
+    }
+    setFieldForm(resetFieldForm);
+  }
+  
+  const onChangeType = (e:any) => {
+    console.log("onChangeType", e);
+    if(e.value != null && e.value.length > 0) {
+      setResultDataOption(
+          selectBoxOptions(new DataSource(activityResultByTypeStore(e.value)), "Select Result")
+      );
+      
+      activityTypeFieldForm(e.value).then((rs)=> {
+        let newFieldForm = fieldForm;
+        
+        let result = rs.find((f:any)=>f.field===contactActivityFieldForm.RESULT);
+        newFieldForm["resultId"] = {
+          visible: (typeof result !== "undefined"), displayOrder: (typeof result !== "undefined") && result.displayOrder, isRequired: (typeof result !== "undefined") && result.isRequired
+        };
+        
+        let photo = rs.find((f:any)=>f.field===contactActivityFieldForm.PHOTO);
+        newFieldForm["photo"] = {
+          visible: (typeof photo !== "undefined"), displayOrder: (typeof photo !== "undefined") && photo.displayOrder, isRequired: (typeof photo !== "undefined") && photo.isRequired
+        };
+        
+        let currentPosition = rs.find((f:any)=>f.field===contactActivityFieldForm.CURRENT_GEO_POSITION);
+        newFieldForm["currentGeoposition"] = {
+          visible: (typeof currentPosition !== "undefined"), displayOrder: (typeof currentPosition !== "undefined") && currentPosition.displayOrder, isRequired: (typeof currentPosition !== "undefined") && currentPosition.isRequired
+        };
+        
+        let comment = rs.find((f:any)=>f.field===contactActivityFieldForm.COMMENT);
+        newFieldForm["comment"] = {
+          visible: (typeof comment !== "undefined"), displayOrder: (typeof comment !== "undefined") && comment.displayOrder, isRequired: (typeof comment !== "undefined") && comment.isRequired
+        };
+        
+        let ptpDate = rs.find((f:any)=>f.field===contactActivityFieldForm.PTP_DATE);
+        newFieldForm["ptpDate"] = {
+          visible: (typeof ptpDate !== "undefined"), displayOrder: (typeof ptpDate !== "undefined") && ptpDate.displayOrder, isRequired: (typeof ptpDate !== "undefined") && ptpDate.isRequired
+        };
+        let ptpAmount = rs.find((f:any)=>f.field===contactActivityFieldForm.PTP_AMOUNT);
+        newFieldForm["ptpAmount"] = {
+          visible: (typeof ptpAmount !== "undefined"), displayOrder: (typeof ptpAmount !== "undefined") && ptpAmount.displayOrder, isRequired: (typeof ptpAmount !== "undefined") && ptpAmount.isRequired
+        };
+        let purposeVisitId = rs.find((f:any)=>f.field===contactActivityFieldForm.PURPOSE_OF_VISIT);
+        newFieldForm["purposeVisitId"] = {
+          visible: (typeof purposeVisitId !== "undefined"), displayOrder: (typeof purposeVisitId !== "undefined") && purposeVisitId.displayOrder, isRequired: (typeof purposeVisitId !== "undefined") && purposeVisitId.isRequired
+        };
+        let purposeCallId = rs.find((f:any)=>f.field===contactActivityFieldForm.PURPOSE_OF_CALL);
+        newFieldForm["purposeCallId"] = {
+          visible: (typeof purposeCallId !== "undefined"), displayOrder: (typeof purposeCallId !== "undefined") && purposeCallId.displayOrder, isRequired: (typeof purposeCallId !== "undefined") && purposeCallId.isRequired
+        };
+        let salesOfferingId = rs.find((f:any)=>f.field===contactActivityFieldForm.SALES_OFFERING);
+        newFieldForm["salesOfferingId"] = {
+          visible: (typeof salesOfferingId !== "undefined"), displayOrder: (typeof salesOfferingId !== "undefined") && salesOfferingId.displayOrder, isRequired: (typeof salesOfferingId !== "undefined") && salesOfferingId.isRequired
+        };
+        setFieldForm(newFieldForm);
+        console.log("field form: ",newFieldForm);
+      });
+    }
+  }
+  
 
   return (
     <Popup
@@ -453,7 +413,10 @@ export default function ActivityContactForm(props: ActivityContactProps) {
               editorType="dxSelectBox"
               visible={fieldForm.categoryId.visible}
               isRequired={fieldForm.categoryId.isRequired}
-              editorOptions={categoryOptions}
+              editorOptions={{...categoryOptions,
+                onValueChanged: onChangeCategory
+                
+          }}
           >
             <RequiredRule message="Type is required" />
           </SimpleItem>
@@ -463,7 +426,7 @@ export default function ActivityContactForm(props: ActivityContactProps) {
             editorType="dxSelectBox"
             visible={fieldForm.typeId.visible}
             isRequired={fieldForm.typeId.isRequired}
-            editorOptions={typeOptions}
+            editorOptions={{...typeOptions, onValueChanged: onChangeType}}
           >
             <RequiredRule message="Type is required" />
           </SimpleItem>
@@ -471,8 +434,8 @@ export default function ActivityContactForm(props: ActivityContactProps) {
             dataField="resultId"
             label={{ text: "Result" }}
             editorType="dxSelectBox"
-            visible={resultFieldForm.visible}
-            isRequired={resultFieldForm.isRequired}
+            visible={fieldForm.resultId.visible}
+            isRequired={fieldForm.resultId.isRequired}
             editorOptions={{
               ...resultDataOption,
               valueExpr: "id",
@@ -480,7 +443,7 @@ export default function ActivityContactForm(props: ActivityContactProps) {
               searchEnabled: true
             }}
           >
-            {resultFieldForm.isRequired && <RequiredRule message="Result is required" />}
+            {fieldForm.resultId.isRequired && <RequiredRule message="Result is required" />}
           </SimpleItem>
 
           <SimpleItem
