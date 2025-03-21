@@ -58,6 +58,8 @@ const PreviewFile = ({ file }: any) => {
         dragEnabled={false}
         hideOnOutsideClick={true}
         maxWidth={700}
+        height={"auto"}
+        maxHeight={"80vh"}
       >
         <div
           style={{
@@ -66,7 +68,7 @@ const PreviewFile = ({ file }: any) => {
           }}
         >
           {isImage ? (
-            <img src={fileBase64} alt="Income proof document" />
+            <img src={fileBase64} alt="Income proof document" style={{ maxWidth: "100%" }} />
           ) : (
             <PdfViewer url={fileBase64} />
           )}
