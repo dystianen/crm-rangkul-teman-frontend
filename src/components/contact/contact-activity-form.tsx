@@ -12,7 +12,7 @@ import { ClickEvent } from "devextreme/ui/button";
 import {useCallback, useEffect, useRef, useState} from "react";
 import {
   activityCategoryStore, activityResultByTypeStore,
-  activityResultStore, activityTypeByCategoryStore, activityTypeFieldForm,
+  activityResultStore, activityTypeByCategoryStore, activityTypeFieldForm, getFile,
   purposeCallStore,
   purposeVisitStore,
   salesOfferingStore,
@@ -26,7 +26,6 @@ import imageCompress from "src/utils/imageCompress.util";
 import GoogleMapsLocation from "../google-maps-location/GoogleMapsLocation";
 import "./activity-form.scss";
 import {contactActivityFieldForm} from "../../constants/variableConstata";
-import contactActivity from "./contact-activity";
 
 export interface IContactActivity {
   contactId?: string;
@@ -48,6 +47,7 @@ export interface IContactActivity {
 }
 
 interface ActivityContactProps {
+  contactId: string,
   activityContactData: IContactActivity;
   isModalVisible: boolean;
   onSubmit: (e: any) => void;
@@ -90,9 +90,7 @@ export default function ActivityContactForm(props: ActivityContactProps) {
   const formRef = useRef<Form>(null);
   const [loading, setLoading] = useState(false);
   const [resultDataOption, setResultDataOption] = useState<any>({});
-  const [activityContactData, setActivityContactData] = useState<IContactActivity>(
-    props.activityContactData
-  );
+  const [activityContactData, setActivityContactData] = useState<IContactActivity>({});
   const [typeOptions, setTypeOptions] = useState<any>({});
   const [fieldListForm, setFieldListForm] = useState<any[]>([])
 
@@ -102,19 +100,35 @@ export default function ActivityContactForm(props: ActivityContactProps) {
     latitude: "",
     longitude: ""
   });
-  const [image, setImage] = useState(undefined);
+  const [image, setImage] = useState("");
 
   useEffect(() => {
     const data = props.activityContactData;
     console.log("props.activityContactData", props.activityContactData);
     setGeoposition({
-      isStreetShop: (typeof data.latitude !=="undefined" && data.longitude !== "undefined" && data.longitude.length > 0 && data.latitude.length > 0),
-      latitude: data.latitude,
-      longitude: data.longitude
+      isStreetShop: ((typeof data.latitude !=="undefined") && (typeof data.longitude !== "undefined") && data.latitude.length > 0 && data.longitude.length > 0),
+      latitude: data.latitude || "",
+      longitude: data.longitude || ""
     });
-    setImage(data.image);
+    
+    // setImage((data.image || ""));
+    
+    if(typeof data.image !== "undefined" && data.image.length > 0){
+      getFile(data.image)
+      .then(response => setImage(response))
+      .catch(error => console.error("ERROR:: ", error));
+      // imageUrlToBase64(data.image).then((rs)=>{
+      //   console.log("base64  dari list", rs)
+      // })
+      // .catch(error => console.error("ERROR PHOTO:: ", error));
+    }
+    
     setActivityContactData(props.activityContactData);
   }, [props.activityContactData]);
+  
+  useEffect(() => {
+    console.log(" image filled", image);
+  }, [image]);
   
   
   const [resultFieldForm, setResultFieldForm] = useState<FieldAvailable>({
@@ -188,6 +202,7 @@ export default function ActivityContactForm(props: ActivityContactProps) {
 
       const payload: any = {
         ...updatedData,
+        contactId: props.contactId,
         photo: image,
         latitude: geoposition.latitude,
         longitude: geoposition.longitude,
@@ -195,18 +210,18 @@ export default function ActivityContactForm(props: ActivityContactProps) {
         ptpDate: updatedData.ptpDate ? convertToUTCString(new Date(updatedData.ptpDate)) : null
       };
 
-      if (image === updatedData.image || !isBase64(image)) {
-        delete payload.photo;
-      }
-
-      delete payload.image;
 
       if (updatedData.id) {
         await ajaxPatch(`/api/contact/activity/update/${updatedData.id}`, payload).then(
             ()=>{
               
               resetGeoposition();
-              setImage("");
+              
+              if (image === updatedData.image || !isBase64(image)) {
+                delete payload.photo;
+              }
+              
+              delete payload.image;
               resetFieldForm();
               setTypeOptions(selectBoxOptions(new DataSource([]), "Select Activity Type"));
             });
@@ -215,7 +230,12 @@ export default function ActivityContactForm(props: ActivityContactProps) {
             ()=> {
               
               resetGeoposition();
-              setImage("");
+              
+              if (image === updatedData.image || !isBase64(image)) {
+                delete payload.photo;
+              }
+              
+              delete payload.image;
               resetFieldForm();
               setTypeOptions(selectBoxOptions(new DataSource([]), "Select Activity Type"));
             });
@@ -273,6 +293,27 @@ export default function ActivityContactForm(props: ActivityContactProps) {
       } else {
         resetGeoposition();
       }
+    }
+    
+    if(evt.dataField === "typeId" && evt.value !== null) {
+      setActivityContactData((prev) => ({
+        ...prev,
+        typeId: evt.value,
+        resultId: "",
+        comment: "",
+        currentGeoposition: false,
+        ptpAmount: "",
+        ptpDate: "",
+        photo: "",
+        image: "",
+        purposeVisitId: "",
+        purposeCallId: "",
+        latitude: "",
+        longitude: "",
+        salesOfferingId: ""
+      }));
+      setImage("");
+      resetGeoposition();
     }
 
     if (evt.dataField === "resultId" && evt.value !== null) {
@@ -598,9 +639,9 @@ export default function ActivityContactForm(props: ActivityContactProps) {
             editorOptions={uploadPhotoOptions}
             label={{ text: "Photo" }}
             visible={photoFieldForm.visible}
-            isRequired={photoFieldForm.isRequired}
+            isRequired={(activityContactData.id == "" && photoFieldForm.isRequired)}
           >
-            {photoFieldForm.isRequired && <RequiredRule message="Photo is required" />}
+            {(activityContactData.id == "" && photoFieldForm.isRequired) && <RequiredRule message="Photo is required" />}
           </SimpleItem>
           <SimpleItem visible={(typeof image !== "undefined") && image.length > 0 && photoFieldForm.visible}>
             <img src={image} alt="foto" width="250px" style={{ marginTop: -16 }} />
