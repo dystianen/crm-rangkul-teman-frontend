@@ -108,3 +108,15 @@ export const restructure_max_periods = {
   "76ae8eaa-9721-4e55-b16a-12a12b272288": 78,
   "f1bd3cec-d445-4967-bcff-a50f4be64fb1": 36
 }
+
+export const contactActivityFieldForm = {
+  RESULT: "ACTIVITY_TYPE_RESULT",
+  PHOTO: "PHOTO",
+  CURRENT_GEO_POSITION: "CURRENT_GEO_POSITION",
+  COMMENT: "COMMENT",
+  PTP_DATE: "PTP_DATE",
+  PTP_AMOUNT: "PTP_AMOUNT",
+  PURPOSE_OF_VISIT: "PURPOSE_OF_VISIT",
+  SALES_OFFERING: "SALES_OFFERING",
+  PURPOSE_OF_CALL: "PURPOSE_OF_CALL",
+}

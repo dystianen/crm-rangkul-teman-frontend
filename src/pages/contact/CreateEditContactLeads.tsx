@@ -11,11 +11,13 @@ import {
   selectBoxBranchOptions,
   updateLeads
 } from "src/api/contact";
-import ContactActivity from "src/components/contact/contact-activity";
 import { InitLeadsValue, type TReqCreateLeads } from "src/interfaces/contactDto";
 import { notifyError, notifySuccess } from "src/utils/devExtremeUtils";
+import {useAuth} from "../../contexts/auth";
+import ContactActivityV2 from "../../components/contact/contact-activyv2";
 
 const CreateEditContactLeads = () => {
+  const {user} = useAuth();
   const formRef = useRef<Form>(null);
   const navigate = useNavigate();
   const location = useLocation();
@@ -181,7 +183,7 @@ const CreateEditContactLeads = () => {
         </GroupItem>
       </Form>
 
-      {!isCreate && <ContactActivity contactId={id as string} withTitle />}
+      {!isCreate && <ContactActivityV2 user={user} contactId={id as string} withTitle />}
     </div>
   );
 };
