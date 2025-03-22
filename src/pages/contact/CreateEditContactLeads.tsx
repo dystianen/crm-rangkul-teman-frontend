@@ -183,7 +183,7 @@ const CreateEditContactLeads = () => {
         </GroupItem>
       </Form>
 
-      {!isCreate && <ContactActivityV2 user={user} contactId={id as string} withTitle />}
+      {!isCreate && <ContactActivityV2 contactId={id as string} withTitle />}
     </div>
   );
 };

@@ -964,7 +964,7 @@ export default function EditPage() {
                                 </DataGrid>
                             </Tab>
                             <Tab title="Contact Activity">
-                                <ContactActivityV2 user={user} contactId={id as string}/>
+                                <ContactActivityV2 contactId={id as string}/>
                             </Tab>
                         </TabbedItem>
                     </Form>
