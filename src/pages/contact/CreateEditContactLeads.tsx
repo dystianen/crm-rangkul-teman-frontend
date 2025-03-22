@@ -14,8 +14,10 @@ import {
 import ContactActivity from "src/components/contact/contact-activity";
 import { InitLeadsValue, type TReqCreateLeads } from "src/interfaces/contactDto";
 import { notifyError, notifySuccess } from "src/utils/devExtremeUtils";
+import {useAuth} from "../../contexts/auth";
 
 const CreateEditContactLeads = () => {
+  const {user} = useAuth();
   const formRef = useRef<Form>(null);
   const navigate = useNavigate();
   const location = useLocation();
@@ -181,7 +183,7 @@ const CreateEditContactLeads = () => {
         </GroupItem>
       </Form>
 
-      {!isCreate && <ContactActivity contactId={id as string} withTitle />}
+      {!isCreate && <ContactActivity user={user} contactId={id as string} withTitle />}
     </div>
   );
 };

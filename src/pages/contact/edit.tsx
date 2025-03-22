@@ -57,8 +57,10 @@ import {AppLoanOnboardingRequest, initLoanOnboardingValue} from "../../interface
 import {getActiveBranchByUserStore, getActiveProductByBranch} from "../../api/apploan";
 import imageCompress from "src/utils/imageCompress.util";
 import trimBody from "../../utils/trim-body";
+import {useAuth} from "../../contexts/auth";
 
 export default function EditPage() {
+    const {user} = useAuth();
     const formAppRef = useRef<Form>(null);
     const [productOptions, setProductOptions] = useState<any>(undefined);
     const [productComboOptions, setComboProductOptions] = useState<any>({});
@@ -962,7 +964,7 @@ export default function EditPage() {
                                 </DataGrid>
                             </Tab>
                             <Tab title="Contact Activity">
-                                <ContactActivity contactId={id as string}/>
+                                <ContactActivity user={user} contactId={id as string}/>
                             </Tab>
                         </TabbedItem>
                     </Form>
