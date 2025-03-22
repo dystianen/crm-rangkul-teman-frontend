@@ -51,13 +51,13 @@ import resizeImage from "src/utils/resizeImage.util";
 import {formatDate} from "../../utils/dateUtils";
 import { notifyError } from "src/utils/devExtremeUtils";
 import "./contact.scss";
-import ContactActivity from "src/components/contact/contact-activity";
 import {StringLengthRule} from "devextreme-react/validator";
 import {AppLoanOnboardingRequest, initLoanOnboardingValue} from "../../interfaces/appLoanOnboarding";
 import {getActiveBranchByUserStore, getActiveProductByBranch} from "../../api/apploan";
 import imageCompress from "src/utils/imageCompress.util";
 import trimBody from "../../utils/trim-body";
 import {useAuth} from "../../contexts/auth";
+import ContactActivityV2 from "../../components/contact/contact-activyv2";
 
 export default function EditPage() {
     const {user} = useAuth();
@@ -964,7 +964,7 @@ export default function EditPage() {
                                 </DataGrid>
                             </Tab>
                             <Tab title="Contact Activity">
-                                <ContactActivity user={user} contactId={id as string}/>
+                                <ContactActivityV2 user={user} contactId={id as string}/>
                             </Tab>
                         </TabbedItem>
                     </Form>
