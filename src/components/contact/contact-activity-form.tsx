@@ -9,11 +9,10 @@ import Form, {
 } from "devextreme-react/form";
 import DataSource from "devextreme/data/data_source";
 import { ClickEvent } from "devextreme/ui/button";
-import { useCallback, useEffect, useState } from "react";
+import {useCallback, useEffect, useRef, useState} from "react";
 import {
   activityCategoryStore, activityResultByTypeStore,
   activityResultStore, activityTypeByCategoryStore, activityTypeFieldForm,
-  activityTypeStore,
   purposeCallStore,
   purposeVisitStore,
   salesOfferingStore,
@@ -27,6 +26,7 @@ import imageCompress from "src/utils/imageCompress.util";
 import GoogleMapsLocation from "../google-maps-location/GoogleMapsLocation";
 import "./activity-form.scss";
 import {contactActivityFieldForm} from "../../constants/variableConstata";
+import contactActivity from "./contact-activity";
 
 export interface IContactActivity {
   contactId?: string;
@@ -87,12 +87,14 @@ interface FieldForm {
 }
 
 export default function ActivityContactForm(props: ActivityContactProps) {
+  const formRef = useRef<Form>(null);
   const [loading, setLoading] = useState(false);
   const [resultDataOption, setResultDataOption] = useState<any>({});
   const [activityContactData, setActivityContactData] = useState<IContactActivity>(
     props.activityContactData
   );
   const [typeOptions, setTypeOptions] = useState<any>({});
+  const [fieldListForm, setFieldListForm] = useState<any[]>([])
 
   const [center, setCenter] = useState(defaultCenter);
   const [geoposition, setGeoposition] = useState({
@@ -100,96 +102,81 @@ export default function ActivityContactForm(props: ActivityContactProps) {
     latitude: "",
     longitude: ""
   });
-  const [image, setImage] = useState("");
+  const [image, setImage] = useState(undefined);
 
   useEffect(() => {
     const data = props.activityContactData;
-    if (data.image) {
-      setImage(data.image);
-    }
-    if (data.latitude && data.longitude) {
-      setGeoposition({
-        isStreetShop: true,
-        latitude: data.latitude,
-        longitude: data.longitude
-      });
-    }
+    console.log("props.activityContactData", props.activityContactData);
+    setGeoposition({
+      isStreetShop: (typeof data.latitude !=="undefined" && data.longitude !== "undefined" && data.longitude.length > 0 && data.latitude.length > 0),
+      latitude: data.latitude,
+      longitude: data.longitude
+    });
+    setImage(data.image);
+    setActivityContactData(props.activityContactData);
   }, [props.activityContactData]);
-
-  const resetFieldForm: FieldForm = {
-      comment: {
-          visible: false,
-          isRequired: false,
-          displayOrder: 0,
-      },
-      categoryId: {
-          visible: true,
-          isRequired: true,
-          displayOrder: 0,
-      },
-      resultId: {
-          visible: false,
-          isRequired: false,
-          displayOrder: 0,
-      },
-      typeId: {
-          visible: true,
-          isRequired: true,
-          displayOrder: 0,
-      },
-      currentGeoposition: {
-          visible: false,
-          isRequired: false,
-          displayOrder: 0,
-      },
-      ptpAmount: {
-          visible: false,
-          isRequired: false,
-          displayOrder: 0,
-      },
-      ptpDate: {
-          visible: false,
-          isRequired: false,
-          displayOrder: 0,
-      },
-      photo: {
-          visible: false,
-          isRequired: false,
-          displayOrder: 0,
-      },
-      image: {
-          visible: false,
-          isRequired: false,
-          displayOrder: 0,
-      },
-      purposeVisitId: {
-          visible: false,
-          isRequired: false,
-          displayOrder: 0,
-      },
-      purposeCallId: {
-          visible: false,
-          isRequired: false,
-          displayOrder: 0,
-      },
-      latitude: {
-          visible: false,
-          isRequired: false,
-          displayOrder: 0,
-      },
-      longitude: {
-          visible: false,
-          isRequired: false,
-          displayOrder: 0,
-      },
-      salesOfferingId: {
-          visible: false,
-          isRequired: false,
-          displayOrder: 0,
-      },
-  };
-
-  const [fieldForm, setFieldForm] = useState<FieldForm>(resetFieldForm);
+  
+  
+  const [resultFieldForm, setResultFieldForm] = useState<FieldAvailable>({
+    visible: false,
+    isRequired: false,
+    displayOrder: 0,
+  });
+  
+  const [commentFieldForm, setCommentFieldForm] = useState<FieldAvailable>({
+    visible: false,
+    isRequired: false,
+    displayOrder: 0,
+  });
+  
+  const [currentGeopositionFieldForm, setCurrentGeopositionFieldForm] = useState<FieldAvailable>({
+    visible: false,
+    isRequired: false,
+    displayOrder: 0,
+  });
+  
+  const [ptpDateFieldForm, setPtpDateFieldForm] = useState<FieldAvailable>({
+    visible: false,
+    isRequired: false,
+    displayOrder: 0,
+  });
+  
+  const [ptpAmountFieldForm, setPtpAmountFieldForm] = useState<FieldAvailable>({
+    visible: false,
+    isRequired: false,
+    displayOrder: 0,
+  });
+  
+  const [photoFieldForm, setPhotoFieldForm] = useState<FieldAvailable>({
+    visible: false,
+    isRequired: false,
+    displayOrder: 0,
+  });
+  
+  const [imageFieldForm, setImageFieldForm] = useState<FieldAvailable>({
+    visible: false,
+    isRequired: false,
+    displayOrder: 0,
+  });
+  
+  const [purposeVisitIdFieldForm, setPurposeVisitIdFieldForm] = useState<FieldAvailable>({
+    visible: false,
+    isRequired: false,
+    displayOrder: 0,
+  });
+  
+  const [purposeCallIdFieldForm, setPurposeCallIdFieldForm] = useState<FieldAvailable>({
+    visible: false,
+    isRequired: false,
+    displayOrder: 0,
+  });
+  
+  const [salesOfferingIdFieldForm, setSalesOfferingIdFieldForm] = useState<FieldAvailable>({
+    visible: false,
+    isRequired: false,
+    displayOrder: 0,
+  });
+  
 
   const onSubmit = async (event: any) => {
     event.preventDefault();
@@ -216,10 +203,22 @@ export default function ActivityContactForm(props: ActivityContactProps) {
 
       if (updatedData.id) {
         await ajaxPatch(`/api/contact/activity/update/${updatedData.id}`, payload).then(
-            ()=>setFieldForm(resetFieldForm));
+            ()=>{
+              
+              resetGeoposition();
+              setImage("");
+              resetFieldForm();
+              setTypeOptions(selectBoxOptions(new DataSource([]), "Select Activity Type"));
+            });
       } else {
         await ajaxPost("/api/contact/activity/create", payload).then(
-            ()=>setFieldForm(resetFieldForm));
+            ()=> {
+              
+              resetGeoposition();
+              setImage("");
+              resetFieldForm();
+              setTypeOptions(selectBoxOptions(new DataSource([]), "Select Activity Type"));
+            });
       }
 
       setLoading(false);
@@ -244,7 +243,7 @@ export default function ActivityContactForm(props: ActivityContactProps) {
   );
   const purposeCallOptions = selectBoxOptions(
     new DataSource(purposeCallStore),
-    "Select Purpose Visit"
+    "Select Purpose Call"
   );
 
   const resetGeoposition = () => {
@@ -274,7 +273,6 @@ export default function ActivityContactForm(props: ActivityContactProps) {
       } else {
         resetGeoposition();
       }
-      return;
     }
 
     if (evt.dataField === "resultId" && evt.value !== null) {
@@ -316,11 +314,60 @@ export default function ActivityContactForm(props: ActivityContactProps) {
 
   const handleCloseModal = (e: ClickEvent) => {
     resetGeoposition();
+    setImage("");
     setActivityContactData(props.activityContactData);
-    setFieldForm(resetFieldForm);
+    resetFieldForm();
+    setTypeOptions(selectBoxOptions(new DataSource([]), "Select Activity Type"));
     props.onCloseModal(e);
   };
 
+  const resetFieldForm = () => {
+    setResultFieldForm({
+      visible: false,
+      isRequired: false,
+      displayOrder: 0,
+    });
+    setPhotoFieldForm({
+      visible: false,
+      isRequired: false,
+      displayOrder: 0,
+    });
+    setCommentFieldForm({
+      visible: false,
+      isRequired: false,
+      displayOrder: 0,
+    });
+    setPtpDateFieldForm({
+      visible: false,
+      isRequired: false,
+      displayOrder: 0,
+    });
+    setPtpAmountFieldForm({
+      visible: false,
+      isRequired: false,
+      displayOrder: 0,
+    });
+    setCurrentGeopositionFieldForm({
+      visible: false,
+      isRequired: false,
+      displayOrder: 0,
+    });
+    setSalesOfferingIdFieldForm({
+      visible: false,
+      isRequired: false,
+      displayOrder: 0,
+    });
+    setPurposeCallIdFieldForm({
+      visible: false,
+      isRequired: false,
+      displayOrder: 0,
+    });
+    setPurposeVisitIdFieldForm({
+      visible: false,
+      isRequired: false,
+      displayOrder: 0,
+    });
+  }
   
   const onChangeCategory = (e:any) => {
     console.log("onChangeCategory", e);
@@ -328,7 +375,7 @@ export default function ActivityContactForm(props: ActivityContactProps) {
       const selectOptions = selectBoxOptions(new DataSource(activityTypeByCategoryStore(e.value)), "Select Activity Type");
       setTypeOptions(selectOptions);
     }
-    setFieldForm(resetFieldForm);
+    resetFieldForm();
   }
   
   const onChangeType = (e:any) => {
@@ -337,56 +384,76 @@ export default function ActivityContactForm(props: ActivityContactProps) {
       setResultDataOption(
           selectBoxOptions(new DataSource(activityResultByTypeStore(e.value)), "Select Result")
       );
-      
-      activityTypeFieldForm(e.value).then((rs)=> {
-        let newFieldForm = fieldForm;
-        
+      activityTypeFieldForm(e.value).then((rs: any)=> {
+        setFieldListForm(rs);
         let result = rs.find((f:any)=>f.field===contactActivityFieldForm.RESULT);
-        newFieldForm["resultId"] = {
+        setResultFieldForm({
           visible: (typeof result !== "undefined"), displayOrder: (typeof result !== "undefined") && result.displayOrder, isRequired: (typeof result !== "undefined") && result.isRequired
-        };
+        });
         
         let photo = rs.find((f:any)=>f.field===contactActivityFieldForm.PHOTO);
-        newFieldForm["photo"] = {
+        setPhotoFieldForm({
           visible: (typeof photo !== "undefined"), displayOrder: (typeof photo !== "undefined") && photo.displayOrder, isRequired: (typeof photo !== "undefined") && photo.isRequired
-        };
+        });
         
         let currentPosition = rs.find((f:any)=>f.field===contactActivityFieldForm.CURRENT_GEO_POSITION);
-        newFieldForm["currentGeoposition"] = {
+        setCurrentGeopositionFieldForm({
           visible: (typeof currentPosition !== "undefined"), displayOrder: (typeof currentPosition !== "undefined") && currentPosition.displayOrder, isRequired: (typeof currentPosition !== "undefined") && currentPosition.isRequired
-        };
+        });
         
         let comment = rs.find((f:any)=>f.field===contactActivityFieldForm.COMMENT);
-        newFieldForm["comment"] = {
+        setCommentFieldForm({
           visible: (typeof comment !== "undefined"), displayOrder: (typeof comment !== "undefined") && comment.displayOrder, isRequired: (typeof comment !== "undefined") && comment.isRequired
-        };
+        });
         
         let ptpDate = rs.find((f:any)=>f.field===contactActivityFieldForm.PTP_DATE);
-        newFieldForm["ptpDate"] = {
+        setPtpDateFieldForm({
           visible: (typeof ptpDate !== "undefined"), displayOrder: (typeof ptpDate !== "undefined") && ptpDate.displayOrder, isRequired: (typeof ptpDate !== "undefined") && ptpDate.isRequired
-        };
+        });
+        
         let ptpAmount = rs.find((f:any)=>f.field===contactActivityFieldForm.PTP_AMOUNT);
-        newFieldForm["ptpAmount"] = {
-          visible: (typeof ptpAmount !== "undefined"), displayOrder: (typeof ptpAmount !== "undefined") && ptpAmount.displayOrder, isRequired: (typeof ptpAmount !== "undefined") && ptpAmount.isRequired
-        };
+        setPtpAmountFieldForm({
+          visible: (typeof ptpAmount !== "undefined"), displayOrder: (typeof ptpAmount !== "undefined") && ptpAmount.displayOrder, isRequired: false
+        });
+        
         let purposeVisitId = rs.find((f:any)=>f.field===contactActivityFieldForm.PURPOSE_OF_VISIT);
-        newFieldForm["purposeVisitId"] = {
+        setPurposeVisitIdFieldForm({
           visible: (typeof purposeVisitId !== "undefined"), displayOrder: (typeof purposeVisitId !== "undefined") && purposeVisitId.displayOrder, isRequired: (typeof purposeVisitId !== "undefined") && purposeVisitId.isRequired
-        };
+        });
+        
         let purposeCallId = rs.find((f:any)=>f.field===contactActivityFieldForm.PURPOSE_OF_CALL);
-        newFieldForm["purposeCallId"] = {
+        setPurposeCallIdFieldForm({
           visible: (typeof purposeCallId !== "undefined"), displayOrder: (typeof purposeCallId !== "undefined") && purposeCallId.displayOrder, isRequired: (typeof purposeCallId !== "undefined") && purposeCallId.isRequired
-        };
+        });
         let salesOfferingId = rs.find((f:any)=>f.field===contactActivityFieldForm.SALES_OFFERING);
-        newFieldForm["salesOfferingId"] = {
+        setSalesOfferingIdFieldForm({
           visible: (typeof salesOfferingId !== "undefined"), displayOrder: (typeof salesOfferingId !== "undefined") && salesOfferingId.displayOrder, isRequired: (typeof salesOfferingId !== "undefined") && salesOfferingId.isRequired
-        };
-        setFieldForm(newFieldForm);
-        console.log("field form: ",newFieldForm);
+        });
+        
       });
     }
   }
   
+  const onChangeResult = (e: any) => {
+    console.log("onChange result", e, activityContactData.typeId);
+    let ptpDate = fieldListForm.find((f:any)=>f.field===contactActivityFieldForm.PTP_DATE);
+    let ptpAmount = fieldListForm.find((f:any)=>f.field===contactActivityFieldForm.PTP_AMOUNT);
+    if("738e2341-4103-458c-8d56-a765d3e64738" == activityContactData.typeId && "5d5c08f0-7ee7-4ecb-95a9-6804df059c19"==e.value){
+      setPtpDateFieldForm({
+        visible: (typeof ptpDate !== "undefined"), displayOrder: (typeof ptpDate !== "undefined") && ptpDate.displayOrder, isRequired: true
+      });
+      setPtpAmountFieldForm({
+        visible: (typeof ptpAmount !== "undefined"), displayOrder: (typeof ptpAmount !== "undefined") && ptpAmount.displayOrder, isRequired: true
+      });
+    } else {
+      setPtpDateFieldForm({
+        visible: (typeof ptpDate !== "undefined"), displayOrder: (typeof ptpDate !== "undefined") && ptpDate.displayOrder, isRequired: false
+      });
+      setPtpAmountFieldForm({
+        visible: (typeof ptpAmount !== "undefined"), displayOrder: (typeof ptpAmount !== "undefined") && ptpAmount.displayOrder, isRequired: false
+      });
+    }
+  }
 
   return (
     <Popup
@@ -400,6 +467,7 @@ export default function ActivityContactForm(props: ActivityContactProps) {
       <form onSubmit={onSubmit}>
         <Form
           id="form"
+          ref={formRef}
           showColonAfterLabel={true}
           showValidationSummary={true}
           validationGroup="OnActivityContactData"
@@ -411,62 +479,59 @@ export default function ActivityContactForm(props: ActivityContactProps) {
               dataField="categoryId"
               label={{ text: "Activity Category" }}
               editorType="dxSelectBox"
-              visible={fieldForm.categoryId.visible}
-              isRequired={fieldForm.categoryId.isRequired}
               editorOptions={{...categoryOptions,
                 onValueChanged: onChangeCategory
                 
           }}
           >
-            <RequiredRule message="Type is required" />
+            <RequiredRule message="Activity Category is required" />
           </SimpleItem>
           <SimpleItem
             dataField="typeId"
             label={{ text: "Activity Type" }}
             editorType="dxSelectBox"
-            visible={fieldForm.typeId.visible}
-            isRequired={fieldForm.typeId.isRequired}
             editorOptions={{...typeOptions, onValueChanged: onChangeType}}
           >
-            <RequiredRule message="Type is required" />
+            <RequiredRule message="Activity Type is required" />
           </SimpleItem>
           <SimpleItem
             dataField="resultId"
             label={{ text: "Result" }}
             editorType="dxSelectBox"
-            visible={fieldForm.resultId.visible}
-            isRequired={fieldForm.resultId.isRequired}
+            visible={resultFieldForm.visible}
+            isRequired={resultFieldForm.isRequired}
             editorOptions={{
               ...resultDataOption,
+              onValueChanged: onChangeResult,
               valueExpr: "id",
               displayExpr: "name",
               searchEnabled: true
             }}
           >
-            {fieldForm.resultId.isRequired && <RequiredRule message="Result is required" />}
+            {resultFieldForm.isRequired && <RequiredRule message="Result is required" />}
           </SimpleItem>
 
           <SimpleItem
             dataField="ptpDate"
             editorType={"dxDateBox"}
             label={{ text: "PTP Date" }}
-            visible={fieldForm.ptpDate.visible}
-            isRequired={fieldForm.ptpDate.isRequired}
+            visible={ptpDateFieldForm.visible}
+            isRequired={ptpDateFieldForm.isRequired}
             editorOptions={{
               type: "date",
               pickerType: "calender",
               displayFormat: "dd/MM/yyyy"
             }}
           >
-            {fieldForm.ptpDate.isRequired && <RequiredRule message="PTP Date is required" />}
+            {ptpDateFieldForm.isRequired && <RequiredRule message="PTP Date is required" />}
           </SimpleItem>
 
           <SimpleItem
             dataField="ptpAmount"
             editorType="dxTextBox"
             label={{ text: "PTP Amount" }}
-            visible={fieldForm.ptpAmount.visible}
-            isRequired={fieldForm.ptpAmount.isRequired}
+            visible={ptpAmountFieldForm.visible}
+            isRequired={ptpAmountFieldForm.isRequired}
             editorOptions={{
               value: activityContactData.ptpAmount || "",
               onKeyDown: (e: any) => {
@@ -483,7 +548,7 @@ export default function ActivityContactForm(props: ActivityContactProps) {
               }
             }}
           >
-            {fieldForm.ptpAmount.isRequired && <RequiredRule message="PTP Amount is required" />}
+            {ptpAmountFieldForm.isRequired && <RequiredRule message="PTP Amount is required" />}
           </SimpleItem>
 
           <SimpleItem
@@ -491,8 +556,8 @@ export default function ActivityContactForm(props: ActivityContactProps) {
             label={{ text: "Purpose of Visit" }}
             editorType="dxSelectBox"
             editorOptions={purposeVisitOptions}
-            visible={fieldForm.purposeVisitId.visible}
-            isRequired={fieldForm.purposeVisitId.isRequired}
+            visible={purposeVisitIdFieldForm.visible}
+            isRequired={purposeVisitIdFieldForm.isRequired}
           />
 
           <SimpleItem
@@ -500,8 +565,8 @@ export default function ActivityContactForm(props: ActivityContactProps) {
             label={{ text: "Purpose of Call" }}
             editorType="dxSelectBox"
             editorOptions={purposeCallOptions}
-            visible={fieldForm.purposeCallId.visible}
-            isRequired={fieldForm.purposeCallId.isRequired}
+            visible={purposeCallIdFieldForm.visible}
+            isRequired={purposeCallIdFieldForm.isRequired}
           />
 
           <SimpleItem
@@ -509,8 +574,8 @@ export default function ActivityContactForm(props: ActivityContactProps) {
             label={{ text: "Sales Offering" }}
             editorType="dxSelectBox"
             editorOptions={salesOfferingOptions}
-            visible={fieldForm.salesOfferingId.visible}
-            isRequired={fieldForm.salesOfferingId.isRequired}
+            visible={salesOfferingIdFieldForm.visible}
+            isRequired={salesOfferingIdFieldForm.isRequired}
           />
 
           <SimpleItem
@@ -518,12 +583,12 @@ export default function ActivityContactForm(props: ActivityContactProps) {
             editorType={"dxCheckBox"}
             editorOptions={{ text: "Current Geoposition: *" }}
             label={{ visible: false }}
-            visible={fieldForm.currentGeoposition.visible}
-            isRequired={fieldForm.currentGeoposition.isRequired}
+            visible={currentGeopositionFieldForm.visible}
+            isRequired={currentGeopositionFieldForm.isRequired}
           >
             <RequiredRule message="Current geoposition is required" />
           </SimpleItem>
-          <Item visible={geoposition.isStreetShop && fieldForm.currentGeoposition.visible}>
+          <Item visible={geoposition.isStreetShop && currentGeopositionFieldForm.visible}>
             <GoogleMapsLocation center={center} />
           </Item>
 
@@ -532,21 +597,21 @@ export default function ActivityContactForm(props: ActivityContactProps) {
             editorType={"dxFileUploader" as any}
             editorOptions={uploadPhotoOptions}
             label={{ text: "Photo" }}
-            visible={fieldForm.photo.visible}
-            isRequired={fieldForm.photo.isRequired}
+            visible={photoFieldForm.visible}
+            isRequired={photoFieldForm.isRequired}
           >
-            {fieldForm.photo.isRequired && <RequiredRule message="Photo is required" />}
+            {photoFieldForm.isRequired && <RequiredRule message="Photo is required" />}
           </SimpleItem>
-          <Item visible={image !== "" && fieldForm.photo.visible}>
+          <SimpleItem visible={(typeof image !== "undefined") && image.length > 0 && photoFieldForm.visible}>
             <img src={image} alt="foto" width="250px" style={{ marginTop: -16 }} />
-          </Item>
+          </SimpleItem>
 
           <SimpleItem
             dataField="comment"
             label={{ text: "Comment" }}
             editorType="dxTextArea"
-            visible={fieldForm.comment.visible}
-            isRequired={fieldForm.comment.isRequired}
+            visible={commentFieldForm.visible}
+            isRequired={commentFieldForm.isRequired}
           />
 
           <GroupItem
