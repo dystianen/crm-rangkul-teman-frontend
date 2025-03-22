@@ -199,7 +199,7 @@ class ContactActivity extends React.PureComponent<Iprops, Istate> {
           <Paging defaultPageSize={50} />
           <Pager showPageSizeSelector={true} showInfo={true} allowedPageSizes={[10, 50, 100]} />
         </DataGrid>
-        <ActivityContactForm
+        <ActivityContactForm contactId={this.props.contactId}
           activityContactData={activityContactData}
           isModalVisible={activityModal}
           onSubmit={this.onSubmitActivity}
