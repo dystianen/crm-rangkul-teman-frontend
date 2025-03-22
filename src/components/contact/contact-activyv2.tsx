@@ -95,8 +95,10 @@ export default function ContactActivityV2(props: Iprops) {
 		  dataType={"date"}
 		  format={"dd MMM yyyy HH:mm:ss"}
 		  calculateFilterExpression={(value: any, selectedFilterOperations: any, target: any) => {
-			const column = this as any;
-			return column.defaultCalculateFilterExpression.apply(this, [
+			const grid = typeGridRef.current!.instance;
+			const columns = grid.getVisibleColumns();
+			const column:any = columns.find((col: any) => col.dataField === 'modifiedOn');
+			return column.defaultCalculateFilterExpression.apply(column, [
 			  new Date(value),
 			  selectedFilterOperations,
 			  target
@@ -122,7 +124,7 @@ export default function ContactActivityV2(props: Iprops) {
 				  typeId: e.row.data.typeId || "",
 				  comment: e.row.data.name || "",
 				  photo: "",
-				  image: e.row.data.photo,
+				  image: e.row.data.photo || "",
 				  currentGeoposition: e.row.data.latitude !== "" && e.row.data.longitude !== "",
 				  latitude: e.row.data.latitude || "",
 				  longitude: e.row.data.longitude || "",
