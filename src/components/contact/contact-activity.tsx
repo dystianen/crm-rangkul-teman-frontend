@@ -4,13 +4,15 @@ import DataSource from "devextreme/data/data_source";
 import type dxDataGrid from "devextreme/ui/data_grid";
 import moment from "moment-timezone";
 import React, { RefObject } from "react";
-import { activityTypeStore, contactActivityListStore } from "../../api/contact";
+import { contactActivityListStore } from "../../api/contact";
 import { filterOperation } from "../../constants/FilterOperation";
 import ActivityContactForm, { IContactActivity } from "./contact-activity-form";
+import {backofficeAccess} from "../../constants/variableConstata";
 
 interface Iprops {
   contactId: string;
   withTitle?: boolean;
+  user: any;
 }
 
 interface Istate {
@@ -27,16 +29,15 @@ interface Istate {
   resultDataSource?: DataSource;
   activityContactData: IContactActivity;
   activityModal: boolean;
-  typeData: any[];
+  user: any;
 }
 
 class ContactActivity extends React.PureComponent<Iprops, Istate> {
-  typeGridRef: RefObject<DataGrid>;
-
+  private typeGridRef: RefObject<DataGrid>;
   constructor(props: Iprops) {
     super(props);
     this.typeGridRef = React.createRef();
-
+    
     this.state = {
       contactActivities: [],
       toolbar: [],
@@ -46,29 +47,17 @@ class ContactActivity extends React.PureComponent<Iprops, Istate> {
       contactData: {},
       activityContactData: { contactId: this.props.contactId },
       activityModal: false,
-      typeData: []
+      user: props.user
     };
   }
 
   get typeGrid(): dxDataGrid {
-    return this.typeGridRef.current?.instance!;
+    const instance = this.typeGridRef.current?.instance!;
+    return instance;
   }
 
   async componentDidMount() {
-    try {
-      const typeDataSource = new DataSource(activityTypeStore);
-      const typeData = await typeDataSource.load();
-
-      if (typeData.length > 0) {
-        const initialTypeId = typeData[0].id;
-        this.setState({
-          selectedTypeId: initialTypeId,
-          typeData: typeData
-        });
-      }
-    } catch (error) {
-      console.error("Error fetching activity types:", error);
-    }
+  
   }
 
   onShowActivityForm = (formData: IContactActivity) => {
@@ -87,19 +76,22 @@ class ContactActivity extends React.PureComponent<Iprops, Istate> {
 
   onSubmitActivity = (e: any) => {
     this.onCloseActivityForm();
+    this.typeGrid.refresh(true);
   };
 
   render() {
-    const { typeData, selectedTypeId, activityContactData, activityModal } = this.state;
+    const {user, activityContactData, activityModal } = this.state;
     let that = this;
     return (
       <div className={"dx-card responsive-paddings"}>
         {this.props.withTitle && <h5 style={{ margin: 0 }}>Contact Activity</h5>}
 
         <DataGrid
+            ref={this.typeGridRef}
           remoteOperations={true}
           columnAutoWidth={true}
           wordWrapEnabled={true}
+          focusedRowEnabled={true}
           showBorders={true}
           cacheEnabled={false}
           dateSerializationFormat={"yyyy-MM-ddTHH:mm:ss.SSSxxx"}
@@ -121,7 +113,8 @@ class ContactActivity extends React.PureComponent<Iprops, Istate> {
                 onClick: function () {
                   that.onShowActivityForm({
                     contactId: that.props.contactId,
-                    typeId: selectedTypeId,
+                    categoryId: undefined,
+                    typeId: undefined,
                     id: "",
                     comment: "",
                     resultId: "",
@@ -142,7 +135,8 @@ class ContactActivity extends React.PureComponent<Iprops, Istate> {
           }}
           editing={{
             allowUpdating: (options: any) => {
-              let found = typeData.some((x) => x.id === options.row.data.typeId);
+              let found = (typeof user?.userAccess !== "undefined") && user?.userAccess.some((access:string) => access === backofficeAccess.backoffice_contact_activity_type_collection || access === backofficeAccess.backoffice_contact_activity_type_sales);
+              
               const createdOn = moment(options.row.data.createdOn);
               const now = moment();
               const diffInMinutes = now.diff(createdOn, "minutes");
@@ -167,6 +161,7 @@ class ContactActivity extends React.PureComponent<Iprops, Istate> {
             }}
             filterOperations={filterOperation.date}
           />
+          <Column dataField={"categoryName"} caption={"Category"} />
           <Column dataField={"typeName"} caption={"Type"} />
           <Column dataField={"resultName"} caption={"Result"} />
           <Column dataField={"name"} caption={"Comment"} width={300} />
@@ -176,14 +171,15 @@ class ContactActivity extends React.PureComponent<Iprops, Istate> {
               {
                 name: "edit",
                 onClick: function (e: any) {
-                  that.onShowActivityForm({
+                  const dataRec = {
                     id: e.row.data.id,
                     contactId: e.row.data.contactId || "",
                     resultId: e.row.data.resultId || "",
+                    categoryId: e.row.data.categoryId || "",
                     typeId: e.row.data.typeId || "",
                     comment: e.row.data.name || "",
                     photo: "",
-                    image: `${process.env.REACT_APP_BACKEND}/api/file/get${e.row.data.photo}` || "",
+                    image: ((e.row.data.photo != null && e.row.data.photo.length > 0) ? `${process.env.REACT_APP_BACKEND}api/file/get${e.row.data.photo}`: ""),
                     currentGeoposition: e.row.data.latitude !== "" && e.row.data.longitude !== "",
                     latitude: e.row.data.latitude || "",
                     longitude: e.row.data.longitude || "",
@@ -192,7 +188,9 @@ class ContactActivity extends React.PureComponent<Iprops, Istate> {
                     purposeVisitId: e.row.data.purposeVisitId || "",
                     purposeCallId: e.row.data.purposeCallId || "",
                     salesOfferingId: e.row.data.salesOfferingId || ""
-                  });
+                  };
+                  console.log("data yg mau diubah", dataRec);
+                  that.onShowActivityForm(dataRec);
                   e.event.preventDefault();
                 }
               }
@@ -201,7 +199,7 @@ class ContactActivity extends React.PureComponent<Iprops, Istate> {
           <Paging defaultPageSize={50} />
           <Pager showPageSizeSelector={true} showInfo={true} allowedPageSizes={[10, 50, 100]} />
         </DataGrid>
-        <ActivityContactForm
+        <ActivityContactForm contactId={this.props.contactId}
           activityContactData={activityContactData}
           isModalVisible={activityModal}
           onSubmit={this.onSubmitActivity}
