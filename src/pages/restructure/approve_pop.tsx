@@ -6,6 +6,8 @@ import {approve, calc, frequencyStore, submit} from "../../api/restructure_v2";
 import {notifyError, notifySuccess} from "../../utils/devExtremeUtils";
 
 import {confirm} from 'devextreme/ui/dialog';
+import {navigation} from "../../app-navigation";
+import {useNavigate} from "react-router";
 
 
 interface approveRequest {
@@ -15,7 +17,8 @@ interface approveRequest {
 }
 
 export const ApproveRestructurePopup: FC<any> = (props, context) => {
-
+    
+    const navigate = useNavigate();
     const formRef = useRef<Form>(null);
     const [request, setRequest] = useState<approveRequest>({});
     const {popupVisible, hide, data} = props;
@@ -31,6 +34,7 @@ export const ApproveRestructurePopup: FC<any> = (props, context) => {
                     approve(request).then(sr=>{
                         notifySuccess("Submit approval berhasil!!");
                         hide();
+                        navigate("/restructure");
                     }).catch(()=>notifyError("Approval restructure GAGAL!!"));
                 }
             });

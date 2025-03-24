@@ -6,6 +6,7 @@ import {formatRupiah} from "../../utils/string.util";
 import {DataGrid} from "devextreme-react";
 import {Column, Pager, Paging, Scrolling} from "devextreme-react/data-grid";
 import {filterOperation} from "../../constants/FilterOperation";
+import "./style.scss";
 
 
 export const RestructureDetailFormPage = (props: any) => {
@@ -48,7 +49,8 @@ export const RestructureDetailFormPage = (props: any) => {
                                 editorType="dxSwitch"
                                 label={{text: " ", showColon: false}}
                                 editorOptions={{
-                                    width: "20%",
+                                    onText: 'On',
+                                    offText: 'Off',
                                     readOnly: true,
                                 }}
                             >

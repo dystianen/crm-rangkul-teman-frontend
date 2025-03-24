@@ -6,6 +6,7 @@ import {calc, frequencyStore, reject, submit} from "../../api/restructure_v2";
 import {notifyError, notifySuccess} from "../../utils/devExtremeUtils";
 
 import {confirm} from 'devextreme/ui/dialog';
+import {useNavigate} from "react-router";
 
 
 interface rejectRequest {
@@ -15,7 +16,8 @@ interface rejectRequest {
 
 
 export const RejectRestructurePopup: FC<any> = (props, context) => {
-
+    
+    const navigate = useNavigate();
     const formRef = useRef<Form>(null);
     const [request, setRequest] = useState<rejectRequest>({});
     const {popupVisible, hide, data} = props;
@@ -31,6 +33,7 @@ export const RejectRestructurePopup: FC<any> = (props, context) => {
                     reject(request).then(sr=>{
                         notifySuccess("Submit data berhasil!!");
                         hide();
+                        navigate("/restructure");
                     }).catch(()=>notifyError("Reject restructure GAGAL!!"));
                 }
             });
