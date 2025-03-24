@@ -3,7 +3,7 @@ import {useNavigate} from "react-router";
 import {useLocation} from "react-router-dom";
 import queryString from "query-string";
 import * as Title from "devextreme-react/toolbar";
-import Form, {ButtonItem, CustomRule, GroupItem, PatternRule, SimpleItem} from "devextreme-react/form";
+import Form, {AsyncRule, ButtonItem, CustomRule, GroupItem, PatternRule, SimpleItem} from "devextreme-react/form";
 import {formatRupiah} from "../../utils/string.util";
 import DataSource from "devextreme/data/data_source";
 import {calc, frequencyStore, submit} from "../../api/restructure_v2";
@@ -103,6 +103,9 @@ export const RestructureCreatePage: FC = () => {
 		setSchedule(rest.schedule);
 	  }
 	  setRequest(updateData);
+	}).catch(e=>{
+		notifyError(e.message);
+		evt.event.preventDefault();
 	});
   }
   
@@ -123,6 +126,7 @@ export const RestructureCreatePage: FC = () => {
   
   const minPaymentAmountValid = useCallback(
 	  ({value}: ValidationCallbackData) => {
+
 		if(request.repaymentSetting?.paymentAmount != null && request.repaymentSetting?.paymentAmount < 400000) return false;
 		return true;
 	  },[request]);
@@ -132,6 +136,13 @@ export const RestructureCreatePage: FC = () => {
 		if(request.repaymentSetting?.frequencyId && (value > restructure_max_periods[request.repaymentSetting?.frequencyId])) return false;
 		return true;
 	  },[request]);
+
+  const asyncValidationInitialPayment = useCallback(({value}: ValidationCallbackData)=>{
+
+	  console.log();
+	  if(request.restructureAmount && (value > request.restructureAmount)) return false;
+	  return true;
+  }, [request])
   
   useEffect(() => {
 	request["contractId"] = id;
@@ -239,6 +250,10 @@ export const RestructureCreatePage: FC = () => {
 					format: "Rp #,##0",
 				  }}
 			  >
+				  <CustomRule
+					  message="Initial payment tidak boleh lebih dari balance"
+					  validationCallback={asyncValidationInitialPayment}
+				  />
 				<PatternRule message="Initial payment hanya boleh angka" pattern={/^[0-9]+$/}/>
 			  </SimpleItem>
 			</GroupItem>
