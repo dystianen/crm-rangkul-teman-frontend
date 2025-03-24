@@ -10,13 +10,15 @@ import {calc, frequencyStore, submit} from "../../api/restructure_v2";
 import {DataGrid} from "devextreme-react";
 import {Column, Pager, Paging, Scrolling} from "devextreme-react/data-grid";
 import {filterOperation} from "../../constants/FilterOperation";
-import {notifyError, notifySuccess} from "../../utils/devExtremeUtils";
+import {notifyError, notifySuccess, notifyWarning} from "../../utils/devExtremeUtils";
 import {confirm} from "devextreme/ui/dialog";
 import {ValidationCallbackData} from "devextreme-react/common";
-import {restructure_max_periods} from "../../constants/variableConstata";
+import {backofficeAccess, restructure_max_periods} from "../../constants/variableConstata";
+import LoadPanel from "devextreme-react/load-panel";
+import {checkAccess} from "../../api/apploan";
 
 
-interface restructureData {
+interface RestructureData {
   contractId?: string;
   removeSanction?: boolean;
   discount?: number;
@@ -55,8 +57,19 @@ export const RestructureCreatePage: FC = () => {
   const {id}: any = queryString.parse(location.search);
   
   const formRef = useRef<Form>(null);
-  const [request, setRequest] = useState<restructureData>({});
+  const [request, setRequest] = useState<RestructureData>({});
   const [schedule, setSchedule] = useState<schedule[]>([]);
+  
+  const [loadingCalculate, setLoadingCalculate] = useState<boolean>(false);
+  
+  useEffect(() => {
+	checkAccess(backofficeAccess.backoffice_restructure_write).then((res) => {
+	  if (!res) {
+		notifyWarning("User tidak memiliki akses ke halaman ini!!");
+		navigate(-1);
+	  }
+	});
+  }, []);
   
   const onFormSubmit = (e: any) => {
 	const form = formRef.current!.instance;
@@ -74,7 +87,13 @@ export const RestructureCreatePage: FC = () => {
 		if (dialogResult) {
 		  submit(request).then(sr => {
 			notifySuccess("Submit data berhasil!!");
-			navigate("/restructure");
+			checkAccess(backofficeAccess.backoffice_restructure_read).then((res) => {
+			  if (!res) {
+				navigate("/contract");
+			  } else {
+				navigate("/restructure");
+			  }
+			});
 		  }).catch(() => notifyError("Submit Restruktur GAGAL!!"));
 		}
 	  });
@@ -82,10 +101,10 @@ export const RestructureCreatePage: FC = () => {
 	e.preventDefault();
   }
   
-  const onFieldDataChanged = (evt: any) => {
+  const onChangedRequest = useCallback((req: RestructureData) => {
 	const form = formRef.current!.instance;
-	request[evt.dataField] = evt.value;
-	calc(request).then((rest) => {
+	setLoadingCalculate(true);
+	calc(req).then((rest) => {
 	  const updateData = {...request};
 	  // form.option('formData.principalAmount', rest.principalAmount);
 	  // form.option('formData.interestAmount', rest.interestAmount);
@@ -103,62 +122,54 @@ export const RestructureCreatePage: FC = () => {
 		setSchedule(rest.schedule);
 	  }
 	  setRequest(updateData);
-	}).catch(e=>{
-		notifyError(e.message);
-		evt.event.preventDefault();
-	});
-  }
+	}).catch(e => {
+	  console.error(e);
+	  // notifyError(e.message);
+	  return false;
+	}).finally(() => setLoadingCalculate(false));
+	return true;
+  }, [request]);
   
-  const asyncValidation = (params: { value: any; }) => {
-	const isVal = params.value >= 1 && params.value <= 100;
-	return new Promise((resolve) => {
-	  setTimeout(() => {
-		resolve(isVal);
-	  }, 1000);
-	});
-  };
+  const onFieldDataChanged = (evt: any) => {
+	const valid = onChangedRequest(request);
+	if (valid) {
+	  request[evt.dataField] = evt.value;
+	}
+	var editor = evt.component.getEditor("repaymentSetting.paymentPeriod");
+	editor.focus();
+  }
   
   const minMaxDiscountValid = useCallback(
 	  ({value}: ValidationCallbackData) => {
-		if(request.discount != null && (request.discount > 100 && request.discount<0)) return false;
-		return true;
-	  },[request]);
+		return !(value != null && (value > 100 && value < 0));
+	  }, [request]);
   
   const minPaymentAmountValid = useCallback(
 	  ({value}: ValidationCallbackData) => {
-
-		if(request.repaymentSetting?.paymentAmount != null && request.repaymentSetting?.paymentAmount < 400000) return false;
-		return true;
-	  },[request]);
+		if (value == 0) return true;
+		return (value > 400000);
+	  }, [request]);
+  
+  const maxPaymentAmountValid = useCallback(
+	  ({value}: ValidationCallbackData) => {
+		return !(request.restructureAmount && (value > request.restructureAmount));
+	  }, [request]);
   
   const maxPeriodValid = useCallback(
 	  ({value}: ValidationCallbackData) => {
-		if(request.repaymentSetting?.frequencyId && (value > restructure_max_periods[request.repaymentSetting?.frequencyId])) return false;
-		return true;
-	  },[request]);
-
-  const asyncValidationInitialPayment = useCallback(({value}: ValidationCallbackData)=>{
-
-	  console.log();
-	  if(request.restructureAmount && (value > request.restructureAmount)) return false;
-	  return true;
+		return !(request.repaymentSetting?.frequencyId && (value > restructure_max_periods[request.repaymentSetting?.frequencyId]));
+		
+	  }, [request]);
+  
+  const asyncValidationInitialPayment = useCallback(({value}: ValidationCallbackData) => {
+	return !(request.restructureAmount && (value > request.restructureAmount));
   }, [request])
   
   useEffect(() => {
 	request["contractId"] = id;
-	calc(request).then((rest) => {
-	  const data = {...request};
-	  data["principalAmount"] = rest.principalAmount;
-	  data["interestAmount"] = rest.interestAmount;
-	  data["penaltyAmount"] = rest.penaltyAmount;
-	  data["restructureAmount"] = rest.restructureAmount;
-	  if (typeof rest.schedule !== "undefined") {
-		data["schedule"] = rest.schedule;
-	  }
-	  setRequest(data);
-	});
+	onChangedRequest(request);
   }, [id]);
-  return <>
+  return <> <LoadPanel visible={loadingCalculate}/>
 	<div className="title-detail">
 	  <h2 className={"content-block"}>Create Restructure</h2>
 	</div>
@@ -216,7 +227,7 @@ export const RestructureCreatePage: FC = () => {
 					onKeyDown: (e: any) => {
 					  const key = e.event.key;
 					  e.value = String.fromCharCode(e.event.keyCode);
-					  let forbiddenChars = ['!','@','#','$','%','^','&','*','(',')'];
+					  let forbiddenChars = ['!', '@', '#', '$', '%', '^', '&', '*', '(', ')'];
 					  if (forbiddenChars.includes(key))
 						e.event.preventDefault();
 					  if (!/[0-9]/.test(e.value) && key !== "Backspace" && key !== "Delete")
@@ -240,7 +251,7 @@ export const RestructureCreatePage: FC = () => {
 					onKeyDown: (e: any) => {
 					  const key = e.event.key;
 					  e.value = String.fromCharCode(e.event.keyCode);
-					  let forbiddenChars = ['!','@','#','$','%','^','&','*','(',')'];
+					  let forbiddenChars = ['!', '@', '#', '$', '%', '^', '&', '*', '(', ')'];
 					  if (forbiddenChars.includes(key))
 						e.event.preventDefault();
 					  if (!/[0-9]/.test(e.value) && key !== "Backspace" && key !== "Delete")
@@ -250,10 +261,10 @@ export const RestructureCreatePage: FC = () => {
 					format: "Rp #,##0",
 				  }}
 			  >
-				  <CustomRule
-					  message="Initial payment tidak boleh lebih dari balance"
-					  validationCallback={asyncValidationInitialPayment}
-				  />
+				<CustomRule
+					message="Initial payment tidak boleh lebih dari balance"
+					validationCallback={asyncValidationInitialPayment}
+				/>
 				<PatternRule message="Initial payment hanya boleh angka" pattern={/^[0-9]+$/}/>
 			  </SimpleItem>
 			</GroupItem>
@@ -299,7 +310,7 @@ export const RestructureCreatePage: FC = () => {
 					  onKeyDown: (e: any) => {
 						const key = e.event.key;
 						e.value = String.fromCharCode(e.event.keyCode);
-						let forbiddenChars = ['!','@','#','$','%','^','&','*','(',')'];
+						let forbiddenChars = ['!', '@', '#', '$', '%', '^', '&', '*', '(', ')'];
 						if (forbiddenChars.includes(key))
 						  e.event.preventDefault();
 						if (!/[0-9]/.test(e.value) && key !== "Backspace" && key !== "Delete")
@@ -312,9 +323,13 @@ export const RestructureCreatePage: FC = () => {
 					  message={'Min. 400.000'}
 					  validationCallback={minPaymentAmountValid}
 				  />
+				  <CustomRule message="Maximum payment amount tidak boleh melebihi balance"
+							  validationCallback={maxPaymentAmountValid}/>
 				  <PatternRule message="Payment amount hanya boleh angka" pattern={/^[0-9]+$/}/>
 				</SimpleItem>
-				<SimpleItem cssClass="topPadding25"><div className={"bgDesc"}>Min. 400.000</div></SimpleItem>
+				<SimpleItem cssClass="topPadding25">
+				  <div className={"bgDesc"}>Min. 400.000</div>
+				</SimpleItem>
 			  </GroupItem>
 			  <GroupItem colCount={2}>
 				
@@ -325,7 +340,7 @@ export const RestructureCreatePage: FC = () => {
 					  onKeyDown: (e: any) => {
 						const key = e.event.key;
 						e.value = String.fromCharCode(e.event.keyCode);
-						let forbiddenChars = ['!','@','#','$','%','^','&','*','(',')'];
+						let forbiddenChars = ['!', '@', '#', '$', '%', '^', '&', '*', '(', ')'];
 						if (forbiddenChars.includes(key))
 						  e.event.preventDefault();
 						if (!/[0-9]/.test(e.value) && key !== "Backspace" && key !== "Delete")
@@ -339,7 +354,9 @@ export const RestructureCreatePage: FC = () => {
 				  />
 				  <PatternRule message="Payment period hanya boleh angka" pattern={/^[0-9]+$/}/>
 				</SimpleItem>
-				<SimpleItem cssClass="topPadding25"><div className="bgDesc">Max : 3years</div> </SimpleItem>
+				<SimpleItem cssClass="topPadding25">
+				  <div className="bgDesc">Max : 3years</div>
+				</SimpleItem>
 			  </GroupItem>
 			</GroupItem>
 			{/*<GroupItem>&nbsp;</GroupItem>*/}
