@@ -146,12 +146,16 @@ export const RestructureCreatePage: FC = () => {
     }, [id]);
 
     const onFieldDataChanged = (evt: any) => {
+        const form = formRef.current!.instance;
         // setRequest((prev)=>{
         //     setPrevRequest(prev);
         //     return {...prev, [evt.dataField]: evt.value};
         // });
         request[evt.dataField] = evt.value;
-        calculateRestructure(request).then((rs)=>{console.log("restructure calculate", rs)});
+        calculateRestructure(request).then((rs)=>{console.log("restructure calculate", rs)})
+            .catch((e)=>{
+                form.getEditor(evt.dataField).element().dxValidator("instance");
+            });
         var editor = evt.component.getEditor("repaymentSetting.paymentPeriod");
         editor.focus();
     };
