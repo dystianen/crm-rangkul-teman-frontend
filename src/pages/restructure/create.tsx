@@ -24,7 +24,7 @@ import {ValidationCallbackData} from "devextreme-react/common";
 import {backofficeAccess, restructure_max_periods} from "../../constants/variableConstata";
 import LoadPanel from "devextreme-react/load-panel";
 import {checkAccess} from "../../api/apploan";
-
+import "./style.scss";
 
 interface RestructureData {
     contractId?: string;
@@ -64,8 +64,8 @@ export const RestructureCreatePage: FC = () => {
     const location = useLocation();
     const {id}: any = queryString.parse(location.search);
     const formRef = useRef<any>(null);
+    const gridRef = useRef<DataGrid>(null);
 
-    const [prevRequest, setPrevRequest] = useState<RestructureData>({});
     const [request, setRequest] = useState<RestructureData>({});
     const [schedule, setSchedule] = useState<schedule[]>([]);
 
@@ -131,7 +131,7 @@ export const RestructureCreatePage: FC = () => {
             }));
         }).catch(e => {
             console.error(e);
-            // notifyWarning(e.message);
+            notifyWarning(e.message);
             return new Promise((reject) => reject(false));
         }).finally(() => {
             setLoadingCalculate(false);
@@ -144,20 +144,16 @@ export const RestructureCreatePage: FC = () => {
         request["contractId"] = id;
         calculateRestructure(request).then((rs)=>{console.log("init calculate", rs)});
     }, [id]);
-
+    
     const onFieldDataChanged = (evt: any) => {
-        const form = formRef.current!.instance;
-        // setRequest((prev)=>{
-        //     setPrevRequest(prev);
-        //     return {...prev, [evt.dataField]: evt.value};
-        // });
         request[evt.dataField] = evt.value;
-        calculateRestructure(request).then((rs)=>{console.log("restructure calculate", rs)})
-            .catch((e)=>{
-                form.getEditor(evt.dataField).element().dxValidator("instance");
-            });
-        var editor = evt.component.getEditor("repaymentSetting.paymentPeriod");
-        editor.focus();
+        var {isValid} = evt.component.instance().validate();
+        if(!isValid) {
+            return;
+        }
+        
+        calculateRestructure(request)
+        .then((rs)=>console.info("calculate restructure", rs));
     };
 
     const minMaxDiscountValid = useCallback(
@@ -180,46 +176,29 @@ export const RestructureCreatePage: FC = () => {
         ({value}: ValidationCallbackData) => {
             return !(request.repaymentSetting?.frequencyId && (value > restructure_max_periods[request.repaymentSetting?.frequencyId]));
         }, [request]);
-
+    
+    const minValidationInitialPaymentValid = useCallback(
+        ({value}: ValidationCallbackData) => {
+            return !(value <= 0);
+        }, [request]);
+    
     const asyncValidationInitialPayment = useCallback(({value}: ValidationCallbackData) => {
-        return !(request.restructureAmount && (value > request.restructureAmount));
+        let restructureAmount = 0;
+        //principal + interest + IF(rm_sanctions is True, 0, sanction) - initial payment) * (1 - discount)
+        if(typeof request.principalAmount !== "undefined" && typeof request.interestAmount !== "undefined" ){
+            restructureAmount = request.principalAmount + request.interestAmount;
+        }
+        if(typeof request.removeSanction !== "undefined" && !request.removeSanction){
+            restructureAmount += request.principalAmount || 0;
+        }
+        restructureAmount = restructureAmount - value;
+        
+        if(typeof  request.discount !== "undefined" && request.discount > 0) {
+            restructureAmount = restructureAmount * (1 - (request.discount/100));
+        }
+        console.log("restructureAmount : ", restructureAmount);
+        return !(restructureAmount < 0);
     }, [request]);
-
-    const asyncRemoveSanctionValidation = (params: { value: any; }) => {
-        const payload = {...request, removeSanction: params.value};
-        return calculateRestructure(payload);
-    };
-
-    const asyncDiscountValidation = (params: { value: any; }) => {
-        const payload = {...request, discount: params.value};
-        return calculateRestructure(payload);
-    };
-
-    const asyncInitialPaymentValidation = (params: { value: any; }) => {
-        const payload = {...request, initialAmount: params.value};
-        return calculateRestructure(payload);
-    };
-
-    const asyncfirstPaymentDateValidation = (params: { value: any; }) => {
-        const payload = {...request, "repaymentSetting.firstPaymentDate": params.value};
-        return calculateRestructure(payload);
-    };
-
-    const asyncfrequenceValidation = (params: { value: any; }) => {
-        const payload = {...request, "repaymentSetting.frequencyId": params.value};
-        return calculateRestructure(payload);
-    };
-
-    const asyncPaymentAmountValidation = (params: { value: any; }) => {
-        const payload = {...request, "repaymentSetting.paymentAmount": params.value};
-        return calculateRestructure(payload);
-    };
-
-    const asyncPaymentPeriodValidation = (params: { value: any; }) => {
-        const payload = {...request, "repaymentSetting.paymentPeriod": params.value};
-        return calculateRestructure(payload);
-    };
-
 
     return <> <LoadPanel visible={loadingCalculate}/>
         <div className="title-detail">
@@ -265,9 +244,10 @@ export const RestructureCreatePage: FC = () => {
                         </GroupItem>
                         <GroupItem>
                             <SimpleItem
+                                cssClass={"itemRemoveSanction"}
                                 dataField="removeSanction"
                                 editorType="dxSwitch"
-                                label={{text: " ", showColon: false}}
+                                label={{text: "Remove Sanctions", showColon:false, alignment: "center", location: "right"}}
                                 editorOptions={{
                                     defaultValue: false,
                                 }}
@@ -293,9 +273,6 @@ export const RestructureCreatePage: FC = () => {
                                     maxLength: 2
                                 }}
                             >
-                                {/*<AsyncRule*/}
-                                {/*    message="Terdapat pada input discount"*/}
-                                {/*    validationCallback={asyncDiscountValidation} />*/}
                                 <CustomRule
                                     message={'Diskon tidak valid'}
                                     validationCallback={minMaxDiscountValid}
@@ -303,8 +280,9 @@ export const RestructureCreatePage: FC = () => {
                                 <PatternRule message="Diskon hanya boleh angka" pattern={/^[0-9]+$/}/>
                             </SimpleItem>
                             <SimpleItem
+                                cssClass={"itemInitialPayment"}
                                 dataField="initialAmount"
-                                label={{text: " ", showColon: false}}
+                                label={{text: "Initial payment: 1.000.000", showColon: false, alignment: "center", location: "right"}}
                                 editorType={"dxNumberBox"}
                                 editorOptions={{
                                     onKeyDown: (e: any) => {
@@ -320,13 +298,11 @@ export const RestructureCreatePage: FC = () => {
                                     format: "Rp #,##0",
                                 }}
                             >
-                                {/*<AsyncRule*/}
-                                {/*    message="Terdapat kesalahan pada input initial payment"*/}
-                                {/*    validationCallback={asyncInitialPaymentValidation} />*/}
-                                {/*<CustomRule*/}
-                                {/*    message="Initial payment tidak boleh lebih dari balance"*/}
-                                {/*    validationCallback={asyncValidationInitialPayment}*/}
-                                {/*/>*/}
+                                <CustomRule
+                                    message="Initial payment tidak boleh lebih dari balance"
+                                    validationCallback={asyncValidationInitialPayment}
+                                />
+                                <CustomRule message="Initial payment harus diisi" validationCallback={minValidationInitialPaymentValid}/>
                                 <PatternRule message="Initial payment hanya boleh angka" pattern={/^[0-9]+$/}/>
                             </SimpleItem>
                         </GroupItem>
@@ -350,9 +326,6 @@ export const RestructureCreatePage: FC = () => {
                                 }}
                                 editorType="dxDateBox"
                             >
-                                {/*<AsyncRule*/}
-                                {/*    message="Terdapat kesalahan pada pengisian first payment date"*/}
-                                {/*    validationCallback={asyncfirstPaymentDateValidation} />*/}
                             </SimpleItem>
                             <SimpleItem
                                 dataField="repaymentSetting.frequencyId"
@@ -366,9 +339,6 @@ export const RestructureCreatePage: FC = () => {
                                     searchEnabled: false
                                 }}
                             >
-                                {/*<AsyncRule*/}
-                                {/*    message="Terdapat kesalahan pada pengisian frequence"*/}
-                                {/*    validationCallback={asyncfrequenceValidation} />*/}
                             </SimpleItem>
                             <GroupItem colCount={2}>
                                 <SimpleItem
@@ -388,9 +358,6 @@ export const RestructureCreatePage: FC = () => {
                                         format: "Rp #,##0",
                                     }}
                                 >
-                                    {/*<AsyncRule*/}
-                                    {/*    message="Terdapat kesalahan pada pengisian payment amount"*/}
-                                    {/*    validationCallback={asyncPaymentAmountValidation} />*/}
                                     <CustomRule
                                         message={'Min. 400.000'}
                                         validationCallback={minPaymentAmountValid}
@@ -420,9 +387,6 @@ export const RestructureCreatePage: FC = () => {
                                         },
                                     }}
                                 >
-                                    {/*<AsyncRule*/}
-                                    {/*    message="Terdapat kesalahan pada pengisian payment period"*/}
-                                    {/*    validationCallback={asyncPaymentPeriodValidation} />*/}
                                     <CustomRule
                                         message={'Max 3 years'}
                                         validationCallback={maxPeriodValid}
@@ -438,6 +402,7 @@ export const RestructureCreatePage: FC = () => {
                     <GroupItem colSpan={2} caption={"Schedule"} colCount={1}
                                cssClass={"dx-card responsive-paddings next-card"}>
                         <DataGrid
+                            ref={gridRef}
                             dataSource={schedule}
                             remoteOperations={true}
                             columnAutoWidth={true}
