@@ -49,8 +49,8 @@ export const RestructureDetailFormPage = (props: any) => {
                                 editorType="dxSwitch"
                                 label={{text: " ", showColon: false}}
                                 editorOptions={{
-                                    onText: 'On',
-                                    offText: 'Off',
+                                    switchedOnText: 'On',
+                                    switchedOffText: 'Off',
                                     readOnly: true,
                                 }}
                             >

@@ -13,7 +13,7 @@ export const RestructureFormV2 = (props: any) => {
   const {restructure} = props;
   
   return <>
-	<Form colCount={1} id="contractForm"
+	<Form colCount={1} id="restructureV2Form"
 		  formData={restructure}>
 	  <GroupItem colCount={2} cssClass={"dx-card responsive-paddings"}>
 		<GroupItem colCount={1} caption={"Informasi"}>
