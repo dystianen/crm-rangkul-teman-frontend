@@ -25,12 +25,13 @@ import {backofficeAccess, restructure_max_periods} from "../../constants/variabl
 import LoadPanel from "devextreme-react/load-panel";
 import {checkAccess} from "../../api/apploan";
 import "./style.scss";
+import {TextBoxTypes} from "devextreme-react/text-box";
 
 interface RestructureData {
     contractId?: string;
     removeSanction?: boolean;
     discount?: number;
-    initialAmount?: number;
+    initialAmount: number | null;
 
     repaymentSetting?: {
         firstPaymentDate?: string;
@@ -66,7 +67,7 @@ export const RestructureCreatePage: FC = () => {
     const formRef = useRef<any>(null);
     const gridRef = useRef<DataGrid>(null);
 
-    const [request, setRequest] = useState<RestructureData>({});
+    const [request, setRequest] = useState<RestructureData>({initialAmount: null});
     const [schedule, setSchedule] = useState<schedule[]>([]);
 
     const [loadingCalculate, setLoadingCalculate] = useState<boolean>(false);
@@ -112,6 +113,7 @@ export const RestructureCreatePage: FC = () => {
 
     const calculateRestructure = (req: RestructureData) => {
         setLoadingCalculate(true);
+        if(req.initialAmount === null) req.initialAmount = 0;
         calc(req).then((rest) => {
             const updateData = {...request};
             updateData["principalAmount"] = rest.principalAmount;
@@ -121,6 +123,7 @@ export const RestructureCreatePage: FC = () => {
             updateData["scheduleTypeId"] = rest.scheduleTypeId;
             updateData["payment"] = rest.payment;
             updateData["numPayments"] = rest.numPayments;
+
             if (typeof rest.schedule !== "undefined") {
                 updateData["schedule"] = rest.schedule;
                 setSchedule(rest.schedule);
@@ -200,6 +203,15 @@ export const RestructureCreatePage: FC = () => {
         return !(restructureAmount < 0);
     }, [request]);
 
+    const onInitialAmountChange = useCallback((e: TextBoxTypes.ValueChangedEvent) => {
+        console.log("onInitialAmountChange", e);
+        if(e.value === 0)setRequest((prevState) => ({
+            ...prevState,
+            initialAmount: null,
+        }));
+        e.event && e.event.preventDefault();
+    }, [request]);
+
     return <> <LoadPanel visible={loadingCalculate}/>
         <div className="title-detail">
             <h2 className={"content-block"}>Create Restructure</h2>
@@ -252,9 +264,6 @@ export const RestructureCreatePage: FC = () => {
                                     defaultValue: false,
                                 }}
                             >
-                                {/*<AsyncRule*/}
-                                {/*    message="Terdapat kesalahan pada hapus pinalty"*/}
-                                {/*    validationCallback={asyncRemoveSanctionValidation} />*/}
                             </SimpleItem>
                             <SimpleItem
                                 dataField="discount"
@@ -282,7 +291,7 @@ export const RestructureCreatePage: FC = () => {
                             <SimpleItem
                                 cssClass={"itemInitialPayment"}
                                 dataField="initialAmount"
-                                label={{text: "Initial payment: 1.000.000", showColon: false, alignment: "center", location: "right"}}
+                                label={{text: " ", showColon: false, alignment: "center", location: "right"}}
                                 editorType={"dxNumberBox"}
                                 editorOptions={{
                                     onKeyDown: (e: any) => {
@@ -294,6 +303,8 @@ export const RestructureCreatePage: FC = () => {
                                         if (!/[0-9]/.test(e.value) && key !== "Backspace" && key !== "Delete")
                                             e.event.preventDefault();
                                     },
+                                    value: (request.initialAmount !== null && request.initialAmount > 0 ? request.initialAmount : null),
+                                    onValueChanged: onInitialAmountChange,
                                     placeholder: "Initial payment: 1.000.000",
                                     format: "Rp #,##0",
                                 }}
