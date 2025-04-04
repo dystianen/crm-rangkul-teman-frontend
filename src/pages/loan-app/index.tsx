@@ -51,12 +51,15 @@ export default function Index() {
     const {user} = useAuth();
     const navigate = useNavigate();
     const formRef = useRef<Form>(null);
+    const dataGrid = useRef<any>();
     const [popupVisible, setPopupVisible] = React.useState(false);
     const [productOptions, setProductOptions] = useState<any>(undefined);
     const [productComboOptions, setComboProductOptions] = useState<any>({});
     const [loanAppOnboarding, setLoanAppOnboarding] =
         useState<AppLoanOnboardingRequest>(initLoanOnboardingValue);
     const [isPengajuanVisible, setPengajuanVisible] = useState<boolean>(false);
+
+    const [gridFilterValue,setGridFilterValue] = useState<any>(null);
 
     useEffect(() => {
         checkAccess(backofficeAccess.backoffice_master_contact_write).then((res) => {
@@ -142,7 +145,6 @@ export default function Index() {
         return validateIdNumber(request);
     };
 
-    const dataGrid = useRef<any>();
     const onClickDownload = (e: any) => {
         let instance: any = dataGrid.current?.instance;
         let fileName = `pengajuan.xlsx`;
@@ -173,7 +175,9 @@ export default function Index() {
     }
     
     const onValueQuickFilterChanged = useCallback((e: SelectBoxTypes.ValueChangedEvent) => {
-        notify(`The value is changed to: "${e.value}"`);
+        let table: any = dataGrid.current?.instance;
+        const filterValue = table.getCombinedFilter(true);
+        console.log("filterValue ", filterValue);
     }, []);
     
     const onToolbarPreparing = (e: any, visible: boolean) => {
@@ -238,6 +242,7 @@ export default function Index() {
                             return options.row.data.statusIsActive && allowAccess;
                         },
                     }}
+                    filterValue={gridFilterValue}
                 >
                     <Scrolling showScrollbar={"always"}/>
                     <FilterRow visible={true}/>

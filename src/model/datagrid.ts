@@ -45,6 +45,7 @@ const dataRawCustomStore = (url: string) =>
                     loadOptions.skip != null ? loadOptions.skip : 0,
                 lengthVal: number | undefined =
                     loadOptions.take != null ? loadOptions.take : 50;
+
             const paramSearch: FilterPss = {
                 ...setFilterPss(),
                 start: startVal,
@@ -52,6 +53,7 @@ const dataRawCustomStore = (url: string) =>
                 sort: loadOptions?.sort,
                 searchQuery: JSON.stringify(loadOptions.filter),
             };
+
             const resp = await ajaxGet(`${url}${qs.stringify(paramSearch)}`);
             return resp.data;
         },
