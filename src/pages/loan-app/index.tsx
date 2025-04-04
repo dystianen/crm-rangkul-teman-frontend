@@ -45,13 +45,15 @@ import {
 } from "../../constants/variableConstata";
 import {confirmNotify, notifyError, notifySuccess} from "../../utils/devExtremeUtils";
 import "./loan-app.scss";
-import {SelectBoxTypes} from "devextreme-react/select-box";
+import {SelectBox, SelectBoxTypes} from "devextreme-react/select-box";
+import { Template } from 'devextreme-react/core/template';
+import type {CollectionWidgetItem} from "devextreme/ui/collection/ui.collection_widget.base";
 
 export default function Index() {
     const {user} = useAuth();
     const navigate = useNavigate();
     const formRef = useRef<Form>(null);
-    const dataGrid = useRef<any>();
+    const dataGrid = useRef<DataGrid>(null);
     const [popupVisible, setPopupVisible] = React.useState(false);
     const [productOptions, setProductOptions] = useState<any>(undefined);
     const [productComboOptions, setComboProductOptions] = useState<any>({});
@@ -59,7 +61,7 @@ export default function Index() {
         useState<AppLoanOnboardingRequest>(initLoanOnboardingValue);
     const [isPengajuanVisible, setPengajuanVisible] = useState<boolean>(false);
 
-    const [gridFilterValue,setGridFilterValue] = useState<any>(null);
+    const [quickFilter,setQuickFilter] = useState<string|undefined>(undefined);
 
     useEffect(() => {
         checkAccess(backofficeAccess.backoffice_master_contact_write).then((res) => {
@@ -175,24 +177,44 @@ export default function Index() {
     }
     
     const onValueQuickFilterChanged = useCallback((e: SelectBoxTypes.ValueChangedEvent) => {
-        let table: any = dataGrid.current?.instance;
-        const filterValue = table.getCombinedFilter(true);
-        console.log("filterValue ", filterValue);
-    }, []);
+            setQuickFilter(e.value);
+            e.event && e.event.preventDefault();
+        }, []);
     
     const onToolbarPreparing = (e: any, visible: boolean) => {
+        console.log("onToolbarPreparing", e)
         const items = e.toolbarOptions.items;
         items.unshift({
             location: 'before',
-            widget: 'dxSelectBox',
-            options: {
-                dataSource: new DataSource(getQuickFilterListStore),
-                valueExpr: "id",
-                displayExpr: "name",
-                placeholder: "Quick Filter",
-                showClearButton: true,
-                onValueChanged: onValueQuickFilterChanged
+            template: (itemData: CollectionWidgetItem, itemIndex: number, itemElement: any)=>{
+                const dom = ReactDOM.createRoot(itemElement);
+                dom.render(<>
+                    <div className="dx-field dx-search-app">
+                        <div className="dx-field-label">List of QF </div>
+                        <div className="dx-field-value w160">
+                            <SelectBox
+                                dataSource={new DataSource(getQuickFilterListStore)}
+                                valueExpr={"id"}
+                                displayExpr={"name"}
+                                placeholder={" "}
+                                onValueChanged={onValueQuickFilterChanged}
+                                showClearButton={true}
+                                value={quickFilter}
+                            /></div>
+                    </div>
+                </>);
             },
+            
+            // widget: 'dxSelectBox',
+            // options: {
+            //     value: quickFilter,
+            //     dataSource: new DataSource(getQuickFilterListStore),
+            //     valueExpr: "id",
+            //     displayExpr: "name",
+            //     placeholder: "Quick Filter",
+            //     showClearButton: true,
+            //     onValueChanged: onValueQuickFilterChanged
+            // },
         });
         items.unshift({
             location: 'after',
@@ -227,7 +249,7 @@ export default function Index() {
             <div className={"dx-card"}>
                 <DataGrid
                     ref={dataGrid}
-                    dataSource={appLoanListStore}
+                    dataSource={appLoanListStore(quickFilter)}
                     focusedRowEnabled={true}
                     remoteOperations={true}
                     columnAutoWidth={true}
@@ -242,7 +264,6 @@ export default function Index() {
                             return options.row.data.statusIsActive && allowAccess;
                         },
                     }}
-                    filterValue={gridFilterValue}
                 >
                     <Scrolling showScrollbar={"always"}/>
                     <FilterRow visible={true}/>
@@ -254,7 +275,7 @@ export default function Index() {
                         cellTemplate={function (container: any, options: any) {
                             const dom = ReactDOM.createRoot(container);
                             let found = appStatusIncomplete.some(x => x === options.data.statusId);
-                            console.log("record app ", options.data);
+                            // console.log("record app ", options.data);
                             if(options.data.isWaitingSigning) {
                                 dom.render(<OnClickLink
                                   onClick={() => navigate(`/loan-app/create/step/1?id=${options.data.id}&autoNext=false`)}>{options.data.seqId}</OnClickLink>);
