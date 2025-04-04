@@ -1,4 +1,4 @@
-import React, {useEffect, useRef, useState} from "react";
+import React, {useCallback, useEffect, useRef, useState} from "react";
 import "devextreme/data/odata/store";
 import DataGrid, {
     Column,
@@ -25,7 +25,7 @@ import {
     appCancel,
     appLoanListStore, checkAccess,
     createAppLoanOnboarding, detailAppStep, getActiveBranchByUserStore, getActiveProductByBranch,
-    getActiveProductStore,
+    getActiveProductStore, getQuickFilterListStore,
 } from "src/api/apploan";
 
 import {
@@ -45,6 +45,7 @@ import {
 } from "../../constants/variableConstata";
 import {confirmNotify, notifyError, notifySuccess} from "../../utils/devExtremeUtils";
 import "./loan-app.scss";
+import {SelectBoxTypes} from "devextreme-react/select-box";
 
 export default function Index() {
     const {user} = useAuth();
@@ -170,8 +171,25 @@ export default function Index() {
             .catch(console.error);
         console.log(paramSearch);
     }
+    
+    const onValueQuickFilterChanged = useCallback((e: SelectBoxTypes.ValueChangedEvent) => {
+        notify(`The value is changed to: "${e.value}"`);
+    }, []);
+    
     const onToolbarPreparing = (e: any, visible: boolean) => {
         const items = e.toolbarOptions.items;
+        items.unshift({
+            location: 'before',
+            widget: 'dxSelectBox',
+            options: {
+                dataSource: new DataSource(getQuickFilterListStore),
+                valueExpr: "id",
+                displayExpr: "name",
+                placeholder: "Quick Filter",
+                showClearButton: true,
+                onValueChanged: onValueQuickFilterChanged
+            },
+        });
         items.unshift({
             location: 'after',
             widget: 'dxButton',

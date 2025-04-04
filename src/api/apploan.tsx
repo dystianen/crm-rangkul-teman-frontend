@@ -158,6 +158,8 @@ export const submitNeighbourQuestions = async (appId: string, payload: any): Pro
   return resp.data;
 };
 
+export const getQuickFilterListStore = dataRawCustomStore(`/api/trx/application/data/filter/list?`);
+
 export const getActiveBranchByUserStore = dataRawCustomStore(`/api/data/branch/user?`);
 
 export const getActiveProductByBranch = (branchId: string) =>
