@@ -1,4 +1,4 @@
-import React, {useEffect, useRef, useState} from "react";
+import React, {useCallback, useEffect, useRef, useState} from "react";
 import "devextreme/data/odata/store";
 import DataGrid, {
     Column,
@@ -25,7 +25,7 @@ import {
     appCancel,
     appLoanListStore, checkAccess,
     createAppLoanOnboarding, detailAppStep, getActiveBranchByUserStore, getActiveProductByBranch,
-    getActiveProductStore,
+    getActiveProductStore, getQuickFilterListStore,
 } from "src/api/apploan";
 
 import {
@@ -45,17 +45,23 @@ import {
 } from "../../constants/variableConstata";
 import {confirmNotify, notifyError, notifySuccess} from "../../utils/devExtremeUtils";
 import "./loan-app.scss";
+import {SelectBox, SelectBoxTypes} from "devextreme-react/select-box";
+import { Template } from 'devextreme-react/core/template';
+import type {CollectionWidgetItem} from "devextreme/ui/collection/ui.collection_widget.base";
 
 export default function Index() {
     const {user} = useAuth();
     const navigate = useNavigate();
     const formRef = useRef<Form>(null);
+    const dataGrid = useRef<DataGrid>(null);
     const [popupVisible, setPopupVisible] = React.useState(false);
     const [productOptions, setProductOptions] = useState<any>(undefined);
     const [productComboOptions, setComboProductOptions] = useState<any>({});
     const [loanAppOnboarding, setLoanAppOnboarding] =
         useState<AppLoanOnboardingRequest>(initLoanOnboardingValue);
     const [isPengajuanVisible, setPengajuanVisible] = useState<boolean>(false);
+
+    const [quickFilter,setQuickFilter] = useState<string|undefined>(undefined);
 
     useEffect(() => {
         checkAccess(backofficeAccess.backoffice_master_contact_write).then((res) => {
@@ -141,7 +147,6 @@ export default function Index() {
         return validateIdNumber(request);
     };
 
-    const dataGrid = useRef<any>();
     const onClickDownload = (e: any) => {
         let instance: any = dataGrid.current?.instance;
         let fileName = `pengajuan.xlsx`;
@@ -170,8 +175,47 @@ export default function Index() {
             .catch(console.error);
         console.log(paramSearch);
     }
+    
+    const onValueQuickFilterChanged = useCallback((e: SelectBoxTypes.ValueChangedEvent) => {
+            setQuickFilter(e.value);
+            e.event && e.event.preventDefault();
+        }, []);
+    
     const onToolbarPreparing = (e: any, visible: boolean) => {
+        console.log("onToolbarPreparing", e)
         const items = e.toolbarOptions.items;
+        items.unshift({
+            location: 'before',
+            template: (itemData: CollectionWidgetItem, itemIndex: number, itemElement: any)=>{
+                const dom = ReactDOM.createRoot(itemElement);
+                dom.render(<>
+                    <div className="dx-field dx-search-app">
+                        <div className="dx-field-label">List of QF </div>
+                        <div className="dx-field-value w160">
+                            <SelectBox
+                                dataSource={new DataSource(getQuickFilterListStore)}
+                                valueExpr={"id"}
+                                displayExpr={"name"}
+                                placeholder={" "}
+                                onValueChanged={onValueQuickFilterChanged}
+                                showClearButton={true}
+                                value={quickFilter}
+                            /></div>
+                    </div>
+                </>);
+            },
+            
+            // widget: 'dxSelectBox',
+            // options: {
+            //     value: quickFilter,
+            //     dataSource: new DataSource(getQuickFilterListStore),
+            //     valueExpr: "id",
+            //     displayExpr: "name",
+            //     placeholder: "Quick Filter",
+            //     showClearButton: true,
+            //     onValueChanged: onValueQuickFilterChanged
+            // },
+        });
         items.unshift({
             location: 'after',
             widget: 'dxButton',
@@ -205,7 +249,7 @@ export default function Index() {
             <div className={"dx-card"}>
                 <DataGrid
                     ref={dataGrid}
-                    dataSource={appLoanListStore}
+                    dataSource={appLoanListStore(quickFilter)}
                     focusedRowEnabled={true}
                     remoteOperations={true}
                     columnAutoWidth={true}
@@ -231,7 +275,7 @@ export default function Index() {
                         cellTemplate={function (container: any, options: any) {
                             const dom = ReactDOM.createRoot(container);
                             let found = appStatusIncomplete.some(x => x === options.data.statusId);
-                            console.log("record app ", options.data);
+                            // console.log("record app ", options.data);
                             if(options.data.isWaitingSigning) {
                                 dom.render(<OnClickLink
                                   onClick={() => navigate(`/loan-app/create/step/1?id=${options.data.id}&autoNext=false`)}>{options.data.seqId}</OnClickLink>);

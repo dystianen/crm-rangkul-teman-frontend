@@ -3,6 +3,7 @@ export interface FilterPss {
   length?: number;
   sort?: any;
   searchQuery?: string;
+  quickFilter?: string;
 }
 
 export function setFilterPss(): FilterPss {
