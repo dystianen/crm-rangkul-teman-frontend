@@ -16,7 +16,7 @@ import Form, {
   GroupItem,
   PatternRule,
   RequiredRule,
-  SimpleItem
+  SimpleItem, Tab, TabbedItem, TabPanelOptions
 } from "devextreme-react/form";
 import notify from "devextreme/ui/notify";
 import queryString from "query-string";
@@ -43,6 +43,7 @@ import { getFileBase64 } from "../../api/helper";
 import { backofficeAccess } from "../../constants/variableConstata";
 import { notifySuccess, notifyWarning } from "../../utils/devExtremeUtils";
 import "./loan-app.scss";
+import {ApprovalHistory} from "../approval1-app/ApprovalHistory";
 
 export default function Step2Page() {
   const navigate = useNavigate();
@@ -380,6 +381,22 @@ export default function Step2Page() {
                     )}
                   </Item>
                 )}
+              </GroupItem>
+            </GroupItem>
+            <GroupItem colSpan={2} cssClass={"dx-card responsive-paddings next-card"}>
+              <GroupItem cssClass={"custom-tabs-step2"}>
+                <ApprovalHistory id={ID} />
+                {/*<TabbedItem*/}
+                {/*    tabPanelOptions={{*/}
+                {/*      scrollByContent: true,*/}
+                {/*      showNavButtons: true*/}
+                {/*    }}*/}
+                {/*>*/}
+                {/*  <TabPanelOptions deferRendering={false} />*/}
+                {/*  <Tab title="Histori Persetujuan">*/}
+                {/*    <ApprovalHistory id={ID} />*/}
+                {/*  </Tab>*/}
+                {/*</TabbedItem>*/}
               </GroupItem>
             </GroupItem>
             <GroupItem colSpan={2}>
