@@ -101,3 +101,12 @@
 .w160{
   max-width: 100%!important;
 }
+
+.custom-tabs-step2 {
+  .dx-item-content.dx-tab-content{
+    padding: 0 5px 0 5px !important;
+  }
+  .dx-layout-manager .dx-tabpanel .dx-multiview-item-content{
+    padding: 20px 0 0 !important;
+  }
+}
