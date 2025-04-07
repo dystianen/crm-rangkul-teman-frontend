@@ -7,8 +7,9 @@ import { dataRawCustomStore } from "../model/datagrid";
 import { ajaxDelete, ajaxGet, ajaxPatch, ajaxPost } from "./http.api";
 import { API_PATH } from "./path_url";
 
-export const appLoanListStore = customStore({
-  loadUrl: API_PATH.APPLICATION
+export const appLoanListStore =(customQueryParams?: string)=>customStore({
+  loadUrl: API_PATH.APPLICATION,
+  customQueryParams: customQueryParams
 });
 
 export const appLoanDetailApi = async (id: string): Promise<any[]> => {
@@ -157,6 +158,8 @@ export const submitNeighbourQuestions = async (appId: string, payload: any): Pro
   const resp = await ajaxPost(`${API_PATH.QUESTION}/neighbour/${appId}`, payload);
   return resp.data;
 };
+
+export const getQuickFilterListStore = dataRawCustomStore(`/api/trx/application/data/filter/list?`);
 
 export const getActiveBranchByUserStore = dataRawCustomStore(`/api/data/branch/user?`);
 
