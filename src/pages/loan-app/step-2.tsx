@@ -1,4 +1,4 @@
-import { LoadPanel, Popup } from "devextreme-react";
+import { DropDownButton, LoadPanel, Popup } from "devextreme-react";
 import { Button } from "devextreme-react/button";
 import DataGrid, {
   Column,
@@ -16,7 +16,7 @@ import Form, {
   GroupItem,
   PatternRule,
   RequiredRule,
-  SimpleItem, Tab, TabbedItem, TabPanelOptions
+  SimpleItem
 } from "devextreme-react/form";
 import notify from "devextreme/ui/notify";
 import queryString from "query-string";
@@ -30,6 +30,7 @@ import {
   createAppLoanOnboardingStep2,
   detailAppLoan,
   fetchCheckPartial,
+  fetchStep2Activity,
   getSignedDoc
 } from "src/api/apploan";
 import BusinessAddress from "src/components/loan-app/BusinessAddress";
@@ -42,8 +43,9 @@ import PdfViewer from "src/components/pdf-viewer/PdfViewer";
 import { getFileBase64 } from "../../api/helper";
 import { backofficeAccess } from "../../constants/variableConstata";
 import { notifySuccess, notifyWarning } from "../../utils/devExtremeUtils";
+import { ApprovalHistory } from "../approval1-app/ApprovalHistory";
 import "./loan-app.scss";
-import {ApprovalHistory} from "../approval1-app/ApprovalHistory";
+import { RejectPopup } from "./RejectPopup";
 
 export default function Step2Page() {
   const navigate = useNavigate();
@@ -61,18 +63,14 @@ export default function Step2Page() {
     creditTransaction: 0
   });
   const [submitForm, setSubmitForm] = useState(false);
-  const [loadingDownloadBtn, setLoadingDownloadBtn] = useState(false);
   const [isShowRemainingPopup, setShowRemainingPopup] = useState(false);
   const [missingFields, setMissingFields] = useState<string[]>([]);
+  const [activity, setActivity] = useState<Array<any>>([]);
+  const [isShowPopupReject, setShowPopupReject] = useState(false);
 
   const detailLoanApp = (appId: any) => {
     detailAppLoan(appId).then((res) => {
       const data = res as any;
-
-      // console.log("data app: ", data);
-      // if (!data.privyEnabled && data.statusId === statusApp.unsigned) {
-      // navigate(`/loan-app/detail/upload-signed?id=${ID}`);
-      // }
       const gridStore: any[] = data?.customData || [];
       setDataGrid(gridStore);
       if (data?.incomeProof) {
@@ -98,6 +96,7 @@ export default function Step2Page() {
 
   useEffect(() => {
     detailLoanApp(ID);
+    fetchStep2Activity(ID).then(setActivity);
   }, [ID]);
 
   useEffect(() => {
@@ -110,7 +109,6 @@ export default function Step2Page() {
   }, []);
 
   const downloadDocSigned = () => {
-    setLoadingDownloadBtn(true);
     getSignedDoc(id as any)
       .then((dt) => {
         const link = document.createElement("a");
@@ -131,8 +129,7 @@ export default function Step2Page() {
           "warning",
           15000
         );
-      })
-      .finally(() => setLoadingDownloadBtn(false));
+      });
   };
 
   const handleSubmit = (e: any) => {
@@ -225,6 +222,7 @@ export default function Step2Page() {
     uploadMode: "useForm",
     onValueChanged: onFileChanged
   };
+
   const onFieldDataChanged = (evt: any) => {
     onStep2Loan[evt.dataField] = evt.value;
   };
@@ -239,22 +237,29 @@ export default function Step2Page() {
         showPane={true}
         hideOnOutsideClick={false}
       />
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          margin: "0 15px 0"
-        }}
-      >
-        <h2>Step 2</h2>
-        <Button
-          text="Download Signed Contract"
-          type="success"
-          stylingMode="contained"
-          disabled={loadingDownloadBtn}
-          onClick={downloadDocSigned}
-        />
+      <div className="title-detail">
+        <h2 className={"content-block"}>Step 2</h2>
+        <div>
+          <DropDownButton
+            useSelectMode={false}
+            stylingMode="contained"
+            text="Activity"
+            dropDownOptions={{
+              width: 230
+            }}
+            items={activity}
+            onItemClick={(e) => {
+              if (e.itemData === "Download Signed Contract") {
+                downloadDocSigned();
+              }
+
+              if (e.itemData === "Reject") {
+                setShowPopupReject(true);
+              }
+            }}
+            width={230}
+          />
+        </div>
       </div>
       <div className={"content-block"}>
         <div className={"dx-card responsive-paddings"}>
@@ -446,6 +451,12 @@ export default function Step2Page() {
           />
         </div>
       </Popup>
+
+      <RejectPopup
+        appId={ID}
+        popupVisible={isShowPopupReject}
+        hide={() => setShowPopupReject(false)}
+      />
     </>
   );
 }
