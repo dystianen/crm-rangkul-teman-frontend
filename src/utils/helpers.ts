@@ -31,3 +31,20 @@ export function allowOnlyNumbers(e: KeyboardEvent): void {
     e.preventDefault();
   }
 }
+
+export function allowOnlyText(e: KeyboardEvent) {
+  const allowedKeys = [
+    "Backspace",
+    "Delete",
+    "ArrowLeft",
+    "ArrowRight",
+    "Tab",
+    " "
+  ];
+
+  const isLetter = /^[a-zA-Z]$/.test(e.key);
+
+  if (!isLetter && !allowedKeys.includes(e.key)) {
+    e.preventDefault();
+  }
+}

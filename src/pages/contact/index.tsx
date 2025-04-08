@@ -21,10 +21,10 @@ import { useNavigate } from "react-router";
 import { contactListStore, selectBoxBranchOptions, validateIdNumber } from "src/api/contact";
 import { OnClickLink } from "../../components/alink";
 import { filterOperation } from "../../constants/FilterOperation";
-// @ts-expect-error
 import * as downloadFile from "save-file";
 import { getActiveBranchByUserStore } from "../../api/apploan";
 import { downloadExcel } from "../../api/http.api";
+import { allowOnlyNumbers } from "src/utils/helpers";
 
 interface DataGridInstance {
   instance: {
@@ -333,18 +333,7 @@ export default function Index() {
               editorOptions={{
                 min: 16,
                 maxLength: 16,
-                onKeyDown: (e: any) => {
-                  const key = e.event.key;
-                  e.value = String.fromCharCode(e.event.keyCode);
-                  if (
-                    !/[0-9]/.test(e.value) &&
-                    key !== "Control" &&
-                    key !== "v" &&
-                    key !== "Backspace" &&
-                    key !== "Delete"
-                  )
-                    e.event.preventDefault();
-                }
+                onKeyDown: (e: any) => allowOnlyNumbers(e.event)
               }}
             >
               <RequiredRule message="KTP wajib diisi" />

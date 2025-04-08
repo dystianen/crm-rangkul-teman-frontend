@@ -58,6 +58,7 @@ import imageCompress from "src/utils/imageCompress.util";
 import trimBody from "../../utils/trim-body";
 import {useAuth} from "../../contexts/auth";
 import ContactActivityV2 from "../../components/contact/contact-activyv2";
+import { allowOnlyNumbers, allowOnlyText } from "src/utils/helpers";
 
 export default function EditPage() {
     const {user} = useAuth();
@@ -495,12 +496,7 @@ export default function EditPage() {
                                     editorOptions={{
                                         min: 16,
                                         maxLength: 16,
-                                        onKeyDown: (e: any) => {
-                                            const key = e.event.key;
-                                            e.value = String.fromCharCode(e.event.keyCode);
-                                            if (!/[0-9]/.test(e.value) && key !== "Backspace" && key !== "Delete")
-                                                e.event.preventDefault();
-                                        }
+                                        onKeyDown: (e: any) => allowOnlyNumbers(e.event)
                                     }}
                                 >
                                     <RequiredRule message="KTP Number is required"/>
@@ -578,12 +574,7 @@ export default function EditPage() {
                                     editorOptions={{
                                         min: 0,
                                         maxLength: 14,
-                                        onKeyDown: (e: any) => {
-                                            const key = e.event.key;
-                                            e.value = String.fromCharCode(e.event.keyCode);
-                                            if (!/[0-9]/.test(e.value) && key !== "Backspace" && key !== "Delete")
-                                                e.event.preventDefault();
-                                        }
+                                        onKeyDown: (e: any) => allowOnlyNumbers(e.event)
                                     }}
                                 >
                                     <RequiredRule message="Mobile phone is required"/>
@@ -732,12 +723,7 @@ export default function EditPage() {
                                     editorOptions={{
                                         min: 0,
                                         maxLength: 5,
-                                        onKeyDown: (e: any) => {
-                                            const key = e.event.key;
-                                            e.value = String.fromCharCode(e.event.keyCode);
-                                            if (!/[0-9]/.test(e.value) && key !== "Backspace" && key !== "Delete")
-                                                e.event.preventDefault();
-                                        }
+                                        onKeyDown: (e: any) => allowOnlyNumbers(e.event)
                                     }}
                                     label={{text: "Postal Code"}}
                                 />
@@ -746,12 +732,7 @@ export default function EditPage() {
                                     editorOptions={{
                                         min: 0,
                                         maxLength: 4,
-                                        onKeyDown: (e: any) => {
-                                            const key = e.event.key;
-                                            e.value = String.fromCharCode(e.event.keyCode);
-                                            if (!/[0-9]/.test(e.value) && key !== "Backspace" && key !== "Delete")
-                                                e.event.preventDefault();
-                                        }
+                                        onKeyDown: (e: any) => allowOnlyNumbers(e.event)
                                     }}
                                     label={{text: "RT"}}
                                 />
@@ -760,12 +741,7 @@ export default function EditPage() {
                                     editorOptions={{
                                         min: 0,
                                         maxLength: 4,
-                                        onKeyDown: (e: any) => {
-                                            const key = e.event.key;
-                                            e.value = String.fromCharCode(e.event.keyCode);
-                                            if (!/[0-9]/.test(e.value) && key !== "Backspace" && key !== "Delete")
-                                                e.event.preventDefault();
-                                        }
+                                        onKeyDown: (e: any) => allowOnlyNumbers(e.event)
                                     }}
                                     label={{text: "RW"}}
                                 />
@@ -822,17 +798,7 @@ export default function EditPage() {
                                                     editorOptions: {
                                                         min: 0,
                                                         maxLength: 150,
-                                                        onKeyDown: (e: any) => {
-                                                            const key = e.event.key;
-                                                            e.value = String.fromCharCode(e.event.keyCode);
-                                                            if (
-                                                                !/[A-Za-z]/.test(e.value) &&
-                                                                key !== " " &&
-                                                                key !== "Backspace" &&
-                                                                key !== "Delete"
-                                                            )
-                                                                e.event.preventDefault();
-                                                        }
+                                                        onKeyDown: (e: any) => allowOnlyText(e.event)
                                                     },
                                                     isRequired: true
                                                 },
@@ -841,17 +807,7 @@ export default function EditPage() {
                                                     editorOptions: {
                                                         min: 0,
                                                         maxLength: 14,
-                                                        onKeyDown: (e: any) => {
-                                                            const key = e.event.key;
-                                                            e.value = String.fromCharCode(e.event.keyCode);
-                                                            if (
-                                                                !/[0-9]/.test(e.value) &&
-                                                                key !== "Backspace" &&
-                                                                key !== "Delete"
-                                                            ) {
-                                                                e.event.preventDefault();
-                                                            }
-                                                        }
+                                                        onKeyDown: (e: any) => allowOnlyNumbers(e.event)
                                                     },
                                                     isRequired: true
                                                 }
@@ -1048,17 +1004,7 @@ export default function EditPage() {
                                 maxLength: 16,
                                 readOnly: true,
                                 value: (contact.idNumber || ""),
-                                onKeyDown: (e: any) => {
-                                    const key = e.event.key;
-                                    e.value = String.fromCharCode(e.event.keyCode);
-                                    if (
-                                        !/[0-9]/.test(e.value) &&
-                                        key !== "Control" && key !== "v" &&
-                                        key !== "Backspace" &&
-                                        key !== "Delete"
-                                    )
-                                        e.event.preventDefault();
-                                },
+                                onKeyDown: (e: any) => allowOnlyNumbers(e.event)
                             }}
                         >
                             <RequiredRule message="KTP Number is required"/>
