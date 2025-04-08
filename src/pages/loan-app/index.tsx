@@ -48,6 +48,7 @@ import "./loan-app.scss";
 import {SelectBox, SelectBoxTypes} from "devextreme-react/select-box";
 import { Template } from 'devextreme-react/core/template';
 import type {CollectionWidgetItem} from "devextreme/ui/collection/ui.collection_widget.base";
+import { allowOnlyNumbers } from "src/utils/helpers";
 
 export default function Index() {
     const {user} = useAuth();
@@ -507,17 +508,7 @@ export default function Index() {
                         editorOptions={{
                             min: 16,
                             maxLength: 16,
-                            onKeyDown: (e: any) => {
-                                const key = e.event.key;
-                                e.value = String.fromCharCode(e.event.keyCode);
-                                if (
-                                    !/[0-9]/.test(e.value) &&
-                                    key !== "Control" && key !== "v" &&
-                                    key !== "Backspace" &&
-                                    key !== "Delete"
-                                )
-                                    e.event.preventDefault();
-                            },
+                            onKeyDown: (e: any) => allowOnlyNumbers(e.event)
                         }}
                     >
                         <RequiredRule message="KTP Number is required"/>

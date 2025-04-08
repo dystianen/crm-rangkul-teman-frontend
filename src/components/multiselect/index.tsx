@@ -54,6 +54,7 @@ function MultiSelect({
             keyExpr="id"
             displayExpr="name"
             onSelectionChanged={handleSelectionChanged}
+            height={250}
           />
           <Button text="Done" style={{ marginTop: 10, width: "100%" }} onClick={handleDone} />
         </div>

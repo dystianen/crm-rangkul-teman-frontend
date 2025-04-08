@@ -44,6 +44,7 @@ import resizeImage from "src/utils/resizeImage.util";
 import {createAppTemp} from "../../api/apploan";
 import "./contact.scss";
 import { notifyError } from "src/utils/devExtremeUtils";
+import { allowOnlyNumbers, allowOnlyText } from "src/utils/helpers";
 
 export default function Create() {
     const navigate = useNavigate();
@@ -238,12 +239,7 @@ export default function Create() {
                                 editorOptions={{
                                     min: 16,
                                     maxLength: 16,
-                                    onKeyDown: (e: any) => {
-                                        const key = e.event.key;
-                                        e.value = String.fromCharCode(e.event.keyCode);
-                                        if (!/[0-9]/.test(e.value) && key !== "Backspace" && key !== "Delete")
-                                            e.event.preventDefault();
-                                    },
+                                    onKeyDown: (e: any) => allowOnlyNumbers(e.event),
                                     value: ktp,
                                     disabled: true
                                 }}
@@ -261,17 +257,7 @@ export default function Create() {
                                 editorOptions={{
                                     min: 0,
                                     maxLength: 150,
-                                    onKeyDown: (e: any) => {
-                                        const key = e.event.key;
-                                        e.value = String.fromCharCode(e.event.keyCode);
-                                        if (
-                                            !/[A-Za-z]/.test(e.value) &&
-                                            key !== " " &&
-                                            key !== "Backspace" &&
-                                            key !== "Delete"
-                                        )
-                                            e.event.preventDefault();
-                                    }
+                                    onKeyDown: (e: any) => allowOnlyText(e.event)
                                 }}
                             >
                                 <RequiredRule message="Nama wajib diisi"/>
@@ -334,12 +320,7 @@ export default function Create() {
                                 editorOptions={{
                                     min: 0,
                                     maxLength: 15,
-                                    onKeyDown: (e: any) => {
-                                        const key = e.event.key;
-                                        e.value = String.fromCharCode(e.event.keyCode);
-                                        if (!/[0-9]/.test(e.value) && key !== "Backspace" && key !== "Delete")
-                                            e.event.preventDefault();
-                                    }
+                                    onKeyDown: (e: any) => allowOnlyNumbers(e.event)
                                 }}
                                 label={{text: "Lama bekerja"}}
                             >
@@ -351,12 +332,7 @@ export default function Create() {
                                 editorOptions={{
                                     min: 0,
                                     maxLength: 14,
-                                    onKeyDown: (e: any) => {
-                                        const key = e.event.key;
-                                        e.value = String.fromCharCode(e.event.keyCode);
-                                        if (!/[0-9]/.test(e.value) && key !== "Backspace" && key !== "Delete")
-                                            e.event.preventDefault();
-                                    }
+                                    onKeyDown: (e: any) => allowOnlyNumbers(e.event)
                                 }}
                             >
                                 <RequiredRule message="No.HP wajib diisi"/>
@@ -453,12 +429,7 @@ export default function Create() {
                                 editorOptions={{
                                     min: 0,
                                     maxLength: 5,
-                                    onKeyDown: (e: any) => {
-                                        const key = e.event.key;
-                                        e.value = String.fromCharCode(e.event.keyCode);
-                                        if (!/[0-9]/.test(e.value) && key !== "Backspace" && key !== "Delete")
-                                            e.event.preventDefault();
-                                    }
+                                    onKeyDown: (e: any) => allowOnlyNumbers(e.event)
                                 }}
                                 label={{text: "Kodepos"}}
                             />
@@ -467,12 +438,7 @@ export default function Create() {
                                 editorOptions={{
                                     min: 0,
                                     maxLength: 4,
-                                    onKeyDown: (e: any) => {
-                                        const key = e.event.key;
-                                        e.value = String.fromCharCode(e.event.keyCode);
-                                        if (!/[0-9]/.test(e.value) && key !== "Backspace" && key !== "Delete")
-                                            e.event.preventDefault();
-                                    }
+                                    onKeyDown: (e: any) => allowOnlyNumbers(e.event)
                                 }}
                                 label={{text: "RT"}}
                             />
@@ -481,12 +447,7 @@ export default function Create() {
                                 editorOptions={{
                                     min: 0,
                                     maxLength: 4,
-                                    onKeyDown: (e: any) => {
-                                        const key = e.event.key;
-                                        e.value = String.fromCharCode(e.event.keyCode);
-                                        if (!/[0-9]/.test(e.value) && key !== "Backspace" && key !== "Delete")
-                                            e.event.preventDefault();
-                                    }
+                                    onKeyDown: (e: any) => allowOnlyNumbers(e.event)
                                 }}
                                 label={{text: "RW"}}
                             />
@@ -544,17 +505,7 @@ export default function Create() {
                                                 editorOptions: {
                                                     min: 0,
                                                     maxLength: 150,
-                                                    onKeyDown: (e: any) => {
-                                                        const key = e.event.key;
-                                                        e.value = String.fromCharCode(e.event.keyCode);
-                                                        if (
-                                                            !/[A-Za-z]/.test(e.value) &&
-                                                            key !== " " &&
-                                                            key !== "Backspace" &&
-                                                            key !== "Delete"
-                                                        )
-                                                            e.event.preventDefault();
-                                                    }
+                                                    onKeyDown: (e: any) => allowOnlyText(e.event)
                                                 },
                                                 isRequired: true
                                             },
@@ -563,13 +514,7 @@ export default function Create() {
                                                 editorOptions: {
                                                     min: 0,
                                                     maxLength: 14,
-                                                    onKeyDown: (e: any) => {
-                                                        const key = e.event.key;
-                                                        e.value = String.fromCharCode(e.event.keyCode);
-                                                        if (!/[0-9]/.test(e.value) && key !== "Backspace" && key !== "Delete") {
-                                                            e.event.preventDefault();
-                                                        }
-                                                    }
+                                                    onKeyDown: (e: any) => allowOnlyNumbers(e.event)
                                                 },
                                                 isRequired: true
                                             }

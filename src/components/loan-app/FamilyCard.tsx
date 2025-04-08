@@ -13,6 +13,7 @@ import DataSource from "devextreme/data/data_source";
 import { useMemo } from "react";
 import { familyListStore } from "src/api/apploan";
 import { contactFamilyStore, selectBoxOptions, validateIdNumber } from "src/api/contact";
+import { allowOnlyNumbers, allowOnlyText } from "src/utils/helpers";
 
 const FamilyCard = ({ appId, disabled = false }: { appId: string; disabled?: boolean }) => {
   const familyDataSource = useMemo(() => new DataSource(familyListStore(appId)), [appId]);
@@ -66,12 +67,7 @@ const FamilyCard = ({ appId, disabled = false }: { appId: string; disabled?: boo
               editorOptions={{
                 min: 16,
                 maxLength: 16,
-                onKeyDown: (e: any) => {
-                  const key = e.event.key;
-                  e.value = String.fromCharCode(e.event.keyCode);
-                  if (!/[0-9]/.test(e.value) && key !== "Backspace" && key !== "Delete")
-                    e.event.preventDefault();
-                }
+                onKeyDown: (e: any) => allowOnlyNumbers(e.event)
               }}
             >
               <RequiredRule message="NIK is required" />
@@ -83,12 +79,7 @@ const FamilyCard = ({ appId, disabled = false }: { appId: string; disabled?: boo
             <SimpleItem
               dataField="name"
               editorOptions={{
-                onKeyDown: (e: any) => {
-                  const key = e.event.key;
-                  if (/[0-9]/.test(key) && key !== "Backspace" && key !== "Delete") {
-                    e.event.preventDefault();
-                  }
-                }
+                onKeyDown: (e: any) => allowOnlyText(e.event)
               }}
             >
               <RequiredRule message="Name is required" />
