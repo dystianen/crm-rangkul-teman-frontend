@@ -13,8 +13,8 @@ import {
 } from "src/api/contact";
 import { InitLeadsValue, type TReqCreateLeads } from "src/interfaces/contactDto";
 import { notifyError, notifySuccess } from "src/utils/devExtremeUtils";
+import { allowOnlyNumbers, allowOnlyText } from "src/utils/helpers";
 import ContactActivityV2 from "../../components/contact/contact-activyv2";
-import { allowOnlyNumbers } from "src/utils/helpers";
 
 const CreateEditContactLeads = () => {
   const formRef = useRef<Form>(null);
@@ -120,7 +120,13 @@ const CreateEditContactLeads = () => {
       >
         <GroupItem cssClass={"dx-card responsive-paddings next-card"}>
           <GroupItem caption="Contact form" colCount={2}>
-            <SimpleItem dataField="name" label={{ text: "Name" }} />
+            <SimpleItem
+              dataField="name"
+              label={{ text: "Name" }}
+              editorOptions={{
+                onKeyDown: (e: any) => allowOnlyText(e.event)
+              }}
+            />
             <SimpleItem
               dataField="mobileNumber"
               label={{ text: "Mobile Number" }}
