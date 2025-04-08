@@ -6,11 +6,13 @@ import { customStore } from "../model/customStore";
 import { dataRawCustomStore } from "../model/datagrid";
 import { ajaxDelete, ajaxGet, ajaxPatch, ajaxPost } from "./http.api";
 import { API_PATH } from "./path_url";
+import { TRequestPreverificationReject } from "./types/ILoanApp";
 
-export const appLoanListStore =(customQueryParams?: string)=>customStore({
-  loadUrl: API_PATH.APPLICATION,
-  customQueryParams: customQueryParams
-});
+export const appLoanListStore = (customQueryParams?: string) =>
+  customStore({
+    loadUrl: API_PATH.APPLICATION,
+    customQueryParams: customQueryParams
+  });
 
 export const appLoanDetailApi = async (id: string): Promise<any[]> => {
   const resp = await ajaxGet(`${API_PATH.APPLICATION}/detail/${id}`);
@@ -46,7 +48,6 @@ export const submitAppLoan = async (id: string): Promise<any> => {
   const resp = await ajaxPost(`${API_PATH.APPLICATION}/submit/${id}`);
   return resp.data;
 };
-
 
 export const bankCheckValid = async (payload: any): Promise<any> => {
   const resp = await ajaxPost(`${API_PATH.BANK_CHECK}`, payload);
@@ -253,5 +254,17 @@ export const loanDocumentListStore = (id: string) =>
 
 export const fetchCheckPartial = async (appId: string): Promise<any> => {
   const resp = await ajaxGet(`${API_PATH.APPLICATION}/checkPartial/step2/${appId}`);
+  return resp.data;
+};
+
+export const fetchStep2Activity = async (appId: string): Promise<any> => {
+  const resp = await ajaxGet(`${API_PATH.APPLICATION}/activity/step2/${appId}`);
+  return resp.data;
+};
+
+export const submitPreverificationReject = async (
+  payload: TRequestPreverificationReject
+): Promise<any> => {
+  const resp = await ajaxPost(`${API_PATH.APPROVAL}/preverification/reject`, payload);
   return resp.data;
 };
