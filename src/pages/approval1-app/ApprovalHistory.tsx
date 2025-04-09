@@ -78,10 +78,10 @@ export const ApprovalHistory: FC<any> = ({ id }) => {
           filterOperations={filterOperation.date}
         />
         <Column dataField={"typeName"} caption={"Tipe Dokumen"} />
-        <Column dataField={"description"} caption={"Deskripsi"} encodeHtml={false} />
+        <Column dataField={"description"} caption={"Deskripsi"} encodeHtml={false} cssClass="pre-line" />
         <Column dataField={"statusName"} caption={"Status"} />
         <Column dataField={"processedByName"} caption={"Diproses Oleh"} />
-        <Column dataField={"rejectReason"} caption={"Alasan Ditolak"} />
+        <Column dataField={"rejectReason"} caption={"Alasan Ditolak"} encodeHtml={false} cssClass="pre-line" />
         <Column type="buttons">
           <Button
             icon="refresh"
