@@ -78,7 +78,7 @@ export const ApprovalHistory: FC<any> = ({ id }) => {
           filterOperations={filterOperation.date}
         />
         <Column dataField={"typeName"} caption={"Tipe Dokumen"} />
-        <Column dataField={"description"} caption={"Deskripisi"} encodeHtml={false} />
+        <Column dataField={"description"} caption={"Deskripsi"} encodeHtml={false} />
         <Column dataField={"statusName"} caption={"Status"} />
         <Column dataField={"processedByName"} caption={"Diproses Oleh"} />
         <Column dataField={"rejectReason"} caption={"Alasan Ditolak"} />
