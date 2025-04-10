@@ -9,7 +9,7 @@ import Form, {
 } from "devextreme-react/form";
 import DataSource from "devextreme/data/data_source";
 import React, { Ref, useCallback, useEffect, useMemo, useState } from "react";
-import {fileTypeAppStore, fileTypeStore, getFile} from "src/api/apploan";
+import { fileTypeAppStore, getFile } from "src/api/apploan";
 import convertFileToBase64 from "src/utils/convertFileToBase64.util";
 import { notifyError } from "src/utils/devExtremeUtils";
 import resizeImage from "src/utils/resizeImage.util";
@@ -128,7 +128,6 @@ export default function DocumentForm(props: ActivityContactProps) {
   };
 
   const onFieldAppDataChanged = useCallback((evt: any) => {
-    
     setDocumentData((prev) => {
       if (prev[evt.dataField] !== evt.value) {
         return { ...prev, [evt.dataField]: evt.value };
@@ -204,7 +203,7 @@ export default function DocumentForm(props: ActivityContactProps) {
             <Item>
               <div
                 className="dx-field-value"
-                style={{ width: "100%", marginTop: -40, paddingLeft: 10 }}
+                style={{ width: "100%", marginTop: -16, paddingLeft: 10 }}
               >
                 <div className="dx-fileuploader-file">
                   <div className="dx-fileuploader-file-info">
