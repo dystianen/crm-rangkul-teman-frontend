@@ -7,10 +7,10 @@ import { dataRawCustomStore } from "../model/datagrid";
 import { ajaxDelete, ajaxGet, ajaxPatch, ajaxPost } from "./http.api";
 import { API_PATH } from "./path_url";
 import {
-  TRequestPreverificationReject,
   TResCheckAccessStep2,
   TResponsePreverification
 } from "./types/ILoanApp";
+import { TRequestRejection } from "./types/ILoanApp";
 
 export const appLoanListStore = (customQueryParams?: string) =>
   customStore({
@@ -275,7 +275,7 @@ export const fetchStep2Activity = async (appId: string): Promise<any> => {
 };
 
 export const submitPreverificationReject = async (
-  payload: TRequestPreverificationReject
+  payload: TRequestRejection
 ): Promise<any> => {
   const resp = await ajaxPost(`${API_PATH.APPROVAL}/preverification/reject`, payload);
   return resp.data;
