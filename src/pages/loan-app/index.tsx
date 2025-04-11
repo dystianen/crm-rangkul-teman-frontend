@@ -261,29 +261,25 @@ export default function Index() {
               dataField={"seqId"}
               caption={"#No"}
               width={90}
-              cellTemplate={function (container: any, options: any) {
-                const id = String(options.data.id);
-                const dom = ReactDOM.createRoot(container);
-                dom.render(
-                  <OnClickLink
-                    onClick={() => {
-                      detailAppStep(id).then((res) => {
-                        const { showPopup, message, url } = res;
-                        if (showPopup) {
-                          setShowPopupMessage(true);
-                          setPopupMessage(message);
-                          setUrl(url);
-                        } else {
-                          navigate(url);
-                        }
-                      });
-                    }}
-                  >
-                    {options.data.seqId}
-                  </OnClickLink>
-                );
-              }}
               filterOperations={filterOperation.numeric}
+              cellRender={({ row }) => (
+                <OnClickLink
+                  onClick={() => {
+                    detailAppStep(row.data.id).then((res) => {
+                      const { showPopup, message, url } = res;
+                      if (showPopup) {
+                        setShowPopupMessage(true);
+                        setPopupMessage(message);
+                        setUrl(url);
+                      } else {
+                        navigate(url);
+                      }
+                    });
+                  }}
+                >
+                  {row.data.seqId}
+                </OnClickLink>
+              )}
             />
             <Column
               dataField={"createdOn"}
