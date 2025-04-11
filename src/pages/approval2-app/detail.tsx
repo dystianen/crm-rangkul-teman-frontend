@@ -1,42 +1,44 @@
-import React, { useEffect, useState } from "react";
-
-import "devextreme-react/file-uploader";
-import "./approval2-app.scss";
-
-import queryString from "query-string";
-import { useNavigate } from "react-router";
-import { useLocation } from "react-router-dom";
-
 import "devextreme-react/date-box";
 import { DropDownButton } from "devextreme-react/drop-down-button";
-import { getDetail } from "src/api/approval2";
+import "devextreme-react/file-uploader";
+import queryString from "query-string";
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router";
+import { useLocation } from "react-router-dom";
+import { getDetail, rejectApp2 } from "src/api/approval2";
+import { RejectPopup } from "src/components/reject-popup";
 import { AppLoanDetailRequest, initAppLoanDetailValue } from "src/interfaces/appLoanOnboarding";
 import { alertWarning } from "../../utils/devExtremeUtils";
 import { AppForm } from "../loan-app/AppForm";
+import "./approval2-app.scss";
 import { ApprovePopup } from "./ApprovePopup";
-import { RejectPopup } from "./RejectPopup";
+import { TRequestRejection } from "src/api/types/ILoanApp";
 
 export default function DetailPage() {
   const location = useLocation();
   const navigate = useNavigate();
   const { id } = queryString.parse(location.search);
+  const appId = id as string;
   const [popupVisible, setPopupVisible] = React.useState(false);
   const [popupApproveVisible, setPopupApproveVisible] = React.useState(false);
-
   const [detail, setDetail] = useState<AppLoanDetailRequest>(initAppLoanDetailValue);
-  const [activity, setActivity] = useState<Array<any>>(["Approve", "Reject"]);
+  const [activity] = useState<Array<any>>(["Approve", "Reject"]);
 
   useEffect(() => {
-    getDetail(String(id))
-      .then((res: unknown) => {
-        console.log("res detail approval 2: ", res);
-        const data = res as AppLoanDetailRequest;
-        setDetail(data);
+    getDetail(appId)
+      .then((res) => {
+        setDetail(res);
       })
-      .catch((err: any) => {
+      .catch(() => {
         alertWarning("Active approval is not found!").then(() => navigate("/approval2"));
       });
-  }, [id]);
+  }, [appId, navigate]);
+
+  const handleSubmitRejection = async (payload: TRequestRejection) => {
+    return rejectApp2(payload).then(() => {
+      navigate(`/approval2`);
+    });
+  };
 
   return (
     <>
@@ -58,7 +60,6 @@ export default function DetailPage() {
               if (text === "Approve") {
                 setPopupApproveVisible(true);
               }
-              console.log("text ", text);
             }}
             width={230}
           />
@@ -66,7 +67,13 @@ export default function DetailPage() {
       </div>
 
       <AppForm detail={detail} />
-      <RejectPopup data={detail} popupVisible={popupVisible} hide={() => setPopupVisible(false)} />
+      <RejectPopup
+        appId={appId}
+        approvalId={detail.approvalId || ""}
+        popupVisible={popupVisible}
+        hide={() => setPopupVisible(false)}
+        handleSubmit={handleSubmitRejection}
+      />
       <ApprovePopup
         detail={setDetail}
         data={detail}
