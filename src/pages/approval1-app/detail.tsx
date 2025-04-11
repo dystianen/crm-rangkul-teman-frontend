@@ -1,82 +1,85 @@
-import React, {useEffect, useMemo, useRef, useState} from "react";
-import Form, {GroupItem, SimpleItem} from "devextreme-react/form";
-
-import "devextreme-react/file-uploader";
-import "./approval1-app.scss";
-
-import {useNavigate} from "react-router";
-import {useLocation} from "react-router-dom";
-import queryString from "query-string";
-
 import "devextreme-react/date-box";
-import {DropDownButton} from "devextreme-react/drop-down-button";
-import {DataGrid, Column, Pager, Paging, Scrolling} from "devextreme-react/data-grid";
-import TabPanel, {Item} from "devextreme-react/tab-panel";
-import {
-    getDetail,
-} from "src/api/approval1";
-import {
-    AppLoanDetailRequest,
-    initAppLoanDetailValue,
-} from "src/interfaces/appLoanOnboarding";
-import * as Title from "devextreme-react/toolbar";
-import {TabFooter} from "./TabFooter";
-import {RejectPopup} from "./RejectPopup";
-import {ApprovePopup} from "./ApprovePopup";
-import {Button} from "devextreme-react/button";
-import {AppForm} from "../loan-app/AppForm";
-import {alertWarning} from "../../utils/devExtremeUtils";
+import { DropDownButton } from "devextreme-react/drop-down-button";
+import "devextreme-react/file-uploader";
+import queryString from "query-string";
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router";
+import { useLocation } from "react-router-dom";
+import { getDetail, rejectApp1 } from "src/api/approval1";
+import { RejectPopup } from "src/components/reject-popup";
+import { AppLoanDetailRequest, initAppLoanDetailValue } from "src/interfaces/appLoanOnboarding";
+import { alertWarning } from "../../utils/devExtremeUtils";
+import { AppForm } from "../loan-app/AppForm";
+import "./approval1-app.scss";
+import { ApprovePopup } from "./ApprovePopup";
+import { TRequestRejection } from "src/api/types/ILoanApp";
 
 export default function DetailPage() {
-    const location = useLocation();
-    const navigate = useNavigate();
-    const {id} = queryString.parse(location.search);
-    const [popupVisible, setPopupVisible] = React.useState(false);
-    const [popupApproveVisible, setPopupApproveVisible] = React.useState(false);
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { id } = queryString.parse(location.search);
+  const appId = id as string;
+  const [popupVisible, setPopupVisible] = React.useState(false);
+  const [popupApproveVisible, setPopupApproveVisible] = React.useState(false);
+  const [detail, setDetail] = useState<AppLoanDetailRequest>(initAppLoanDetailValue);
+  const [activity] = useState<Array<any>>(["Approve", "Reject"]);
 
-    const [detail, setDetail] = useState<AppLoanDetailRequest>(
-        initAppLoanDetailValue
-    );
-    const [activity, setActivity] = useState<Array<any>>(["Approve", "Reject"]);
+  useEffect(() => {
+    getDetail(appId)
+      .then((res) => {
+        setDetail(res);
+      })
+      .catch(() => {
+        alertWarning("Active approval is not found!").then(() => navigate("/approval1"));
+      });
+  }, [appId, navigate]);
 
-    useEffect(() => {
-        getDetail(String(id)).then((res: unknown) => {
-            const data = res as AppLoanDetailRequest;
-            setDetail(data);
-        }).catch((err: any) => {
-            alertWarning("Active approval is not found!").then(() => navigate("/approval1"));
-        });
-    }, [id]);
+  const handleSubmitRejection = async (payload: TRequestRejection) => {
+    return rejectApp1(payload).then(() => {
+      navigate(`/approval1`);
+    });
+  };
 
-    return (<>
-        <div className="title-detail">
-            <h2 className={"content-block"}>Detail Approval 1</h2>
-            <div>
-                <DropDownButton
-                    stylingMode="contained"
-                    text="Activity"
-                    dropDownOptions={{
-                        width: 230,
-                    }}
-                    items={activity}
-                    onItemClick={(e) => {
-                        const text = e.itemData;
-                        if (text == "Reject") {
-                            setPopupVisible(true);
-                        }
-                        if (text == "Approve") {
-                            setPopupApproveVisible(true);
-                        }
-                        console.log("text ", text);
-
-                    }}
-                    width={230}
-                />
-            </div>
+  return (
+    <>
+      <div className="title-detail">
+        <h2 className={"content-block"}>Detail Approval 1</h2>
+        <div>
+          <DropDownButton
+            stylingMode="contained"
+            text="Activity"
+            dropDownOptions={{
+              width: 230
+            }}
+            items={activity}
+            onItemClick={(e) => {
+              const text = e.itemData;
+              if (text === "Reject") {
+                setPopupVisible(true);
+              }
+              if (text === "Approve") {
+                setPopupApproveVisible(true);
+              }
+            }}
+            width={230}
+          />
         </div>
-        <AppForm detail={detail}/>
-        <RejectPopup data={detail} popupVisible={popupVisible} hide={() => setPopupVisible(false)}/>
-        <ApprovePopup detail={setDetail} data={detail} popupVisible={popupApproveVisible}
-                      hide={() => setPopupApproveVisible(false)}/>
-    </>);
+      </div>
+      <AppForm detail={detail} />
+      <RejectPopup
+        appId={appId}
+        approvalId={detail.approvalId || ""}
+        popupVisible={popupVisible}
+        hide={() => setPopupVisible(false)}
+        handleSubmit={handleSubmitRejection}
+      />
+
+      <ApprovePopup
+        detail={setDetail}
+        data={detail}
+        popupVisible={popupApproveVisible}
+        hide={() => setPopupApproveVisible(false)}
+      />
+    </>
+  );
 }
