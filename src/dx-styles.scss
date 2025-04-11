@@ -278,3 +278,9 @@ body {
 .dx-fileuploader-input-wrapper::after {
   padding-bottom: 0 !important;
 }
+
+.wrapper-popup {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}

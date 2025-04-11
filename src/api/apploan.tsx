@@ -6,7 +6,11 @@ import { customStore } from "../model/customStore";
 import { dataRawCustomStore } from "../model/datagrid";
 import { ajaxDelete, ajaxGet, ajaxPatch, ajaxPost } from "./http.api";
 import { API_PATH } from "./path_url";
-import { TRequestPreverificationReject } from "./types/ILoanApp";
+import {
+  TRequestPreverificationReject,
+  TResCheckAccessStep2,
+  TResponsePreverification
+} from "./types/ILoanApp";
 
 export const appLoanListStore = (customQueryParams?: string) =>
   customStore({
@@ -59,6 +63,11 @@ export const checkAccess = async (accessId: string): Promise<boolean> => {
   return resp;
 };
 
+export const checkAccessStep2 = async (appId: string): Promise<TResCheckAccessStep2> => {
+  const resp = await ajaxGet(`${API_PATH.APPLICATION}/access/step2/${appId}`);
+  return resp;
+};
+
 export const getUnsignedDoc = async (id: string): Promise<any> => {
   const resp = await ajaxGet(`${API_PATH.APPLICATION}/get/unsigned/${id}`);
   return resp.data;
@@ -74,7 +83,10 @@ export const checkStatusSigning = async (id: string): Promise<boolean> => {
   return resp.data;
 };
 
-export const createAppLoanOnboardingStep1 = async (appId: string, payload: any): Promise<any> => {
+export const createAppLoanOnboardingStep1 = async (
+  appId: string,
+  payload: any
+): Promise<TResponsePreverification> => {
   const resp = await ajaxPost(`${API_PATH.APPLICATION}/create/step/1/${appId}`, payload);
   return resp.data;
 };
@@ -99,7 +111,7 @@ export const submitAppLoanSignedDocument = async (appId: string, payload: any): 
   return resp.data;
 };
 
-export const detailAppStep = async (id: string): Promise<any> => {
+export const detailAppStep = async (id: string): Promise<TResponsePreverification> => {
   const resp = await ajaxGet(`${API_PATH.APPLICATION}/get/step/${id}`);
   return resp.data;
 };

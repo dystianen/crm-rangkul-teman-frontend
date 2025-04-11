@@ -20,13 +20,13 @@ import Form, {
 } from "devextreme-react/form";
 import notify from "devextreme/ui/notify";
 import queryString from "query-string";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import ReactDOM from "react-dom/client";
 import Resizer from "react-image-file-resizer";
 import { useNavigate } from "react-router";
 import { useLocation } from "react-router-dom";
 import {
-  checkAccess,
+  checkAccessStep2,
   createAppLoanOnboardingStep2,
   detailAppLoan,
   fetchCheckPartial,
@@ -40,9 +40,9 @@ import NeighbourQuestions from "src/components/loan-app/NeighbourQuestions";
 import SellingQuestions from "src/components/loan-app/SellingQuestions";
 import StreetShop from "src/components/loan-app/StreetShop";
 import PdfViewer from "src/components/pdf-viewer/PdfViewer";
+import PopupMessage from "src/components/popup-message";
 import { getFileBase64 } from "../../api/helper";
-import { backofficeAccess } from "../../constants/variableConstata";
-import { notifySuccess, notifyWarning } from "../../utils/devExtremeUtils";
+import { notifySuccess } from "../../utils/devExtremeUtils";
 import { ApprovalHistory } from "../approval1-app/ApprovalHistory";
 import "./loan-app.scss";
 import { RejectPopup } from "./RejectPopup";
@@ -67,6 +67,8 @@ export default function Step2Page() {
   const [missingFields, setMissingFields] = useState<string[]>([]);
   const [activity, setActivity] = useState<Array<any>>([]);
   const [isShowPopupReject, setShowPopupReject] = useState(false);
+  const [isShowPopupMessage, setShowPopupMessage] = useState(false);
+  const [popupMessage, setPopupMessage] = useState("");
 
   const detailLoanApp = (appId: any) => {
     detailAppLoan(appId).then((res) => {
@@ -100,13 +102,13 @@ export default function Step2Page() {
   }, [ID]);
 
   useEffect(() => {
-    checkAccess(backofficeAccess.backoffice_application_step_2).then((res) => {
-      if (!res) {
-        navigate(`/loan-app`);
-        notifyWarning("User tidak memilik akses ke menu step 2");
+    checkAccessStep2(ID).then((res) => {
+      if (!res.access) {
+        setShowPopupMessage(true);
+        setPopupMessage(res.message);
       }
     });
-  }, []);
+  }, [ID, navigate]);
 
   const downloadDocSigned = () => {
     getSignedDoc(id as any)
@@ -155,7 +157,6 @@ export default function Step2Page() {
       creditTransaction: onStep2Loan?.creditTransaction
     }).then(
       (res) => {
-        // console.log("submit step 2", res);
         setIncomeProof("");
         setDataGrid([]);
         form.resetValues();
@@ -226,6 +227,10 @@ export default function Step2Page() {
   const onFieldDataChanged = (evt: any) => {
     onStep2Loan[evt.dataField] = evt.value;
   };
+
+  const handleConfirmPopupMessage = useCallback(() => {
+    navigate("/loan-app");
+  }, [navigate]);
 
   return (
     <>
@@ -391,17 +396,6 @@ export default function Step2Page() {
             <GroupItem colSpan={2} cssClass={"dx-card responsive-paddings next-card"}>
               <GroupItem cssClass={"custom-tabs-step2"}>
                 <ApprovalHistory id={ID} />
-                {/*<TabbedItem*/}
-                {/*    tabPanelOptions={{*/}
-                {/*      scrollByContent: true,*/}
-                {/*      showNavButtons: true*/}
-                {/*    }}*/}
-                {/*>*/}
-                {/*  <TabPanelOptions deferRendering={false} />*/}
-                {/*  <Tab title="Histori Persetujuan">*/}
-                {/*    <ApprovalHistory id={ID} />*/}
-                {/*  </Tab>*/}
-                {/*</TabbedItem>*/}
               </GroupItem>
             </GroupItem>
             <GroupItem colSpan={2}>
@@ -456,6 +450,12 @@ export default function Step2Page() {
         appId={ID}
         popupVisible={isShowPopupReject}
         hide={() => setShowPopupReject(false)}
+      />
+
+      <PopupMessage
+        visible={isShowPopupMessage}
+        message={popupMessage}
+        handleConfirm={handleConfirmPopupMessage}
       />
     </>
   );
