@@ -40,6 +40,7 @@ import { store } from "src/store/store";
 import { notifyError, notifySuccess, notifyWarning } from "../../utils/devExtremeUtils";
 import "./loan-app.scss";
 import {backofficeAccess} from "../../constants/variableConstata";
+import {ApprovalHistory} from "../approval1-app/ApprovalHistory";
 
 
 export default function Step1Page() {
@@ -484,7 +485,11 @@ export default function Step1Page() {
                   <RequiredRule message="Tujuan pinjaman wajib diisi" />
                 </SimpleItem>
               </GroupItem>
+            </GroupItem><GroupItem colSpan={2} cssClass={"dx-card responsive-paddings next-card"}>
+            <GroupItem cssClass={"custom-tabs-step2"}>
+              <ApprovalHistory id={id} />
             </GroupItem>
+          </GroupItem>
             <GroupItem colSpan={2}>
               <GroupItem colCount={2}>
                 <ButtonItem
