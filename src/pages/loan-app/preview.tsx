@@ -22,8 +22,7 @@ import StreetShop from "src/components/loan-app/StreetShop";
 import { AppLoanRequest, initLoanAppValue } from "src/interfaces/appLoanOnboarding";
 import PdfViewer from "../../components/pdf-viewer/PdfViewer";
 import { appStatusIncomplete } from "../../constants/variableConstata";
-import {confirmNotify, notifyWarning} from "../../utils/devExtremeUtils";
-import {ApprovalHistory} from "../approval1-app/ApprovalHistory";
+import { notifyWarning } from "../../utils/devExtremeUtils";
 
 export default function PreviewPage() {
   const navigate = useNavigate();
@@ -218,12 +217,6 @@ export default function PreviewPage() {
                   </GroupItem>
                 )}
               </GroupItem>
-
-              <GroupItem colSpan={2} cssClass={"dx-card responsive-paddings next-card"}>
-                <GroupItem cssClass={"custom-tabs-step2"}>
-                  <ApprovalHistory id={ID} />
-                </GroupItem>
-              </GroupItem>
             </Form>
           </form>
         </div>
@@ -238,14 +231,8 @@ export default function PreviewPage() {
           <Button
             text="Submit"
             type="default"
-            onClick={(evt: any) => {
-              confirmNotify("<i>Anda yakin melanjutkan proses ini?</i>", "Konfirmasi Submit Aplikasi").then((dialogResult: any) => {
-                if (dialogResult) {
-                  handleSubmit(evt);
-                }
-              });
-
-              evt.event && evt.event.preventDefault();
+            onClick={(e: any) => {
+              handleSubmit(e);
             }}
           />
         </div>

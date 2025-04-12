@@ -8,14 +8,12 @@ interface RequestUrl {
     insertUrl?: string;
     updateUrl?: string;
     deleteUrl?: string;
-    customQueryParams?: string;
 }
 
 export const customStore = (request: RequestUrl) =>
     new CustomStore({
         key: "id",
         load: async (loadOptions) => {
-          // console.log("origin loadOptions ",loadOptions);
             let sort = loadOptions.sort instanceof Array && loadOptions.sort?.map((val: any) => {
                 if (val.selector == "id") {
                     return {selector: "modifiedOn", desc: false}
@@ -29,19 +27,13 @@ export const customStore = (request: RequestUrl) =>
                     loadOptions.skip != null ? loadOptions.skip : 0,
                 lengthVal: number | undefined =
                     loadOptions.take != null ? loadOptions.take : 50;
-            
-            let paramSearch: FilterPss = {
+            const paramSearch: FilterPss = {
                 ...setFilterPss(),
                 start: startVal,
                 length: lengthVal,
                 sort: sort,
                 searchQuery: JSON.stringify(loadOptions.filter),
             };
-            
-            if(typeof request.customQueryParams !== "undefined") {
-              paramSearch = {...paramSearch, quickFilter: request.customQueryParams};
-            }
-          // console.log("filter paramSearch ",paramSearch);
             const resp = await ajaxGet(
                 `${request.loadUrl}?${qs.stringify(paramSearch)}`
             );
