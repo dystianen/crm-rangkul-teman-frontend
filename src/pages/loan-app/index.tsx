@@ -182,7 +182,7 @@ export default function Index() {
         dom.render(
           <>
             <div className="dx-field dx-search-app">
-              <div className="dx-field-label">List of QF </div>
+              <div className="dx-field-label">Quick Filter </div>
               <div className="dx-field-value w160">
                 <SelectBox
                   dataSource={new DataSource(getQuickFilterListStore)}
