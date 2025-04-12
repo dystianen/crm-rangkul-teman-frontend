@@ -59,7 +59,7 @@ const CreateEditContactLeads = () => {
 
       setLeads({ ...leads, ...data });
     }
-  }, [idNumber, branchID, leads]);
+  }, [queryString]);
 
   const handleSuccess = (e: any) => {
     const form = formRef.current!.instance;
