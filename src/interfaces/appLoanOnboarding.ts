@@ -1,3 +1,5 @@
+import { VisibleSection } from "src/pages/loan-app/step-2";
+
 export interface AppLoanRequest {
     id: string;
     loanAmount: number;
@@ -20,6 +22,7 @@ export interface AppLoanRequest {
         fileType: string;
         fileContent: string;
     };
+    items?: VisibleSection
 }
 
 export interface AppLoanOnboardingRequest {
@@ -99,6 +102,7 @@ export const initLoanAppValue: AppLoanRequest = {
         fileType: "",
         fileContent: "",
     },
+    items: [],
 };
 
 export const initLoanIncomeProofValue: AppLoanIncomeProofRequest = {
