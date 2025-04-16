@@ -1,4 +1,4 @@
-import {alert, confirm, custom} from "devextreme/ui/dialog";
+import {alert, confirm} from "devextreme/ui/dialog";
 import notify from "devextreme/ui/notify";
 
 // Success message notification. Modeless
@@ -59,31 +59,8 @@ export function alertWarning(message: string): Promise<void> {
  * Success popup
  * @param {*} message
  */
-export function confirmNotify(message: string, title?: string): Promise<boolean> {
-    // return confirm(message, title ?? "Operation confirmation");
-
-    return custom({
-        title: title ?? "Operation confirmation",
-        messageHtml: message,
-        buttons: [
-            {
-                text: "Tidak",
-                type: "normal",
-                stylingMode: "contained",
-                onClick: (e) => {
-                    return false;
-                }
-            },
-            {
-                text: "Ya",
-                type: "success",
-                stylingMode: "contained",
-                onClick: (e) => {
-                    return true;
-                }
-            },
-        ]
-    }).show();
+export function confirmNotify(message: string): Promise<boolean> {
+    return confirm(message, "Operation confirmation");
 }
 
 /**

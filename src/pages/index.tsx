@@ -27,3 +27,6 @@ export {TransactionPage} from "./transaction";
 export { TransactionDetailPage } from "./transaction/detail";
 export {ActivityUserPage} from "./activity-user";
 export {MessageLogPage} from "./message-log";
+export {RestructureListPage} from "./restructure";
+export {RestructureDetailPage} from "./restructure/detail";
+export {RestructureCreatePage} from "./restructure/create";

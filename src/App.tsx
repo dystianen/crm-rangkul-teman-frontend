@@ -1,6 +1,6 @@
 import LoadPanel from "devextreme-react/load-panel";
 import "devextreme/dist/css/dx.common.css";
-import { HashRouter as Router } from "react-router-dom";
+import { BrowserRouter as Router } from "react-router-dom";
 import Content from "./Content";
 import { AuthProvider, useAuth } from "./contexts/auth";
 import { NavigationProvider } from "./contexts/navigation";

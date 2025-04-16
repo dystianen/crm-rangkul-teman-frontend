@@ -14,6 +14,7 @@ import {ContractFiles} from "./ContractFiles";
 import {AppLoanDetailRequest, initAppLoanDetailValue} from "../../interfaces/appLoanOnboarding";
 import {Button} from "devextreme-react/button";
 import {RestructurePopup} from "./RestructurePopup";
+import {RestructurePopupV2} from "../restructure/RestructurePopupV2";
 
 export interface Contract {
     id: string;
@@ -55,6 +56,7 @@ export const ContractDetailPage: React.FC = () => {
     const {id} = queryString.parse(location.search);
     const [activity, setActivity] = useState<Array<any>>([]);
     const [popupRestructureVisible, setPopupRestructureVisible] = React.useState(false);
+    const [popupRestructureV2Visible, setPopupRestructureV2Visible] = React.useState(false);
     const [detail, setDetail] = useState<any>({
         id: "",
         seqId: 0,
@@ -120,6 +122,8 @@ export const ContractDetailPage: React.FC = () => {
                     onItemClick={(e) => {
                         if(e.itemData=="Restruktur") {
                             setPopupRestructureVisible(true);
+                        } else if(e.itemData=="Restructure 2.0") {
+                            navigate(`/restructure/create?id=${id}`);
                         }
                     }}
                     width={230}
@@ -378,5 +382,9 @@ export const ContractDetailPage: React.FC = () => {
         </div>
         <RestructurePopup detail={setDetail} data={detail} popupVisible={popupRestructureVisible}
                           hide={() => setPopupRestructureVisible(false)} />
+
+
+        <RestructurePopupV2 detail={setDetail} data={detail} popupVisible={popupRestructureV2Visible}
+                            hide={() => setPopupRestructureV2Visible(false)} />
     </>);
 }
