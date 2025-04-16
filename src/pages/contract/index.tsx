@@ -21,14 +21,14 @@ import {Button} from "devextreme-react/button";
 
 export const ContractPage: FC = () => {
     const navigate = useNavigate();
-    const dataGrid: any = useRef();
+    const dataGrid = useRef();
     const onClickDownload = (e: any) => {
         let instance = dataGrid.current?.instance;
         let fileName = `pinjaman.xlsx`;
-        let columns: any[] = [];
-        let captions: any[] = [];
+        let columns = [];
+        let captions = [];
         const visibleColums = instance.getVisibleColumns();
-        visibleColums.filter(function (val: any) {
+        visibleColums.filter(function (val) {
             if (val.dataField != null) {
                 columns.push(val.dataField);
             }
@@ -105,11 +105,11 @@ export const ContractPage: FC = () => {
                         caption={"Tanggal Dibuat"}
                         dataType={"date"}
                         format={"dd MMM yyyy HH:mm:ss"}
-                        calculateFilterExpression={(
+                        calculateFilterExpression={function (
                             value: any,
                             selectedFilterOperations: any,
                             target: any
-                        ) => {
+                        ) {
                             const column = this as any;
                             return column.defaultCalculateFilterExpression.apply(this, [
                                 new Date(value),
@@ -124,11 +124,11 @@ export const ContractPage: FC = () => {
                         caption={"Tanggal Diubah"}
                         dataType={"date"}
                         format={"dd MMM yyyy HH:mm:ss"}
-                        calculateFilterExpression={(
+                        calculateFilterExpression={function (
                             value: any,
                             selectedFilterOperations: any,
                             target: any
-                        )=> {
+                        ) {
                             const column = this as any;
                             return column.defaultCalculateFilterExpression.apply(this, [
                                 new Date(value),
@@ -184,11 +184,11 @@ export const ContractPage: FC = () => {
                         caption={"Dimulai"}
                         dataType={"date"}
                         format={"dd MMM yyyy"}
-                        calculateFilterExpression={(
+                        calculateFilterExpression={function (
                             value: any,
                             selectedFilterOperations: any,
                             target: any
-                        )=> {
+                        ) {
                             const column = this as any;
                             return column.defaultCalculateFilterExpression.apply(this, [
                                 new Date(value),
@@ -203,11 +203,11 @@ export const ContractPage: FC = () => {
                         caption={"Berakhir"}
                         dataType={"date"}
                         format={"dd MMM yyyy"}
-                        calculateFilterExpression={(
+                        calculateFilterExpression={function (
                             value: any,
                             selectedFilterOperations: any,
                             target: any
-                        )=> {
+                        ) {
                             const column = this as any;
                             return column.defaultCalculateFilterExpression.apply(this, [
                                 new Date(value),
