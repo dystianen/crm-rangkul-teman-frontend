@@ -1,29 +1,27 @@
-import Form, { GroupItem, SimpleItem } from "devextreme-react/form";
-import { useEffect, useState } from "react";
-
-import "devextreme-react/file-uploader";
-import queryString from "query-string";
-import { useNavigate } from "react-router";
-import { useLocation } from "react-router-dom";
-import "./loan-app.scss";
-
 import { Button, DataGrid, LoadPanel } from "devextreme-react";
 import { Column, FilterRow, Pager, Paging, Scrolling } from "devextreme-react/data-grid";
 import "devextreme-react/date-box";
+import "devextreme-react/file-uploader";
+import Form, { GroupItem, SimpleItem } from "devextreme-react/form";
 import notify from "devextreme/ui/notify";
+import queryString from "query-string";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router";
+import { useLocation } from "react-router-dom";
 import { checkAccess, detailAppLoan, submitAppLoan } from "src/api/apploan";
-import { getFileBase64 } from "src/api/helper";
 import BusinessAddress from "src/components/loan-app/BusinessAddress";
 import DocumentCard from "src/components/loan-app/DocumentCard";
 import FamilyCard from "src/components/loan-app/FamilyCard";
 import NeighbourQuestions from "src/components/loan-app/NeighbourQuestions";
+import PreviewFile from "src/components/loan-app/PreviewFile";
 import SellingQuestions from "src/components/loan-app/SellingQuestions";
 import StreetShop from "src/components/loan-app/StreetShop";
 import { AppLoanRequest, initLoanAppValue } from "src/interfaces/appLoanOnboarding";
-import PdfViewer from "../../components/pdf-viewer/PdfViewer";
 import { appStatusIncomplete } from "../../constants/variableConstata";
-import {confirmNotify, notifyWarning} from "../../utils/devExtremeUtils";
-import {ApprovalHistory} from "../approval1-app/ApprovalHistory";
+import { confirmNotify, notifyWarning } from "../../utils/devExtremeUtils";
+import { ApprovalHistory } from "../approval1-app/ApprovalHistory";
+import "./loan-app.scss";
+import { SectionName } from "./step-2";
 
 export default function PreviewPage() {
   const navigate = useNavigate();
@@ -31,7 +29,6 @@ export default function PreviewPage() {
   const { id } = queryString.parse(location.search);
   const ID = id as string;
   const [submitForm, setSubmitForm] = useState(false);
-
   const [loanApp, setLoanApp] = useState<AppLoanRequest>(initLoanAppValue);
 
   useEffect(() => {
@@ -42,9 +39,9 @@ export default function PreviewPage() {
       }
     });
   }, []);
+
   useEffect(() => {
     detailAppLoan(id as string).then((res) => {
-      console.log("Detail : ", res);
       let found = appStatusIncomplete.some((x) => x === res.statusId);
       if (!found) {
         navigate(`/loan-app`);
@@ -69,6 +66,40 @@ export default function PreviewPage() {
       );
       navigate(`/loan-app`);
     });
+  };
+
+  const componentsMap: Record<SectionName, (id: string) => JSX.Element> = {
+    FAMILY_CARD: (id) => <FamilyCard appId={id} />,
+    DOCUMENTS: (id) => <DocumentCard appId={id} />,
+    SELLING_QUESTIONS: (id) => <SellingQuestions appId={id} />,
+    NEIGHBOUR_QUESTIONS: (id) => <NeighbourQuestions appId={id} />,
+    BUSINESS_ADDRESS: (id) => <BusinessAddress appId={id} />,
+    FINANCIAL_DETAIL: () => (
+      <GroupItem colSpan={2}>
+        <GroupItem colCount={2}>
+          <SimpleItem
+            dataField="debitTransaction"
+            label={{ text: "Outcome" }}
+            editorOptions={{ format: "Rp #,##0", readOnly: true }}
+          />
+          <SimpleItem
+            dataField="creditTransaction"
+            label={{ text: "Income" }}
+            editorOptions={{ format: "Rp #,##0", readOnly: true }}
+          />
+          <SimpleItem
+            dataField="handwrittenSalesBook"
+            label={{ text: "Handwritten Sales book" }}
+            editorOptions={{ readOnly: true }}
+          />
+        </GroupItem>
+        <GroupItem visible={loanApp.incomeProof !== null} colCount={1}>
+          <SimpleItem>
+            <PreviewFile file={loanApp.incomeProof} />
+          </SimpleItem>
+        </GroupItem>
+      </GroupItem>
+    )
   };
 
   return (
@@ -131,23 +162,20 @@ export default function PreviewPage() {
                 </GroupItem>
               </GroupItem>
 
-              <GroupItem cssClass={"dx-card responsive-paddings next-card"}>
-                <FamilyCard appId={ID} disabled />
-              </GroupItem>
-              <GroupItem cssClass={"dx-card responsive-paddings next-card"}>
-                <DocumentCard appId={ID} disabled />
-              </GroupItem>
-              <GroupItem cssClass={"dx-card responsive-paddings next-card"}>
-                <SellingQuestions appId={ID} disabled />
-              </GroupItem>
-              <GroupItem cssClass={"dx-card responsive-paddings next-card"}>
-                <NeighbourQuestions appId={ID} disabled />
-              </GroupItem>
+              {loanApp.items?.map(({ name, mandatory }) => {
+                if (!mandatory) return null;
+                const Component = componentsMap[name];
+                if (!Component) return null;
+
+                return (
+                  <GroupItem key={name} cssClass={"dx-card responsive-paddings next-card"}>
+                    {Component(ID)}
+                  </GroupItem>
+                );
+              })}
+
               <GroupItem cssClass={"dx-card responsive-paddings next-card"}>
                 <StreetShop appId={ID} disabled />
-              </GroupItem>
-              <GroupItem cssClass={"dx-card responsive-paddings next-card"}>
-                <BusinessAddress appId={ID} disabled />
               </GroupItem>
 
               <GroupItem colSpan={2} cssClass={"dx-card responsive-paddings next-card"}>
@@ -175,49 +203,6 @@ export default function PreviewPage() {
                   </DataGrid>
                 </GroupItem>
               </GroupItem>
-              <GroupItem colSpan={2} cssClass={"dx-card responsive-paddings next-card"}>
-                <GroupItem colCount={2}>
-                  <SimpleItem
-                    dataField="debitTransaction"
-                    label={{ text: "Outcome" }}
-                    editorOptions={{ format: "Rp #,##0", readOnly: true }}
-                  ></SimpleItem>
-                  <SimpleItem
-                    dataField="creditTransaction"
-                    label={{ text: "Income" }}
-                    editorOptions={{ format: "Rp #,##0", readOnly: true }}
-                  ></SimpleItem>
-                  <SimpleItem
-                    dataField="handwrittenSalesBook"
-                    label={{ text: "Handwritten Sales book" }}
-                    editorOptions={{ readOnly: true }}
-                  ></SimpleItem>
-                </GroupItem>
-                {loanApp.incomeProof && (
-                  <GroupItem caption={"Income proof"} colCount={1}>
-                    <SimpleItem>
-                      {loanApp.incomeProof.fileType.includes("image/") ? (
-                        <img
-                          id="dropzone-ktp"
-                          src={getFileBase64(
-                            loanApp.incomeProof.fileType,
-                            loanApp.incomeProof.fileContent
-                          )}
-                          alt="ktp"
-                          width={"50%"}
-                        />
-                      ) : (
-                        <PdfViewer
-                          url={getFileBase64(
-                            loanApp.incomeProof.fileType,
-                            loanApp.incomeProof.fileContent
-                          )}
-                        />
-                      )}
-                    </SimpleItem>
-                  </GroupItem>
-                )}
-              </GroupItem>
 
               <GroupItem colSpan={2} cssClass={"dx-card responsive-paddings next-card"}>
                 <GroupItem cssClass={"custom-tabs-step2"}>
@@ -239,7 +224,10 @@ export default function PreviewPage() {
             text="Submit"
             type="default"
             onClick={(evt: any) => {
-              confirmNotify("<i>Anda yakin melanjutkan proses ini?</i>", "Konfirmasi Submit Aplikasi").then((dialogResult: any) => {
+              confirmNotify(
+                "<i>Anda yakin melanjutkan proses ini?</i>",
+                "Konfirmasi Submit Aplikasi"
+              ).then((dialogResult: any) => {
                 if (dialogResult) {
                   handleSubmit(evt);
                 }

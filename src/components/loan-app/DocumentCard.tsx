@@ -85,6 +85,7 @@ const DocumentCard: React.FC<DocumentCardProps> = ({ appId, disabled = false }) 
     <>
       <h3 style={{ marginBottom: disabled ? 16 : 0 }}>Documents</h3>
       <DataGrid
+        loadPanel={{ enabled: false }}
         dataSource={documentListStore}
         columnAutoWidth
         wordWrapEnabled={false}

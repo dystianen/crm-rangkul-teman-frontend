@@ -36,6 +36,7 @@ const FamilyCard = ({ appId, disabled = false }: { appId: string; disabled?: boo
         <span className="dx-form-group-caption">Family</span>
       </div>
       <DataGrid
+        loadPanel={{ enabled: false }}
         dataSource={familyDataSource}
         columnAutoWidth={true}
         wordWrapEnabled={false}
