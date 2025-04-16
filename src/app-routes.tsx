@@ -242,7 +242,7 @@ const routes = [
   }
 ];
 
-// @ts-ignore
+//@ts-ignore
 export default routes.map((route) => {
   return {
     ...route,

@@ -120,6 +120,8 @@ export const ContractDetailPage: React.FC = () => {
                     onItemClick={(e) => {
                         if(e.itemData=="Restruktur") {
                             setPopupRestructureVisible(true);
+                        } else if(e.itemData=="Restructure 2.0") {
+                            navigate(`/restructure/create?id=${id}`);
                         }
                     }}
                     width={230}
