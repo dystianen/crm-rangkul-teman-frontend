@@ -87,7 +87,13 @@ const NeighbourQuestions: React.FC<NeighbourQuestionsProps> = ({ appId, disabled
       <div className={"dx-form-group-with-caption mb14"}>
         <span className="dx-form-group-caption">Neighbour Questions</span>
       </div>
-      <DataGrid dataSource={neighbourQuestions} wordWrapEnabled showBorders repaintChangesOnly>
+      <DataGrid
+        loadPanel={{ enabled: false }}
+        dataSource={neighbourQuestions}
+        wordWrapEnabled
+        showBorders
+        repaintChangesOnly
+      >
         <Column
           caption="No."
           width={70}

@@ -23,6 +23,7 @@ export const ApprovalHistory: FC<any> = ({ id }) => {
         <span className="dx-form-group-caption">Histori Persetujuan</span>
       </div>
       <DataGrid
+        loadPanel={{ enabled: false }}
         dataSource={historyListStore}
         focusedRowEnabled={true}
         remoteOperations={true}
@@ -78,17 +79,28 @@ export const ApprovalHistory: FC<any> = ({ id }) => {
           filterOperations={filterOperation.date}
         />
         <Column dataField={"typeName"} caption={"Tipe Dokumen"} />
-        <Column dataField={"description"} caption={"Deskripsi"} encodeHtml={false} cssClass="pre-line" />
+        <Column
+          dataField={"description"}
+          caption={"Deskripsi"}
+          encodeHtml={false}
+          cssClass="pre-line"
+        />
         <Column dataField={"statusName"} caption={"Status"} />
         <Column dataField={"processedByName"} caption={"Diproses Oleh"} />
-        <Column dataField={"rejectReason"} caption={"Alasan Ditolak"} encodeHtml={false} cssClass="pre-line" />
+        <Column
+          dataField={"rejectReason"}
+          caption={"Alasan Ditolak"}
+          encodeHtml={false}
+          cssClass="pre-line"
+        />
         <Column type="buttons">
           <Button
             icon="refresh"
             hint="Retry"
-            visible={({ row }) => 
-              row?.data?.statusIsRetry && ["Get CBI Data", "SEON Check"].some(type => row?.data?.typeName?.includes(type))
-            }            
+            visible={({ row }) =>
+              row?.data?.statusIsRetry &&
+              ["Get CBI Data", "SEON Check"].some((type) => row?.data?.typeName?.includes(type))
+            }
             onClick={async (e) => {
               const type = e.row?.data?.typeName;
               if (!type) return;
