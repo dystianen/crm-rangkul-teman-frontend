@@ -89,6 +89,11 @@ export function formatDateMonthYearTime(datetime: Date | string): string {
     return datetime && moment(datetime).format('ddd, DD MMM YYYY HH:mm');
 }
 
+export function formatOnlyDateMonthYear(datetime: Date | string): string | false {
+    const gDate = formatGDate(datetime);
+    return datetime && gDate !== undefined && gDate.format('DD MMM YYYY');
+}
+
 export function formatDayMonthYear(datetime: Date | string): string | false {
     const gDate = formatGDate(datetime);
     return datetime && gDate !== undefined && gDate.format('dddd, DD MMM YYYY');

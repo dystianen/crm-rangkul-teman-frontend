@@ -60,6 +60,7 @@ export default function Step1Page() {
   const [isDisableButtonNext, setDisableButtonNext] = useState(true);
   const [isDableBankIdBankAccNumber, setDisableBankIdBankAccNumber] = useState(false);
   const formRef = useRef<Form>(null);
+  const [waitingToReconnect, setWaitingToReconnect] = useState<boolean>(false);
   
   useEffect(() => {
     checkAccess(backofficeAccess.backoffice_application_step_2).then((res) => setAccessStep2(res));
@@ -230,6 +231,55 @@ export default function Step1Page() {
 
   const stompClientRef = useRef<any>(null);
 
+  // useEffect(() => {
+  //   var socket = new SockJS(`${process.env.REACT_APP_BACKEND}api/bankAccountLive`);
+  //   const stompClient = new Client({
+  //     webSocketFactory: () => socket,
+  //     reconnectDelay: 5000,
+  //     debug: (str) => {
+  //       console.log(str);
+  //     },
+  //     onConnect: () => {
+  //       console.log("Connected to WebSocket");
+  //       stompClient.subscribe("/api/bankAccountResult", (response) => {
+  //         console.log("Received message:", response.body);
+  //         const res = JSON.parse(response.body);
+  //         if (res.appId === id) {
+  //           if (res.isWaiting) {
+  //             setDisableBankIdBankAccNumber(true);
+  //           } else {
+  //             setDisableBankIdBankAccNumber(false);
+  //
+  //             if (res.success) {
+  //               if(res?.error){
+  //                 notifyWarning(res.message);
+  //               } else {
+  //                 notifySuccess(res.message);
+  //               }
+  //               setDisableButtonNext(false);
+  //             } else {
+  //               notifyError(res.message);
+  //               setDisableButtonNext(true);
+  //             }
+  //           }
+  //         }
+  //       });
+  //     },
+  //     onStompError: (frame) => {
+  //       console.error("Broker reported error: " + frame.headers["message"]);
+  //       console.error("Additional details: " + frame.body);
+  //     }
+  //   });
+  //
+  //   stompClient.activate();
+  //   stompClientRef.current = stompClient;
+  //
+  //   return () => {
+  //     stompClient.deactivate();
+  //   };
+  // }, [id]);
+  
+  
   useEffect(() => {
     var socket = new SockJS(`${process.env.REACT_APP_BACKEND}api/bankAccountLive`);
     const stompClient = new Client({
@@ -237,6 +287,12 @@ export default function Step1Page() {
       reconnectDelay: 5000,
       debug: (str) => {
         console.log(str);
+      },
+      onDisconnect: () => {
+        if (waitingToReconnect) {
+          return;
+        }
+        setWaitingToReconnect(true);
       },
       onConnect: () => {
         console.log("Connected to WebSocket");
@@ -248,7 +304,7 @@ export default function Step1Page() {
               setDisableBankIdBankAccNumber(true);
             } else {
               setDisableBankIdBankAccNumber(false);
-
+              
               if (res.success) {
                 if(res?.error){
                   notifyWarning(res.message);
@@ -269,14 +325,17 @@ export default function Step1Page() {
         console.error("Additional details: " + frame.body);
       }
     });
-
+    
     stompClient.activate();
     stompClientRef.current = stompClient;
-
+    
     return () => {
+      console.log('Cleanup');
+      // Dereference, so it will set up next time
+      stompClientRef.current = null;
       stompClient.deactivate();
     };
-  }, [id]);
+  }, [waitingToReconnect]);
 
   const sendBankCheck = () => {
     const payload = {
