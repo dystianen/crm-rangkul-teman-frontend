@@ -74,17 +74,14 @@ export default function Step2Page() {
     debitTransaction: 0,
     creditTransaction: 0
   });
-  const [submitForm, setSubmitForm] = useState(false);
+  const [loadingPage, setLoadingPage] = useState(false);
   const [isShowRemainingPopup, setShowRemainingPopup] = useState(false);
   const [missingFields, setMissingFields] = useState<string[]>([]);
   const [activity, setActivity] = useState<Array<any>>([]);
   const [isShowPopupReject, setShowPopupReject] = useState(false);
   const [isShowPopupMessage, setShowPopupMessage] = useState(false);
   const [popupMessage, setPopupMessage] = useState("");
-  const [loadingPage, setLoadingPage] = useState(false);
   const [visibleSection, setVisibleSection] = useState<VisibleSection>([]);
-
-  console.log({ incomeProof });
 
   const detailLoanApp = (appId: any) => {
     setLoadingPage(true);
@@ -154,8 +151,8 @@ export default function Step2Page() {
       });
   };
 
-  const handleSubmit = (e: any) => {
-    setSubmitForm(true);
+  const handleSubmit = () => {
+    setLoadingPage(true);
     const form = formRef.current!.instance;
     const customData =
       dataGrid.length > 0
@@ -179,16 +176,16 @@ export default function Step2Page() {
       (res) => {
         setIncomeProof("");
         setDataGrid([]);
-        form.resetValues();
+        form.clear();
         notifySuccess(res.message);
-        setSubmitForm(false);
+        setLoadingPage(false);
         detailLoanApp(ID);
         if (res.isCompletedStep) {
           navigate(`/loan-app/create/preview?id=${id}`);
         }
       },
       (error) => {
-        setSubmitForm(false);
+        setLoadingPage(false);
         notify(
           {
             message: error,
@@ -202,7 +199,6 @@ export default function Step2Page() {
         );
       }
     );
-    e.preventDefault();
   };
 
   const onFileChanged = (e: any) => {
@@ -252,12 +248,12 @@ export default function Step2Page() {
     navigate("/loan-app");
   }, [navigate]);
 
-  const componentsMap: Record<SectionName, (id: string) => JSX.Element> = {
-    FAMILY_CARD: (id) => <FamilyCard appId={id} />,
-    DOCUMENTS: (id) => <DocumentCard appId={id} />,
-    SELLING_QUESTIONS: (id) => <SellingQuestions appId={id} />,
-    NEIGHBOUR_QUESTIONS: (id) => <NeighbourQuestions appId={id} />,
-    BUSINESS_ADDRESS: (id) => <BusinessAddress appId={id} />,
+  const componentsMap: Record<SectionName, () => JSX.Element> = {
+    FAMILY_CARD: () => <FamilyCard appId={ID} />,
+    DOCUMENTS: () => <DocumentCard appId={ID} />,
+    SELLING_QUESTIONS: () => <SellingQuestions appId={ID} />,
+    NEIGHBOUR_QUESTIONS: () => <NeighbourQuestions appId={ID} />,
+    BUSINESS_ADDRESS: () => <BusinessAddress appId={ID} />,
     FINANCIAL_DETAIL: () => (
       <GroupItem>
         <GroupItem caption="Financial Detail" colCount={2}>
@@ -309,17 +305,8 @@ export default function Step2Page() {
   return (
     <>
       <LoadPanel
-        shadingColor="rgb(255, 255, 255)"
-        visible={loadingPage}
-        showIndicator={true}
-        shading={true}
-        showPane={true}
-        hideOnOutsideClick={false}
-      />
-
-      <LoadPanel
         shadingColor="rgba(0,0,0,0.4)"
-        visible={submitForm}
+        visible={loadingPage}
         showIndicator={true}
         shading={true}
         showPane={true}
@@ -350,109 +337,100 @@ export default function Step2Page() {
         </div>
       </div>
       <div className={"content-block"}>
-        <form action="validate" onSubmit={handleSubmit} className={"next-card"}>
-          <Form
-            ref={formRef}
-            colCount={1}
-            id="form"
-            showColonAfterLabel={true}
-            validationGroup="incomeProofData"
-            formData={onStep2Loan}
-            onFieldDataChanged={onFieldDataChanged}
-          >
-            {visibleSection.map(({ name, mandatory }) => {
-              if (!mandatory) return null;
-              const Component = componentsMap[name];
-              if (!Component) return null;
+        <Form
+          ref={formRef}
+          colCount={1}
+          id="form"
+          showColonAfterLabel={true}
+          validationGroup="incomeProofData"
+          formData={onStep2Loan}
+          onFieldDataChanged={onFieldDataChanged}
+        >
+          {visibleSection.map(({ name, mandatory }) => {
+            if (!mandatory) return null;
+            const Component = componentsMap[name];
+            if (!Component) return null;
 
-              return (
-                <GroupItem key={name} cssClass={"dx-card responsive-paddings next-card"}>
-                  {Component(ID)}
-                </GroupItem>
-              );
-            })}
-
-            <GroupItem cssClass={"dx-card responsive-paddings next-card"}>
-              <StreetShop appId={ID} />
-            </GroupItem>
-
-            <GroupItem cssClass={"dx-card responsive-paddings next-card"}>
-              <h3>Custom Data</h3>
-              <DataGrid
-                loadPanel={{ enabled: false }}
-                dataSource={dataGrid}
-                columnAutoWidth={true}
-                wordWrapEnabled={false}
-                showBorders={true}
-                dateSerializationFormat={"yyyy-MM-ddTHH:mm:ss.SSSxxx"}
-                repaintChangesOnly={true}
-              >
-                <Editing mode="popup" allowUpdating={true} allowAdding={true} allowDeleting={true}>
-                  <PopGrid title="Custom Data Form" showTitle={true} width={360} height={320} />
-                  <FormGrid
-                    showColonAfterLabel={true}
-                    showValidationSummary={true}
-                    validationGroup="customedata"
-                    colCount={1}
-                  >
-                    <SimpleItem dataField="name">
-                      <RequiredRule message="Nama wajib diisi" />
-                    </SimpleItem>
-                    <SimpleItem dataField={"value"}>
-                      <RequiredRule message="Value wajib diisi" />
-                    </SimpleItem>
-                  </FormGrid>
-                </Editing>
-                <Column
-                  caption={"No."}
-                  width={70}
-                  alignment={"center"}
-                  cellTemplate={function (container: any, options: any) {
-                    const dom = ReactDOM.createRoot(container);
-                    dom.render(options.rowIndex + 1);
-                  }}
-                />
-                <Column dataField={"name"} caption={"Name"} />
-                <Column dataField={"value"} caption={"Value"} />
-                <Paging defaultPageSize={50} />
-                <Pager
-                  showPageSizeSelector={true}
-                  showInfo={true}
-                  allowedPageSizes={[10, 50, 100]}
-                />
-              </DataGrid>
-            </GroupItem>
-
-            <GroupItem colSpan={2} cssClass={"dx-card responsive-paddings next-card"}>
-              <GroupItem cssClass={"custom-tabs-step2"}>
-                <ApprovalHistory id={ID} />
+            return (
+              <GroupItem key={name} cssClass={"dx-card responsive-paddings next-card"}>
+                {Component()}
               </GroupItem>
-            </GroupItem>
+            );
+          })}
 
-            <GroupItem colSpan={2}>
-              <GroupItem colCount={2}>
-                <ButtonItem
-                  horizontalAlignment="left"
-                  buttonOptions={{
-                    text: "Kembali",
-                    type: "normal",
-                    onClick: () => {
-                      navigate(`/loan-app/create/step/1?id=${id}&autoNext=false`);
-                    }
-                  }}
-                />
-                <ButtonItem
-                  horizontalAlignment="right"
-                  buttonOptions={{
-                    text: "Lanjutkan",
-                    type: "default",
-                    useSubmitBehavior: true
-                  }}
-                />
-              </GroupItem>
+          <GroupItem cssClass={"dx-card responsive-paddings next-card"}>
+            <StreetShop appId={ID} />
+          </GroupItem>
+          <GroupItem cssClass={"dx-card responsive-paddings next-card"}>
+            <h3>Custom Data</h3>
+            <DataGrid
+              loadPanel={{ enabled: false }}
+              dataSource={dataGrid}
+              columnAutoWidth={true}
+              wordWrapEnabled={false}
+              showBorders={true}
+              dateSerializationFormat={"yyyy-MM-ddTHH:mm:ss.SSSxxx"}
+              repaintChangesOnly={true}
+            >
+              <Editing mode="popup" allowUpdating={true} allowAdding={true} allowDeleting={true}>
+                <PopGrid title="Custom Data Form" showTitle={true} width={360} height={320} />
+                <FormGrid
+                  showColonAfterLabel={true}
+                  showValidationSummary={true}
+                  validationGroup="customedata"
+                  colCount={1}
+                >
+                  <SimpleItem dataField="name">
+                    <RequiredRule message="Nama wajib diisi" />
+                  </SimpleItem>
+                  <SimpleItem dataField={"value"}>
+                    <RequiredRule message="Value wajib diisi" />
+                  </SimpleItem>
+                </FormGrid>
+              </Editing>
+              <Column
+                caption={"No."}
+                width={70}
+                alignment={"center"}
+                cellTemplate={function (container: any, options: any) {
+                  const dom = ReactDOM.createRoot(container);
+                  dom.render(options.rowIndex + 1);
+                }}
+              />
+              <Column dataField={"name"} caption={"Name"} />
+              <Column dataField={"value"} caption={"Value"} />
+              <Paging defaultPageSize={50} />
+              <Pager showPageSizeSelector={true} showInfo={true} allowedPageSizes={[10, 50, 100]} />
+            </DataGrid>
+          </GroupItem>
+          <GroupItem colSpan={2} cssClass={"dx-card responsive-paddings next-card"}>
+            <GroupItem cssClass={"custom-tabs-step2"}>
+              <ApprovalHistory id={ID} />
             </GroupItem>
-          </Form>
-        </form>
+          </GroupItem>
+          <GroupItem colSpan={2}>
+            <GroupItem colCount={2}>
+              <ButtonItem
+                horizontalAlignment="left"
+                buttonOptions={{
+                  text: "Kembali",
+                  type: "normal",
+                  onClick: () => {
+                    navigate(`/loan-app/create/step/1?id=${id}&autoNext=false`);
+                  }
+                }}
+              />
+              <ButtonItem
+                horizontalAlignment="right"
+                buttonOptions={{
+                  text: "Lanjutkan",
+                  type: "default",
+                  onClick: handleSubmit
+                }}
+              />
+            </GroupItem>
+          </GroupItem>
+        </Form>
       </div>
 
       <Popup width={360} height={"auto"} visible={isShowRemainingPopup} showTitle={false}>
