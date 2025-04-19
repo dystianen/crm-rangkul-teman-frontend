@@ -493,74 +493,77 @@ export default function ActivityContactForm(props: ActivityContactProps) {
   }
   
   const onChangeResult = (e: any) => {
-    activityResultFieldForm(e.value).then((rs)=>{
-      rs && rs.forEach((fieldForm: any, i:number) => {
-        if (contactActivityFieldForm.RESULT === fieldForm.field) {
-          setResultFieldForm({
-            visible: true,
-            displayOrder: fieldForm.displayOrder,
-            isRequired: fieldForm.isRequired,
-            visibleIndex: fieldForm.visibleIndex
-          });
-        } else if (contactActivityFieldForm.PHOTO === fieldForm.field) {
-          setPhotoFieldForm({
-            visible: true,
-            displayOrder: fieldForm.displayOrder,
-            isRequired: fieldForm.isRequired,
-            visibleIndex: fieldForm.visibleIndex
-          });
-        } else if (contactActivityFieldForm.CURRENT_GEO_POSITION === fieldForm.field) {
-          setCurrentGeopositionFieldForm({
-            visible: true,
-            displayOrder: fieldForm.displayOrder,
-            isRequired: fieldForm.isRequired,
-            visibleIndex: fieldForm.visibleIndex
-          });
-        } else if (contactActivityFieldForm.COMMENT === fieldForm.field) {
-          setCommentFieldForm({
-            visible: true,
-            displayOrder: fieldForm.displayOrder,
-            isRequired: fieldForm.isRequired,
-            visibleIndex: fieldForm.visibleIndex
-          });
-        } else if (contactActivityFieldForm.PTP_DATE === fieldForm.field) {
-          setPtpDateFieldForm({
-            visible: true,
-            displayOrder: fieldForm.displayOrder,
-            isRequired: fieldForm.isRequired,
-            visibleIndex: fieldForm.visibleIndex
-          });
-        } else if (contactActivityFieldForm.PTP_AMOUNT === fieldForm.field) {
-          setPtpAmountFieldForm({
-            visible: true,
-            displayOrder: fieldForm.displayOrder,
-            isRequired: fieldForm.isRequired,
-            visibleIndex: fieldForm.visibleIndex
-          });
-        } else if (contactActivityFieldForm.PURPOSE_OF_VISIT === fieldForm.field) {
-          setPurposeVisitIdFieldForm({
-            visible: true,
-            displayOrder: fieldForm.displayOrder,
-            isRequired: fieldForm.isRequired,
-            visibleIndex: fieldForm.visibleIndex
-          });
-        } else if (contactActivityFieldForm.PURPOSE_OF_CALL === fieldForm.field) {
-          setPurposeCallIdFieldForm({
-            visible: true,
-            displayOrder: fieldForm.displayOrder,
-            isRequired: fieldForm.isRequired,
-            visibleIndex: fieldForm.visibleIndex
-          });
-        } else if (contactActivityFieldForm.SALES_OFFERING === fieldForm.field) {
-          setSalesOfferingIdFieldForm({
-            visible: true,
-            displayOrder: fieldForm.displayOrder,
-            isRequired: fieldForm.isRequired,
-            visibleIndex: fieldForm.visibleIndex
-          });
-        }
+    console.log("result value changed: ", e);
+    if(e.value != null && e.value.length > 0) {
+      activityResultFieldForm(e.value).then((rs) => {
+        rs && rs.forEach((fieldForm: any, i: number) => {
+          if (contactActivityFieldForm.RESULT === fieldForm.field) {
+            setResultFieldForm({
+              visible: true,
+              displayOrder: fieldForm.displayOrder,
+              isRequired: fieldForm.isRequired,
+              visibleIndex: fieldForm.visibleIndex
+            });
+          } else if (contactActivityFieldForm.PHOTO === fieldForm.field) {
+            setPhotoFieldForm({
+              visible: true,
+              displayOrder: fieldForm.displayOrder,
+              isRequired: fieldForm.isRequired,
+              visibleIndex: fieldForm.visibleIndex
+            });
+          } else if (contactActivityFieldForm.CURRENT_GEO_POSITION === fieldForm.field) {
+            setCurrentGeopositionFieldForm({
+              visible: true,
+              displayOrder: fieldForm.displayOrder,
+              isRequired: fieldForm.isRequired,
+              visibleIndex: fieldForm.visibleIndex
+            });
+          } else if (contactActivityFieldForm.COMMENT === fieldForm.field) {
+            setCommentFieldForm({
+              visible: true,
+              displayOrder: fieldForm.displayOrder,
+              isRequired: fieldForm.isRequired,
+              visibleIndex: fieldForm.visibleIndex
+            });
+          } else if (contactActivityFieldForm.PTP_DATE === fieldForm.field) {
+            setPtpDateFieldForm({
+              visible: true,
+              displayOrder: fieldForm.displayOrder,
+              isRequired: fieldForm.isRequired,
+              visibleIndex: fieldForm.visibleIndex
+            });
+          } else if (contactActivityFieldForm.PTP_AMOUNT === fieldForm.field) {
+            setPtpAmountFieldForm({
+              visible: true,
+              displayOrder: fieldForm.displayOrder,
+              isRequired: fieldForm.isRequired,
+              visibleIndex: fieldForm.visibleIndex
+            });
+          } else if (contactActivityFieldForm.PURPOSE_OF_VISIT === fieldForm.field) {
+            setPurposeVisitIdFieldForm({
+              visible: true,
+              displayOrder: fieldForm.displayOrder,
+              isRequired: fieldForm.isRequired,
+              visibleIndex: fieldForm.visibleIndex
+            });
+          } else if (contactActivityFieldForm.PURPOSE_OF_CALL === fieldForm.field) {
+            setPurposeCallIdFieldForm({
+              visible: true,
+              displayOrder: fieldForm.displayOrder,
+              isRequired: fieldForm.isRequired,
+              visibleIndex: fieldForm.visibleIndex
+            });
+          } else if (contactActivityFieldForm.SALES_OFFERING === fieldForm.field) {
+            setSalesOfferingIdFieldForm({
+              visible: true,
+              displayOrder: fieldForm.displayOrder,
+              isRequired: fieldForm.isRequired,
+              visibleIndex: fieldForm.visibleIndex
+            });
+          }
+        });
       });
-    });
+    }
   }
 
   return (
