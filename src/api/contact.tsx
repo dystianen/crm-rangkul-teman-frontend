@@ -183,7 +183,10 @@ export const activityTypeFieldForm = async (typeId: string): Promise<any> => {
   const resp = await ajaxGet(`/api/contact/data/activityFieldForm/${typeId}?`);
   return resp.data;
 }
-
+export const activityResultFieldForm = async (resultId: string): Promise<any> => {
+  const resp = await ajaxGet(`/api/contact/data/activityFieldFormByResult/${resultId}?`);
+  return resp.data;
+}
 
 export const activityTypeStore = dataRawCustomStore(`/api/contact/data/activityType?`);
 export const activityResultStore = (id: string | null) => {
