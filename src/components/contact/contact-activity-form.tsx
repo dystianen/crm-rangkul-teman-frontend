@@ -199,7 +199,7 @@ export default function ActivityContactForm(props: ActivityContactProps) {
       if (updatedData.id) {
         await ajaxPatch(`/api/contact/activity/update/${updatedData.id}`, payload).then(
             ()=>{
-              
+            
           resetGeoposition();
 
           if (image === updatedData.image || !isBase64(image)) {
@@ -213,7 +213,7 @@ export default function ActivityContactForm(props: ActivityContactProps) {
       } else {
         await ajaxPost("/api/contact/activity/create", payload).then(
             ()=> {
-              
+            
           resetGeoposition();
 
           if (image === updatedData.image || !isBase64(image)) {
@@ -685,13 +685,13 @@ export default function ActivityContactForm(props: ActivityContactProps) {
             visible={salesOfferingIdFieldForm.visible}
             isRequired={salesOfferingIdFieldForm.isRequired}
           />
-          <GroupItem visibleIndex={currentGeopositionFieldForm.visibleIndex}>
+          <GroupItem visibleIndex={currentGeopositionFieldForm.visibleIndex}
+                     visible={currentGeopositionFieldForm.visible}>
             <SimpleItem
               dataField="currentGeoposition"
               editorType={"dxCheckBox"}
               editorOptions={{ text: "Current Geoposition: *" }}
               label={{ visible: false }}
-              visible={currentGeopositionFieldForm.visible}
               isRequired={currentGeopositionFieldForm.isRequired}
             >
               <RequiredRule message="Current geoposition is required" />
@@ -700,13 +700,13 @@ export default function ActivityContactForm(props: ActivityContactProps) {
               <GoogleMapsLocation center={center} />
             </Item>
           </GroupItem>
-          <GroupItem visibleIndex={photoFieldForm.visibleIndex}>
+          <GroupItem visibleIndex={photoFieldForm.visibleIndex}
+                     visible={photoFieldForm.visible}>
             <SimpleItem
               dataField="photo"
               editorType={"dxFileUploader" as any}
               editorOptions={uploadPhotoOptions}
               label={{ text: "Photo" }}
-              visible={photoFieldForm.visible}
               isRequired={photoFieldForm.isRequired}
             >
               { photoFieldForm.isRequired && <RequiredRule message="Photo is required" />}
