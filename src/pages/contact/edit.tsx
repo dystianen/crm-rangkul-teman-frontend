@@ -506,11 +506,23 @@ export default function EditPage() {
                                     />
                                     <PatternRule message="Only number on KTP Number" pattern={/^[0-9]+$/}/>
                                 </SimpleItem>
-                                <SimpleItem dataField="nameBorrower" label={{text: "Name"}}>
+                                <SimpleItem 
+                                    dataField="nameBorrower" 
+                                    label={{text: "Name"}} 
+                                    editorOptions={{
+                                        onKeyDown: (e: any) => allowOnlyText(e.event)
+                                    }}
+                                >
                                     <RequiredRule message="Name is required"/>
                                     <PatternRule message="Do not use digits in the Name" pattern={/^[^0-9]+$/}/>
                                 </SimpleItem>
-                                <SimpleItem dataField="birthPlace" label={{text: "Place of Birth"}}>
+                                <SimpleItem 
+                                    dataField="birthPlace" 
+                                    label={{text: "Place of Birth"}} 
+                                    editorOptions={{
+                                        onKeyDown: (e: any) => allowOnlyText(e.event)
+                                    }}
+                                >
                                     <RequiredRule message="Place of birth is required"/>
                                 </SimpleItem>
                                 <SimpleItem
@@ -557,7 +569,13 @@ export default function EditPage() {
                                 >
                                     <RequiredRule message="Marital status is required"/>
                                 </SimpleItem>
-                                <SimpleItem dataField="motherMaidenName" label={{text: "Mother Maiden Name"}}>
+                                <SimpleItem 
+                                    dataField="motherMaidenName" 
+                                    label={{text: "Mother Maiden Name"}} 
+                                    editorOptions={{
+                                        onKeyDown: (e: any) => allowOnlyText(e.event)
+                                    }}
+                                >
                                     <RequiredRule message="Mother maiden name is required"/>
                                 </SimpleItem>
                                 <SimpleItem
