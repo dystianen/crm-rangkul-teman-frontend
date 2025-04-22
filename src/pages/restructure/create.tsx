@@ -248,7 +248,7 @@ export const RestructureCreatePage: FC = () => {
                                 Principal Amount : {request.principalAmount && formatRupiah(request.principalAmount)}
                             </SimpleItem>
                             <SimpleItem>
-                                Interest Amount : {request.interestAmount && formatRupiah(request.interestAmount)}
+                                Due interest amount : {request.interestAmount && formatRupiah(request.interestAmount)}
                             </SimpleItem>
                             <SimpleItem>
                                 Sanctions : {request.penaltyAmount && formatRupiah(request.penaltyAmount)}
