@@ -36,7 +36,7 @@ export const RestructureDetailFormPage = (props: any) => {
                             : {restructure.principalAmount && formatRupiah(restructure.principalAmount)}
                         </SimpleItem>
                         <SimpleItem>
-                            Interest Amount : {restructure.interestAmount && formatRupiah(restructure.interestAmount)}
+                            Due interest amount : {restructure.interestAmount && formatRupiah(restructure.interestAmount)}
                         </SimpleItem>
                         <SimpleItem>
                             Sanctions : {restructure.penaltyAmount && formatRupiah(restructure.penaltyAmount)}
