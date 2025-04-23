@@ -24,15 +24,16 @@ import {
   RepaymentPage,
   RepaymentScheduleDetailPage,
   RepaymentSchedulePage,
+  RestructureCreatePage,
+  RestructureDetailPage,
+  RestructureListPage,
   Step1Page,
   Step2Page,
   TransactionDetailPage,
   TransactionPage,
-  UploadSignedPage,
-  RestructureListPage,
-  RestructureDetailPage,
-  RestructureCreatePage,
+  UploadSignedPage
 } from "./pages";
+import ContactActivities from "./pages/contact-activities";
 import CreateEditContactLeads from "./pages/contact/CreateEditContactLeads";
 
 const routes = [
@@ -59,6 +60,12 @@ const routes = [
     path: "/contact",
     title: "Contact",
     element: ContactPage
+  },
+  {
+    ID: 32,
+    path: "/contact-activities",
+    title: "Contact Activities",
+    element: ContactActivities
   },
   {
     ID: 29,

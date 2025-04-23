@@ -177,6 +177,12 @@ export const processCancel = async (contactId: string): Promise<any> => {
 
 
 export const activityCategoryStore = dataRawCustomStore(`/api/contact/data/activityCategory?`);
+export const activityByCategoryStore = (categoryId: string) => dataRawCustomStore(`/api/contact/activity/category/${categoryId}?`);
+export const fetchActivityCategory = async (): Promise<any> => {
+  const resp = await ajaxGet(`/api/contact/data/activityCategory`);
+  return resp.data;
+}
+
 export const activityTypeByCategoryStore = (categoryId: any) => dataRawCustomStore(`/api/contact/data/activityType/${categoryId}?`);
 export const activityResultByTypeStore = (typeId: any) => dataRawCustomStore(`/api/contact/data/activityResult/${typeId}?`);
 export const activityTypeFieldForm = async (typeId: string): Promise<any> => {
