@@ -287,3 +287,7 @@ body {
   text-align: center;
   gap: 16px;
 }
+
+.dx-viewport:not(.dx-theme-generic) .dx-tabs-horizontal {
+  border-block-end: 1px solid rgb(225, 225, 225, 0.4);
+}

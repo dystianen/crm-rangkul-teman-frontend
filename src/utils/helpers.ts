@@ -1,3 +1,5 @@
+import { notifySuccess } from "./devExtremeUtils";
+
 const TAB_SIZE = 4;
 
 export function formatValue(value: any, spaces: number = TAB_SIZE): string {
@@ -70,3 +72,23 @@ export function getFileBase64(file: any): { fileType: string; fileContent: strin
 
   return null;
 }
+
+export const copyToClipboard = (text: string) => {
+  navigator.clipboard.writeText(text).then(() => {
+    notifySuccess("Copied to clipboard!");
+  });
+};
+
+// 🔹 Fungsi untuk mengonversi koordinat desimal ke derajat-menit-detik (DMS)
+export const convertToDMS = (lat: number, lng: number) => {
+  const toDMS = (value: number, direction1: string, direction2: string) => {
+    const absValue = Math.abs(value);
+    const degrees = Math.floor(absValue);
+    const minutes = Math.floor((absValue - degrees) * 60);
+    const seconds = ((absValue - degrees - minutes / 60) * 3600).toFixed(1);
+    const direction = value >= 0 ? direction1 : direction2;
+    return `${degrees}°${minutes}'${seconds}"${direction}`;
+  };
+
+  return `${toDMS(lat, "N", "S")} ${toDMS(lng, "E", "W")}`;
+};
