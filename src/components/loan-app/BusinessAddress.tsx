@@ -2,20 +2,7 @@ import { Button, LoadIndicator, Popup } from "devextreme-react";
 import { useCallback, useEffect, useState } from "react";
 import { fetchGeoLocation, submitGeoLocation } from "src/api/apploan";
 import { notifySuccess } from "src/utils/devExtremeUtils";
-
-// 🔹 Fungsi untuk mengonversi koordinat desimal ke derajat-menit-detik (DMS)
-const convertToDMS = (lat: number, lng: number) => {
-  const toDMS = (value: number, direction1: string, direction2: string) => {
-    const absValue = Math.abs(value);
-    const degrees = Math.floor(absValue);
-    const minutes = Math.floor((absValue - degrees) * 60);
-    const seconds = ((absValue - degrees - minutes / 60) * 3600).toFixed(1);
-    const direction = value >= 0 ? direction1 : direction2;
-    return `${degrees}°${minutes}'${seconds}"${direction}`;
-  };
-
-  return `${toDMS(lat, "N", "S")} ${toDMS(lng, "E", "W")}`;
-};
+import { convertToDMS, copyToClipboard } from "src/utils/helpers";
 
 const BusinessAddress = ({ appId, disabled = false }: { appId: string; disabled?: boolean }) => {
   const [center, setCenter] = useState({ lat: 0, lng: 0 });
@@ -71,12 +58,6 @@ const BusinessAddress = ({ appId, disabled = false }: { appId: string; disabled?
     },
     [appId]
   );
-
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text).then(() => {
-      notifySuccess("Copied to clipboard!");
-    });
-  };
 
   const handleUpdateLocation = useCallback(() => {
     setShowPopupConfirm(true);
