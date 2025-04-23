@@ -10,11 +10,11 @@ import Form, {
     GroupItem,
     PatternRule,
     SimpleItem,
-    AsyncRule
+    AsyncRule, RequiredRule
 } from "devextreme-react/form";
 import {formatRupiah} from "../../utils/string.util";
 import DataSource from "devextreme/data/data_source";
-import {calc, frequencyStore, reject, submit} from "../../api/restructure_v2";
+import {calc, frequencyStore, submit} from "../../api/restructure_v2";
 import {DataGrid} from "devextreme-react";
 import {Column, Pager, Paging, Scrolling} from "devextreme-react/data-grid";
 import {filterOperation} from "../../constants/FilterOperation";
@@ -123,6 +123,9 @@ export const RestructureCreatePage: FC = () => {
             updateData["scheduleTypeId"] = rest.scheduleTypeId;
             updateData["payment"] = rest.payment;
             updateData["numPayments"] = rest.numPayments;
+            if(updateData.initialAmount === 0) {
+                updateData["initialAmount"] = null;
+            }
 
             if (typeof rest.schedule !== "undefined") {
                 updateData["schedule"] = rest.schedule;
@@ -151,12 +154,10 @@ export const RestructureCreatePage: FC = () => {
     const onFieldDataChanged = (evt: any) => {
         request[evt.dataField] = evt.value;
         var {isValid} = evt.component.instance().validate();
-        if(!isValid) {
-            return;
+        if(isValid) {
+            calculateRestructure(request)
+                .then((rs)=>console.info("calculate restructure", rs));
         }
-        
-        calculateRestructure(request)
-        .then((rs)=>console.info("calculate restructure", rs));
     };
 
     const minMaxDiscountValid = useCallback(
@@ -184,6 +185,11 @@ export const RestructureCreatePage: FC = () => {
         ({value}: ValidationCallbackData) => {
             return !(value <= 0);
         }, [request]);
+
+    const nullValidationInitialPaymentValid = useCallback(
+        ({value}: ValidationCallbackData) => {
+            return new Promise((resolve) => resolve(!(value===null)));
+        }, [request]);
     
     const asyncValidationInitialPayment = useCallback(({value}: ValidationCallbackData) => {
         let restructureAmount = 0;
@@ -209,7 +215,12 @@ export const RestructureCreatePage: FC = () => {
             ...prevState,
             initialAmount: null,
         }));
-        e.event && e.event.preventDefault();
+        const form = formRef.current!.instance;
+        console.log("onInitialAmountChange request ", request);
+        const {isValid} = form.validate();
+        if(isValid){
+            e.event && e.event.preventDefault();
+        }
     }, [request]);
 
     return <> <LoadPanel visible={loadingCalculate}/>
@@ -235,6 +246,7 @@ export const RestructureCreatePage: FC = () => {
                     ref={formRef}
                     formData={request}
                     colCount={2}
+                    readOnly={false}
                     id="restructureCreateForm"
                     onFieldDataChanged={onFieldDataChanged}
                     showColonAfterLabel={true}
@@ -291,7 +303,7 @@ export const RestructureCreatePage: FC = () => {
                             <SimpleItem
                                 cssClass={"itemInitialPayment"}
                                 dataField="initialAmount"
-                                label={{text: " ", showColon: false, alignment: "center", location: "right"}}
+                                label={{text: " ", showColon: false, alignment: "center", location: "right", visible: false}}
                                 editorType={"dxNumberBox"}
                                 editorOptions={{
                                     onKeyDown: (e: any) => {
@@ -303,17 +315,24 @@ export const RestructureCreatePage: FC = () => {
                                         if (!/[0-9]/.test(e.value) && key !== "Backspace" && key !== "Delete")
                                             e.event.preventDefault();
                                     },
-                                    value: (request.initialAmount !== null && request.initialAmount > 0 ? request.initialAmount : null),
-                                    onValueChanged: onInitialAmountChange,
+                                    // value: (request.initialAmount !== null && request.initialAmount > 0 ? request.initialAmount : null),
+                                    // onValueChanged: onInitialAmountChange,
                                     placeholder: "Initial payment: 1.000.000",
                                     format: "Rp #,##0",
                                 }}
                             >
+                                <AsyncRule
+                                    message="Initial payment wajib diisi"
+                                    validationCallback={nullValidationInitialPaymentValid}
+                                />
+                                <CustomRule
+                                    message="Initial payment harus diisi"
+                                    validationCallback={minValidationInitialPaymentValid}
+                                />
                                 <CustomRule
                                     message="Initial payment tidak boleh lebih dari balance"
                                     validationCallback={asyncValidationInitialPayment}
                                 />
-                                <CustomRule message="Initial payment harus diisi" validationCallback={minValidationInitialPaymentValid}/>
                                 <PatternRule message="Initial payment hanya boleh angka" pattern={/^[0-9]+$/}/>
                             </SimpleItem>
                         </GroupItem>
