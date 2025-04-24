@@ -78,7 +78,9 @@ const TableSales = ({ dataSource }: { dataSource: any }) => {
       <Column dataField={"purposeCallName"} caption={"Purpose of Call"} />
       <Column dataField={"purposeVisitName"} caption={"Purpose of Visit"} />
       <Column dataField={"salesOfferingName"} caption={"Sales Offering"} />
-      <Column dataField={"name"} caption={"Comment"} width={300} />
+      <Column dataField={"contactType"} caption={"Contact Type"} />
+      <Column dataField={"contactName"} caption={"Contact Name"} />
+      <Column dataField={"name"} caption={"Comment"} width={200} />
       <Paging defaultPageSize={50} />
       <Pager showPageSizeSelector={true} showInfo={true} allowedPageSizes={[10, 50, 100]} />
     </DataGrid>
