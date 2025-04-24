@@ -43,7 +43,7 @@ const TableVerification = ({ dataSource }: { dataSource: any }) => {
             <OnClickLink
               onClick={() => {
                 if (options.data.contactType === "contact") {
-                  navigate(`/contact/detail?id=${options.data.contactId}`);
+                  navigate(`/contact/edit?id=${options.data.contactId}`);
                 } else {
                   navigate(`/contact/leads/edit?id=${options.data.contactId}`);
                 }
