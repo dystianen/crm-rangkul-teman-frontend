@@ -132,6 +132,20 @@ const DetailContactActivity = (props: DataGridTypes.MasterDetailTemplateData) =>
           {/* END SALES */}
 
           <SimpleItem
+            dataField="contactType"
+            label={{ text: "Contact Type" }}
+            editorOptions={{
+              readOnly: true
+            }}
+          />
+          <SimpleItem
+            dataField="contactName"
+            label={{ text: "Contact Name" }}
+            editorOptions={{
+              readOnly: true
+            }}
+          />
+          <SimpleItem
             dataField="name"
             label={{ text: "Comment" }}
             editorOptions={{

@@ -75,7 +75,9 @@ const TableVerification = ({ dataSource }: { dataSource: any }) => {
       <Column dataField={"categoryName"} caption={"Category"} />
       <Column dataField={"typeName"} caption={"Type"} />
       <Column dataField={"resultName"} caption={"Result"} />
-      <Column dataField={"name"} caption={"Comment"} width={300} />
+      <Column dataField={"contactType"} caption={"Contact Type"} />
+      <Column dataField={"contactName"} caption={"Contact Name"} />
+      <Column dataField={"name"} caption={"Comment"} width={200} />
       <Paging defaultPageSize={50} />
       <Pager showPageSizeSelector={true} showInfo={true} allowedPageSizes={[10, 50, 100]} />
     </DataGrid>
