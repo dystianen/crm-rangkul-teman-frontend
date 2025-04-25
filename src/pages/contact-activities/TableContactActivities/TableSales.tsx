@@ -43,7 +43,7 @@ const TableSales = ({ dataSource }: { dataSource: any }) => {
             <OnClickLink
               onClick={() => {
                 if (options.data.contactType === "contact") {
-                  navigate(`/contact/edit?id=${options.data.contactId}`);
+                  navigate(`/contact/edit?id=${options.data.contactId}&from=contact-activities`);
                 } else {
                   navigate(`/contact/leads/edit?id=${options.data.contactId}`);
                 }

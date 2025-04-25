@@ -70,7 +70,7 @@ export default function EditPage() {
         useState<AppLoanOnboardingRequest>(initLoanOnboardingValue);
     const navigate = useNavigate();
     const location = useLocation();
-    const {id} = queryString.parse(location.search);
+    const {id, from} = queryString.parse(location.search);
     const [contact, setContact] = useState<ContactRequest>(initContactValue);
     const [ktpSrc, setKtpSrc] = useState("");
     const [selfie, setSelfie] = useState("");
@@ -442,7 +442,12 @@ export default function EditPage() {
     }
 
     const handleBack = () => {
-        navigate(`/contact`);
+        const isFromContactActivity = from?.includes('contact-activities');
+        if (isFromContactActivity) {
+            navigate('/contact-activities');
+        } else {
+            navigate(`/contact`);
+        }
     };
 
 
