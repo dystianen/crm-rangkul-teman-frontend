@@ -1,10 +1,9 @@
-import { LoadPanel, Popup } from "devextreme-react";
+import { DropDownButton, LoadPanel, Popup } from "devextreme-react";
 import { Button } from "devextreme-react/button";
 import DataGrid, {
   Column,
   Editing,
   Form as FormGrid,
-  Item,
   Pager,
   Paging,
   Popup as PopGrid
@@ -20,29 +19,45 @@ import Form, {
 } from "devextreme-react/form";
 import notify from "devextreme/ui/notify";
 import queryString from "query-string";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import ReactDOM from "react-dom/client";
 import Resizer from "react-image-file-resizer";
 import { useNavigate } from "react-router";
 import { useLocation } from "react-router-dom";
 import {
-  checkAccess,
+  checkAccessStep2,
   createAppLoanOnboardingStep2,
   detailAppLoan,
   fetchCheckPartial,
+  fetchStep2Activity,
   getSignedDoc
 } from "src/api/apploan";
 import BusinessAddress from "src/components/loan-app/BusinessAddress";
 import DocumentCard from "src/components/loan-app/DocumentCard";
 import FamilyCard from "src/components/loan-app/FamilyCard";
 import NeighbourQuestions from "src/components/loan-app/NeighbourQuestions";
+import PreviewFile from "src/components/loan-app/PreviewFile";
 import SellingQuestions from "src/components/loan-app/SellingQuestions";
 import StreetShop from "src/components/loan-app/StreetShop";
-import PdfViewer from "src/components/pdf-viewer/PdfViewer";
+import PopupMessage from "src/components/popup-message";
 import { getFileBase64 } from "../../api/helper";
-import { backofficeAccess } from "../../constants/variableConstata";
-import { notifySuccess, notifyWarning } from "../../utils/devExtremeUtils";
+import { notifySuccess } from "../../utils/devExtremeUtils";
+import { ApprovalHistory } from "../approval1-app/ApprovalHistory";
 import "./loan-app.scss";
+import { RejectPopup } from "./RejectPopup";
+
+export type SectionName =
+  | "FAMILY_CARD"
+  | "DOCUMENTS"
+  | "SELLING_QUESTIONS"
+  | "NEIGHBOUR_QUESTIONS"
+  | "BUSINESS_ADDRESS"
+  | "FINANCIAL_DETAIL";
+
+export type VisibleSection = {
+  name: SectionName;
+  mandatory: boolean;
+}[];
 
 export default function Step2Page() {
   const navigate = useNavigate();
@@ -59,19 +74,19 @@ export default function Step2Page() {
     debitTransaction: 0,
     creditTransaction: 0
   });
-  const [submitForm, setSubmitForm] = useState(false);
-  const [loadingDownloadBtn, setLoadingDownloadBtn] = useState(false);
+  const [loadingPage, setLoadingPage] = useState(false);
   const [isShowRemainingPopup, setShowRemainingPopup] = useState(false);
   const [missingFields, setMissingFields] = useState<string[]>([]);
+  const [activity, setActivity] = useState<Array<any>>([]);
+  const [isShowPopupReject, setShowPopupReject] = useState(false);
+  const [isShowPopupMessage, setShowPopupMessage] = useState(false);
+  const [popupMessage, setPopupMessage] = useState("");
+  const [visibleSection, setVisibleSection] = useState<VisibleSection>([]);
 
   const detailLoanApp = (appId: any) => {
+    setLoadingPage(true);
     detailAppLoan(appId).then((res) => {
       const data = res as any;
-
-      // console.log("data app: ", data);
-      // if (!data.privyEnabled && data.statusId === statusApp.unsigned) {
-      // navigate(`/loan-app/detail/upload-signed?id=${ID}`);
-      // }
       const gridStore: any[] = data?.customData || [];
       setDataGrid(gridStore);
       if (data?.incomeProof) {
@@ -87,6 +102,9 @@ export default function Step2Page() {
           creditTransaction: data?.creditTransaction
         });
       }
+
+      setVisibleSection(res.items);
+      setLoadingPage(false);
     });
 
     fetchCheckPartial(ID).then((res) => {
@@ -97,19 +115,19 @@ export default function Step2Page() {
 
   useEffect(() => {
     detailLoanApp(ID);
+    fetchStep2Activity(ID).then(setActivity);
   }, [ID]);
 
   useEffect(() => {
-    checkAccess(backofficeAccess.backoffice_application_step_2).then((res) => {
-      if (!res) {
-        navigate(`/loan-app`);
-        notifyWarning("User tidak memilik akses ke menu step 2");
+    checkAccessStep2(ID).then((res) => {
+      if (!res.access) {
+        setShowPopupMessage(true);
+        setPopupMessage(res.message);
       }
     });
-  }, []);
+  }, [ID, navigate]);
 
   const downloadDocSigned = () => {
-    setLoadingDownloadBtn(true);
     getSignedDoc(id as any)
       .then((dt) => {
         const link = document.createElement("a");
@@ -130,12 +148,11 @@ export default function Step2Page() {
           "warning",
           15000
         );
-      })
-      .finally(() => setLoadingDownloadBtn(false));
+      });
   };
 
-  const handleSubmit = (e: any) => {
-    setSubmitForm(true);
+  const handleSubmit = () => {
+    setLoadingPage(true);
     const form = formRef.current!.instance;
     const customData =
       dataGrid.length > 0
@@ -157,19 +174,18 @@ export default function Step2Page() {
       creditTransaction: onStep2Loan?.creditTransaction
     }).then(
       (res) => {
-        // console.log("submit step 2", res);
         setIncomeProof("");
         setDataGrid([]);
-        form.resetValues();
+        form.clear();
         notifySuccess(res.message);
-        setSubmitForm(false);
+        setLoadingPage(false);
         detailLoanApp(ID);
         if (res.isCompletedStep) {
           navigate(`/loan-app/create/preview?id=${id}`);
         }
       },
       (error) => {
-        setSubmitForm(false);
+        setLoadingPage(false);
         notify(
           {
             message: error,
@@ -183,7 +199,6 @@ export default function Step2Page() {
         );
       }
     );
-    e.preventDefault();
   };
 
   const onFileChanged = (e: any) => {
@@ -224,188 +239,198 @@ export default function Step2Page() {
     uploadMode: "useForm",
     onValueChanged: onFileChanged
   };
+
   const onFieldDataChanged = (evt: any) => {
     onStep2Loan[evt.dataField] = evt.value;
+  };
+
+  const handleConfirmPopupMessage = useCallback(() => {
+    navigate("/loan-app");
+  }, [navigate]);
+
+  const componentsMap: Record<SectionName, () => JSX.Element> = {
+    FAMILY_CARD: () => <FamilyCard appId={ID} />,
+    DOCUMENTS: () => <DocumentCard appId={ID} />,
+    SELLING_QUESTIONS: () => <SellingQuestions appId={ID} />,
+    NEIGHBOUR_QUESTIONS: () => <NeighbourQuestions appId={ID} />,
+    BUSINESS_ADDRESS: () => <BusinessAddress appId={ID} />,
+    FINANCIAL_DETAIL: () => (
+      <GroupItem>
+        <GroupItem caption="Financial Detail" colCount={2}>
+          <SimpleItem
+            dataField="monthlyIncome"
+            label={{ text: "Penghasilan perbulan" }}
+            editorType="dxNumberBox"
+            editorOptions={{ format: "Rp #,##0.00" }}
+          >
+            <PatternRule message="hanya boleh angka" pattern={/^[0-9]+$/} />
+          </SimpleItem>
+          <SimpleItem
+            dataField="handwrittenSalesBook"
+            label={{ text: "Handwritten Sales book" }}
+            editorType="dxCheckBox"
+          />
+          <SimpleItem
+            dataField="debitTransaction"
+            label={{ text: "Outcome" }}
+            editorType="dxNumberBox"
+            editorOptions={{ format: "Rp #,##0.00" }}
+          >
+            <PatternRule message="hanya boleh angka" pattern={/^[0-9]+$/} />
+          </SimpleItem>
+          <SimpleItem
+            dataField="creditTransaction"
+            label={{ text: "Income" }}
+            editorType="dxNumberBox"
+            editorOptions={{ format: "Rp #,##0.00" }}
+          >
+            <PatternRule message="hanya boleh angka" pattern={/^[0-9]+$/} />
+          </SimpleItem>
+          <SimpleItem
+            dataField="incomeProof"
+            editorType={"dxFileUploader" as any}
+            editorOptions={uploadKtpOptions}
+            label={{ text: "File" }}
+          ></SimpleItem>
+        </GroupItem>
+        <GroupItem visible={incomeProof} colCount={1}>
+          <SimpleItem>
+            <PreviewFile file={incomeProof} />
+          </SimpleItem>
+        </GroupItem>
+      </GroupItem>
+    )
   };
 
   return (
     <>
       <LoadPanel
         shadingColor="rgba(0,0,0,0.4)"
-        visible={submitForm}
+        visible={loadingPage}
         showIndicator={true}
         shading={true}
         showPane={true}
         hideOnOutsideClick={false}
       />
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          margin: "0 15px 0"
-        }}
-      >
-        <h2>Step 2</h2>
-        <Button
-          text="Download Signed Contract"
-          type="success"
-          stylingMode="contained"
-          disabled={loadingDownloadBtn}
-          onClick={downloadDocSigned}
-        />
+      <div className="title-detail">
+        <h2 className={"content-block"}>Step 2</h2>
+        <div>
+          <DropDownButton
+            useSelectMode={false}
+            stylingMode="contained"
+            text="Activity"
+            dropDownOptions={{
+              width: 230
+            }}
+            items={activity}
+            onItemClick={(e) => {
+              if (e.itemData === "Download Signed Contract") {
+                downloadDocSigned();
+              }
+
+              if (e.itemData === "Reject") {
+                setShowPopupReject(true);
+              }
+            }}
+            width={230}
+          />
+        </div>
       </div>
       <div className={"content-block"}>
-        <div className={"dx-card responsive-paddings"}>
-          <FamilyCard appId={ID} />
-        </div>
+        <Form
+          ref={formRef}
+          colCount={1}
+          id="form"
+          showColonAfterLabel={true}
+          validationGroup="incomeProofData"
+          formData={onStep2Loan}
+          onFieldDataChanged={onFieldDataChanged}
+        >
+          {visibleSection.map(({ name, mandatory }) => {
+            if (!mandatory) return null;
+            const Component = componentsMap[name];
+            if (!Component) return null;
 
-        <div className={"dx-card responsive-paddings next-card"}>
-          <DocumentCard appId={ID} />
-        </div>
-
-        <div className={"dx-card responsive-paddings next-card"}>
-          <SellingQuestions appId={ID} />
-        </div>
-
-        <div className={"dx-card responsive-paddings next-card"}>
-          <NeighbourQuestions appId={ID} />
-        </div>
-
-        <div className={"dx-card responsive-paddings next-card"}>
-          <StreetShop appId={ID} />
-        </div>
-
-        <div className={"dx-card responsive-paddings next-card"}>
-          <BusinessAddress appId={ID} />
-        </div>
-
-        <div className={"dx-card responsive-paddings next-card"}>
-          <h3>Custom Data</h3>
-          <DataGrid
-            dataSource={dataGrid}
-            columnAutoWidth={true}
-            wordWrapEnabled={false}
-            showBorders={true}
-            dateSerializationFormat={"yyyy-MM-ddTHH:mm:ss.SSSxxx"}
-            repaintChangesOnly={true}
-          >
-            <Editing mode="popup" allowUpdating={true} allowAdding={true} allowDeleting={true}>
-              <PopGrid title="Custom Data Form" showTitle={true} width={360} height={320} />
-              <FormGrid
-                showColonAfterLabel={true}
-                showValidationSummary={true}
-                validationGroup="customedata"
-                colCount={1}
-              >
-                <SimpleItem dataField="name">
-                  <RequiredRule message="Nama wajib diisi" />
-                </SimpleItem>
-                <SimpleItem dataField={"value"}>
-                  <RequiredRule message="Value wajib diisi" />
-                </SimpleItem>
-              </FormGrid>
-            </Editing>
-            <Column
-              caption={"No."}
-              width={70}
-              alignment={"center"}
-              cellTemplate={function (container: any, options: any) {
-                const dom = ReactDOM.createRoot(container);
-                dom.render(options.rowIndex + 1);
-              }}
-            />
-            <Column dataField={"name"} caption={"Name"} />
-            <Column dataField={"value"} caption={"Value"} />
-            <Paging defaultPageSize={50} />
-            <Pager showPageSizeSelector={true} showInfo={true} allowedPageSizes={[10, 50, 100]} />
-          </DataGrid>
-        </div>
-
-        <form action="validate" onSubmit={handleSubmit} className={"next-card"}>
-          <Form
-            ref={formRef}
-            colCount={1}
-            id="form"
-            showColonAfterLabel={true}
-            validationGroup="incomeProofData"
-            formData={onStep2Loan}
-            onFieldDataChanged={onFieldDataChanged}
-          >
-            <GroupItem colSpan={2} cssClass={"dx-card responsive-paddings next-card"}>
-              <GroupItem caption="Financial Detail" colCount={2}>
-                <SimpleItem
-                  dataField="monthlyIncome"
-                  label={{ text: "Penghasilan perbulan" }}
-                  editorType="dxNumberBox"
-                  editorOptions={{ format: "Rp #,##0.00" }}
-                >
-                  <PatternRule message="hanya boleh angka" pattern={/^[0-9]+$/} />
-                </SimpleItem>
-                <SimpleItem
-                  dataField="handwrittenSalesBook"
-                  label={{ text: "Handwritten Sales book" }}
-                  editorType="dxCheckBox"
-                />
-                <SimpleItem
-                  dataField="debitTransaction"
-                  label={{ text: "Outcome" }}
-                  editorType="dxNumberBox"
-                  editorOptions={{ format: "Rp #,##0.00" }}
-                >
-                  <PatternRule message="hanya boleh angka" pattern={/^[0-9]+$/} />
-                </SimpleItem>
-                <SimpleItem
-                  dataField="creditTransaction"
-                  label={{ text: "Income" }}
-                  editorType="dxNumberBox"
-                  editorOptions={{ format: "Rp #,##0.00" }}
-                >
-                  <PatternRule message="hanya boleh angka" pattern={/^[0-9]+$/} />
-                </SimpleItem>
-                <SimpleItem
-                  dataField="incomeProof"
-                  editorType={"dxFileUploader" as any}
-                  editorOptions={uploadKtpOptions}
-                  label={{ text: "File" }}
-                ></SimpleItem>
+            return (
+              <GroupItem key={name} cssClass={"dx-card responsive-paddings next-card"}>
+                {Component()}
               </GroupItem>
-              <GroupItem>
-                {incomeProof && (
-                  <Item>
-                    {fileType.includes("image/") ? (
-                      <img id="dropzone-ktp" src={incomeProof} alt="income-proof" width={"50%"} />
-                    ) : (
-                      <PdfViewer url={incomeProof} />
-                    )}
-                  </Item>
-                )}
-              </GroupItem>
+            );
+          })}
+
+          <GroupItem cssClass={"dx-card responsive-paddings next-card"}>
+            <StreetShop appId={ID} />
+          </GroupItem>
+          <GroupItem cssClass={"dx-card responsive-paddings next-card"}>
+            <h3>Custom Data</h3>
+            <DataGrid
+              loadPanel={{ enabled: false }}
+              dataSource={dataGrid}
+              columnAutoWidth={true}
+              wordWrapEnabled={false}
+              showBorders={true}
+              dateSerializationFormat={"yyyy-MM-ddTHH:mm:ss.SSSxxx"}
+              repaintChangesOnly={true}
+            >
+              <Editing mode="popup" allowUpdating={true} allowAdding={true} allowDeleting={true}>
+                <PopGrid title="Custom Data Form" showTitle={true} width={360} height={320} />
+                <FormGrid
+                  showColonAfterLabel={true}
+                  showValidationSummary={true}
+                  validationGroup="customedata"
+                  colCount={1}
+                >
+                  <SimpleItem dataField="name">
+                    <RequiredRule message="Nama wajib diisi" />
+                  </SimpleItem>
+                  <SimpleItem dataField={"value"}>
+                    <RequiredRule message="Value wajib diisi" />
+                  </SimpleItem>
+                </FormGrid>
+              </Editing>
+              <Column
+                caption={"No."}
+                width={70}
+                alignment={"center"}
+                cellTemplate={function (container: any, options: any) {
+                  const dom = ReactDOM.createRoot(container);
+                  dom.render(options.rowIndex + 1);
+                }}
+              />
+              <Column dataField={"name"} caption={"Name"} />
+              <Column dataField={"value"} caption={"Value"} />
+              <Paging defaultPageSize={50} />
+              <Pager showPageSizeSelector={true} showInfo={true} allowedPageSizes={[10, 50, 100]} />
+            </DataGrid>
+          </GroupItem>
+          <GroupItem colSpan={2} cssClass={"dx-card responsive-paddings next-card"}>
+            <GroupItem cssClass={"custom-tabs-step2"}>
+              <ApprovalHistory id={ID} />
             </GroupItem>
-            <GroupItem colSpan={2}>
-              <GroupItem colCount={2}>
-                <ButtonItem
-                  horizontalAlignment="left"
-                  buttonOptions={{
-                    text: "Kembali",
-                    type: "normal",
-                    onClick: () => {
-                      navigate(`/loan-app/create/step/1?id=${id}&autoNext=false`);
-                    }
-                  }}
-                />
-                <ButtonItem
-                  horizontalAlignment="right"
-                  buttonOptions={{
-                    text: "Lanjutkan",
-                    type: "default",
-                    useSubmitBehavior: true
-                  }}
-                />
-              </GroupItem>
+          </GroupItem>
+          <GroupItem colSpan={2}>
+            <GroupItem colCount={2}>
+              <ButtonItem
+                horizontalAlignment="left"
+                buttonOptions={{
+                  text: "Kembali",
+                  type: "normal",
+                  onClick: () => {
+                    navigate(`/loan-app/create/step/1?id=${id}&autoNext=false`);
+                  }
+                }}
+              />
+              <ButtonItem
+                horizontalAlignment="right"
+                buttonOptions={{
+                  text: "Lanjutkan",
+                  type: "default",
+                  onClick: handleSubmit
+                }}
+              />
             </GroupItem>
-          </Form>
-        </form>
+          </GroupItem>
+        </Form>
       </div>
 
       <Popup width={360} height={"auto"} visible={isShowRemainingPopup} showTitle={false}>
@@ -429,6 +454,18 @@ export default function Step2Page() {
           />
         </div>
       </Popup>
+
+      <RejectPopup
+        appId={ID}
+        popupVisible={isShowPopupReject}
+        hide={() => setShowPopupReject(false)}
+      />
+
+      <PopupMessage
+        visible={isShowPopupMessage}
+        message={popupMessage}
+        handleConfirm={handleConfirmPopupMessage}
+      />
     </>
   );
 }

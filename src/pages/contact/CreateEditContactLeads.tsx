@@ -13,11 +13,10 @@ import {
 } from "src/api/contact";
 import { InitLeadsValue, type TReqCreateLeads } from "src/interfaces/contactDto";
 import { notifyError, notifySuccess } from "src/utils/devExtremeUtils";
-import {useAuth} from "../../contexts/auth";
+import { allowOnlyNumbers, allowOnlyText } from "src/utils/helpers";
 import ContactActivityV2 from "../../components/contact/contact-activyv2";
 
 const CreateEditContactLeads = () => {
-  const {user} = useAuth();
   const formRef = useRef<Form>(null);
   const navigate = useNavigate();
   const location = useLocation();
@@ -26,11 +25,11 @@ const CreateEditContactLeads = () => {
     ktp?: string;
     branchId?: string;
   };
-  
+
   const idData = id || "";
   const idNumber = ktp || "";
   const branchID = branchId || "";
-  
+
   const isCreate = location.pathname.includes("create");
   const [leads, setLeads] = useState<TReqCreateLeads>(InitLeadsValue);
   const [isLoadingSave, setLoadingSave] = useState(false);
@@ -53,14 +52,14 @@ const CreateEditContactLeads = () => {
 
   useEffect(() => {
     if (idNumber && branchID) {
-      const data: { idNumber: string, branchId: string } = {
+      const data: { idNumber: string; branchId: string } = {
         idNumber,
-        branchId: branchID,
+        branchId: branchID
       };
-  
-      setLeads({...leads, ...data});
+
+      setLeads({ ...leads, ...data });
     }
-  }, [idNumber, branchID]);
+  }, [queryString]);
 
   const handleSuccess = (e: any) => {
     const form = formRef.current!.instance;
@@ -70,13 +69,13 @@ const CreateEditContactLeads = () => {
     notifySuccess("Berhasil submit data");
     console.log("contact leads handleSuccess", e);
     if (typeof e.contactId !== "undefined") {
-      if(e.contactId !== null) {
+      if (e.contactId !== null) {
         navigate(`/contact/edit?id=${e.contactId}`);
-      }else {
-        navigate('/contact');
+      } else {
+        navigate("/contact");
       }
     } else {
-      navigate('/contact');
+      navigate("/contact");
     }
   };
 
@@ -121,19 +120,20 @@ const CreateEditContactLeads = () => {
       >
         <GroupItem cssClass={"dx-card responsive-paddings next-card"}>
           <GroupItem caption="Contact form" colCount={2}>
-            <SimpleItem dataField="name" label={{ text: "Name" }} />
+            <SimpleItem
+              dataField="name"
+              label={{ text: "Name" }}
+              editorOptions={{
+                onKeyDown: (e: any) => allowOnlyText(e.event)
+              }}
+            />
             <SimpleItem
               dataField="mobileNumber"
               label={{ text: "Mobile Number" }}
               editorOptions={{
                 min: 0,
                 maxLength: 14,
-                onKeyDown: (e: any) => {
-                  const key = e.event.key;
-                  e.value = String.fromCharCode(e.event.keyCode);
-                  if (!/[0-9]/.test(e.value) && key !== "Backspace" && key !== "Delete")
-                    e.event.preventDefault();
-                }
+                onKeyDown: (e: any) => allowOnlyNumbers(e.event)
               }}
             />
             <SimpleItem
@@ -142,12 +142,7 @@ const CreateEditContactLeads = () => {
               editorOptions={{
                 min: 16,
                 maxLength: 16,
-                onKeyDown: (e: any) => {
-                  const key = e.event.key;
-                  e.value = String.fromCharCode(e.event.keyCode);
-                  if (!/[0-9]/.test(e.value) && key !== "Backspace" && key !== "Delete")
-                    e.event.preventDefault();
-                }
+                onKeyDown: (e: any) => allowOnlyNumbers(e.event)
               }}
             />
             <SimpleItem dataField="marketAddress" label={{ text: "Market Address" }} />

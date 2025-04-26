@@ -78,11 +78,12 @@ export default function ContactActivityV2(props: Iprops) {
 		}}
 		editing={{
 		  allowUpdating: (options: any) => {
-			let found = (typeof user?.userAccess !== "undefined") && user?.userAccess.some((access: string) => access === backofficeAccess.backoffice_contact_activity_type_collection || access === backofficeAccess.backoffice_contact_activity_type_sales);
+			const {createdOn, accessId} = options.row.data;
+			let found = (typeof user?.userAccess !== "undefined" && accessId!=null) && user?.userAccess.some((access: string) => access === accessId);
 			
-			const createdOn = moment(options.row.data.createdOn);
+			const createdDate = moment(createdOn);
 			const now = moment();
-			const diffInMinutes = now.diff(createdOn, "minutes");
+			const diffInMinutes = now.diff(createdDate, "minutes");
 			return found && diffInMinutes <= 60;
 		  }
 		}}
