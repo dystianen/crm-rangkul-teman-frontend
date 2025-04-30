@@ -99,7 +99,7 @@ const TableCollection = ({ dataSource }: { dataSource: any }) => {
       <Column dataField={"ptpAmount"} caption={"PTP Amount"}
               filterOperations={filterOperation.numeric}
               format="Rp #,##0.00"  />
-      <Column dataField={"contactType"} caption={"Contact Type"}
+      <Column dataType={"number"} dataField={"contactType"} caption={"Contact Type"}
               filterOperations={filterOperation.string}/>
       <Column dataField={"contactName"} caption={"Contact Name"}
               filterOperations={filterOperation.string}/>
