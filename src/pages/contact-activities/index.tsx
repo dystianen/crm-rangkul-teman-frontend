@@ -1,7 +1,6 @@
 import "devextreme-react/file-uploader";
 import Tabs, { Item } from "devextreme-react/tabs";
 import "devextreme-react/text-area";
-import DataSource from "devextreme/data/data_source";
 import "devextreme/data/odata/store";
 import { useEffect, useState } from "react";
 import { activityByCategoryStore, fetchActivityCategory } from "src/api/contact";
@@ -23,7 +22,7 @@ const ContactActivities = () => {
   const isVerification = selectedCategory === "a9291c97-0684-44eb-9c73-5ed2f154936f";
 
   const activityByCategorySource = selectedCategory
-    ? new DataSource(activityByCategoryStore(selectedCategory))
+    ? activityByCategoryStore(selectedCategory)
     : null;
 
   useEffect(() => {
