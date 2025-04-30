@@ -13,8 +13,10 @@ import { useNavigate } from "react-router-dom";
 import { OnClickLink } from "src/components/alink";
 import { filterOperation } from "../../../constants/FilterOperation";
 import DetailContactActivity from "../DetailContactActivity";
+import DataSource from "devextreme/data/data_source";
+import {activityByCategoryStore} from "../../../api/contact";
 
-const TableCollection = ({ dataSource }: { dataSource: any }) => {
+const TableCollection = ({ categoryId }: { categoryId: string }) => {
   const navigate = useNavigate();
 
   return (
@@ -27,7 +29,7 @@ const TableCollection = ({ dataSource }: { dataSource: any }) => {
       cacheEnabled={false}
       dateSerializationFormat={"yyyy-MM-ddTHH:mm:ss.SSSxxx"}
       repaintChangesOnly={true}
-      dataSource={dataSource}
+      dataSource={new DataSource(activityByCategoryStore(categoryId))}
     >
       <MasterDetail enabled={true} component={DetailContactActivity} />
       <Scrolling showScrollbar={"always"} />
