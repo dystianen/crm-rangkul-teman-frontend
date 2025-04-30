@@ -14,8 +14,9 @@ import { OnClickLink } from "src/components/alink";
 import { filterOperation } from "../../../constants/FilterOperation";
 import DetailContactActivity from "../DetailContactActivity";
 import React from "react";
+import {activityByCategoryStore} from "../../../api/contact";
 
-const TableCollection = ({ dataSource }: { dataSource: any }) => {
+const TableCollection = ({ categoryId }: { categoryId: string }) => {
   const navigate = useNavigate();
 
   return (
@@ -28,7 +29,7 @@ const TableCollection = ({ dataSource }: { dataSource: any }) => {
       cacheEnabled={false}
       dateSerializationFormat={"yyyy-MM-ddTHH:mm:ss.SSSxxx"}
       repaintChangesOnly={true}
-      dataSource={dataSource}
+      dataSource={activityByCategoryStore(categoryId)}
     >
       <MasterDetail enabled={true} component={DetailContactActivity} />
       <Scrolling showScrollbar={"always"} />
