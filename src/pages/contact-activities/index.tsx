@@ -22,10 +22,6 @@ const ContactActivities = () => {
   const isSales = selectedCategory === "e293bd9a-b321-432a-91e2-86fd8e7d65ac";
   const isVerification = selectedCategory === "a9291c97-0684-44eb-9c73-5ed2f154936f";
 
-  const activityByCategorySource = selectedCategory
-    ? new DataSource(activityByCategoryStore(selectedCategory))
-    : null;
-
   useEffect(() => {
     fetchActivityCategory().then((res) => {
       setActivityCategory(res);
@@ -49,13 +45,11 @@ const ContactActivities = () => {
             </Item>
           ))}
         </Tabs>
-        {activityByCategorySource && (
-          <>
-            {isCollection && <TableCollection dataSource={activityByCategorySource} />}
-            {isSales && <TableSales dataSource={activityByCategorySource} />}
-            {isVerification && <TableVerification dataSource={activityByCategorySource} />}
-          </>
-        )}
+        {selectedCategory != "" && <>
+          {isCollection && <TableCollection categoryId={selectedCategory} />}
+          {isSales && <TableSales categoryId={selectedCategory} />}
+          {isVerification && <TableVerification categoryId={selectedCategory} />}
+        </>}
       </div>
     </div>
   );
