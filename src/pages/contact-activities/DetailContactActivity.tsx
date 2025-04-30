@@ -12,7 +12,7 @@ const defaultCenter = {
 };
 
 const DetailContactActivity = (props: DataGridTypes.MasterDetailTemplateData) => {
-  const { categoryId, photo, latitude, longitude } = props.data.data;
+  const { categoryId, photo, latitude, longitude, ptpAmount } = props.data.data;
   const [file, setFile] = useState("");
   const [center, setCenter] = useState(defaultCenter);
 
@@ -95,10 +95,11 @@ const DetailContactActivity = (props: DataGridTypes.MasterDetailTemplateData) =>
             editorType="dxDateBox"
           />
           <SimpleItem
-            dataField="ptpAmount"
             label={{ text: "PTP Amount" }}
             editorOptions={{
-              readOnly: true
+                value: +ptpAmount,
+              readOnly: true,
+                format: "Rp #,##0.00"
             }}
             visible={isCollection}
           />
