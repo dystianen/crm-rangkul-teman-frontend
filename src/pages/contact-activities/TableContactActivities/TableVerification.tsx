@@ -1,9 +1,9 @@
 import DataGrid, {
-  Column,
-  MasterDetail,
-  Pager,
-  Paging,
-  Scrolling
+    Column, FilterRow,
+    MasterDetail,
+    Pager,
+    Paging,
+    Scrolling
 } from "devextreme-react/data-grid";
 import "devextreme-react/file-uploader";
 import "devextreme-react/text-area";
@@ -13,6 +13,7 @@ import { useNavigate } from "react-router-dom";
 import { OnClickLink } from "src/components/alink";
 import { filterOperation } from "../../../constants/FilterOperation";
 import DetailContactActivity from "../DetailContactActivity";
+import React from "react";
 
 const TableVerification = ({ dataSource }: { dataSource: any }) => {
   const navigate = useNavigate();
@@ -31,6 +32,7 @@ const TableVerification = ({ dataSource }: { dataSource: any }) => {
     >
       <MasterDetail enabled={true} component={DetailContactActivity} />
       <Scrolling showScrollbar={"always"} />
+      <FilterRow visible={true}/>
 
       <Column
         alignment={"center"}
@@ -56,7 +58,8 @@ const TableVerification = ({ dataSource }: { dataSource: any }) => {
         filterOperations={filterOperation.numeric}
       />
 
-      <Column dataField={"modifiedByName"} caption={"Modified By"} />
+      <Column dataField={"modifiedByName"} caption={"Modified By"}
+              filterOperations={filterOperation.string}/>
       <Column
         dataField={"modifiedOn"}
         caption={"Modified At"}
@@ -72,12 +75,18 @@ const TableVerification = ({ dataSource }: { dataSource: any }) => {
         }}
         filterOperations={filterOperation.date}
       />
-      <Column dataField={"categoryName"} caption={"Category"} />
-      <Column dataField={"typeName"} caption={"Type"} />
-      <Column dataField={"resultName"} caption={"Result"} />
-      <Column dataField={"contactType"} caption={"Contact Type"} />
-      <Column dataField={"contactName"} caption={"Contact Name"} />
-      <Column dataField={"name"} caption={"Comment"} width={200} />
+      <Column dataField={"categoryName"} caption={"Category"}
+              filterOperations={filterOperation.string}/>
+      <Column dataField={"typeName"} caption={"Type"}
+              filterOperations={filterOperation.string}/>
+      <Column dataField={"resultName"} caption={"Result"}
+              filterOperations={filterOperation.string}/>
+      <Column dataField={"contactType"} caption={"Contact Type"}
+              filterOperations={filterOperation.string}/>
+      <Column dataField={"contactName"} caption={"Contact Name"}
+              filterOperations={filterOperation.string}/>
+      <Column dataField={"name"} caption={"Comment"} width={200}
+              filterOperations={filterOperation.string}/>
       <Paging defaultPageSize={50} />
       <Pager showPageSizeSelector={true} showInfo={true} allowedPageSizes={[10, 50, 100]} />
     </DataGrid>

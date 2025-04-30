@@ -82,7 +82,6 @@ export default function Index() {
       );
     }
 
-    // @ts-expect-error
     loanAppOnboarding[evt.dataField] = evt.value;
   };
 
