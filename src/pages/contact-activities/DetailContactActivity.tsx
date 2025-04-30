@@ -95,11 +95,12 @@ const DetailContactActivity = (props: DataGridTypes.MasterDetailTemplateData) =>
             editorType="dxDateBox"
           />
           <SimpleItem
+            dataField="ptpAmount"
             label={{ text: "PTP Amount" }}
             editorOptions={{
-                value: +ptpAmount,
+              value: +ptpAmount,
               readOnly: true,
-                format: "Rp #,##0.00"
+              format: "Rp #,##0.00"
             }}
             visible={isCollection}
           />
