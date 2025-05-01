@@ -15,6 +15,7 @@ import { filterOperation } from "../../../constants/FilterOperation";
 import DetailContactActivity from "../DetailContactActivity";
 import React from "react";
 import {activityByCategoryStore} from "../../../api/contact";
+import {calculateFilterExpressionCustom} from "../../../utils/devExtremeUtils";
 
 const TableVerification = ({ categoryId }: { categoryId: string }) => {
   const navigate = useNavigate();
@@ -66,14 +67,7 @@ const TableVerification = ({ categoryId }: { categoryId: string }) => {
         caption={"Modified At"}
         dataType={"date"}
         format={"dd MMM yyyy HH:mm:ss"}
-        calculateFilterExpression={(value: any, selectedFilterOperations: any, target: any) => {
-          const column = this as any;
-          return column.defaultCalculateFilterExpression.apply(this, [
-            new Date(value),
-            selectedFilterOperations,
-            target
-          ]);
-        }}
+        calculateFilterExpression={calculateFilterExpressionCustom}
         filterOperations={filterOperation.date}
       />
       <Column dataField={"categoryName"} caption={"Category"}

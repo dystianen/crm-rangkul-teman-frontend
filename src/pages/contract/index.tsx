@@ -18,6 +18,7 @@ import {ContractStatus} from "../../components/contract-status";
 import {downloadExcel} from "../../api/http.api";
 import * as downloadFile from "save-file";
 import {Button} from "devextreme-react/button";
+import {calculateFilterExpressionCustom} from "../../utils/devExtremeUtils";
 
 export const ContractPage: FC = () => {
     const navigate = useNavigate();
@@ -105,18 +106,7 @@ export const ContractPage: FC = () => {
                         caption={"Tanggal Dibuat"}
                         dataType={"date"}
                         format={"dd MMM yyyy HH:mm:ss"}
-                        calculateFilterExpression={(
-                            value: any,
-                            selectedFilterOperations: any,
-                            target: any
-                        ) => {
-                            const column = this as any;
-                            return column.defaultCalculateFilterExpression.apply(this, [
-                                new Date(value),
-                                selectedFilterOperations,
-                                target,
-                            ]);
-                        }}
+                        calculateFilterExpression={calculateFilterExpressionCustom}
                         filterOperations={filterOperation.date}
                     />
                     <Column
@@ -124,18 +114,7 @@ export const ContractPage: FC = () => {
                         caption={"Tanggal Diubah"}
                         dataType={"date"}
                         format={"dd MMM yyyy HH:mm:ss"}
-                        calculateFilterExpression={(
-                            value: any,
-                            selectedFilterOperations: any,
-                            target: any
-                        ) => {
-                            const column = this as any;
-                            return column.defaultCalculateFilterExpression.apply(this, [
-                                new Date(value),
-                                selectedFilterOperations,
-                                target,
-                            ]);
-                        }}
+                        calculateFilterExpression={calculateFilterExpressionCustom}
                         filterOperations={filterOperation.date}
                     />
                     <Column
@@ -184,18 +163,7 @@ export const ContractPage: FC = () => {
                         caption={"Dimulai"}
                         dataType={"date"}
                         format={"dd MMM yyyy"}
-                        calculateFilterExpression={(
-                            value: any,
-                            selectedFilterOperations: any,
-                            target: any
-                        ) => {
-                            const column = this as any;
-                            return column.defaultCalculateFilterExpression.apply(this, [
-                                new Date(value),
-                                selectedFilterOperations,
-                                target,
-                            ]);
-                        }}
+                        calculateFilterExpression={calculateFilterExpressionCustom}
                         filterOperations={filterOperation.date}
                     />
                     <Column
@@ -203,18 +171,7 @@ export const ContractPage: FC = () => {
                         caption={"Berakhir"}
                         dataType={"date"}
                         format={"dd MMM yyyy"}
-                        calculateFilterExpression={(
-                            value: any,
-                            selectedFilterOperations: any,
-                            target: any
-                        ) => {
-                            const column = this as any;
-                            return column.defaultCalculateFilterExpression.apply(this, [
-                                new Date(value),
-                                selectedFilterOperations,
-                                target,
-                            ]);
-                        }}
+                        calculateFilterExpression={calculateFilterExpressionCustom}
                         filterOperations={filterOperation.date}
                     />
                     <Column
