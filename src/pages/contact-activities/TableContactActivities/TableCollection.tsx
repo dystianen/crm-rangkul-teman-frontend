@@ -15,6 +15,7 @@ import { filterOperation } from "../../../constants/FilterOperation";
 import DetailContactActivity from "../DetailContactActivity";
 import React from "react";
 import {activityByCategoryStore} from "../../../api/contact";
+import {calculateFilterExpressionCustom} from "../../../utils/devExtremeUtils";
 
 const TableCollection = ({ categoryId }: { categoryId: string }) => {
   const navigate = useNavigate();
@@ -65,14 +66,7 @@ const TableCollection = ({ categoryId }: { categoryId: string }) => {
         caption={"Modified At"}
         dataType={"date"}
         format={"dd MMM yyyy HH:mm:ss"}
-        calculateFilterExpression={(value: any, selectedFilterOperations: any, target: any) => {
-          const column = this as any;
-          return column.defaultCalculateFilterExpression.apply(this, [
-            new Date(value),
-            selectedFilterOperations,
-            target
-          ]);
-        }}
+        calculateFilterExpression={calculateFilterExpressionCustom}
         filterOperations={filterOperation.date}
       />
       <Column dataField={"categoryName"} caption={"Category"}
@@ -83,18 +77,7 @@ const TableCollection = ({ categoryId }: { categoryId: string }) => {
               filterOperations={filterOperation.string}
       />
       <Column dataField={"ptpDate"} caption={"PTP Date"} dataType={"date"} format={"dd MMM yyyy"}
-              calculateFilterExpression={(
-                  value: any,
-                  selectedFilterOperations: any,
-                  target: any
-              ) => {
-                  const column = this as any;
-                  return column.defaultCalculateFilterExpression.apply(this, [
-                      new Date(value),
-                      selectedFilterOperations,
-                      target,
-                  ]);
-              }}
+              calculateFilterExpression={calculateFilterExpressionCustom}
               filterOperations={filterOperation.date}
       />
       <Column dataField={"ptpAmount"} caption={"PTP Amount"}
