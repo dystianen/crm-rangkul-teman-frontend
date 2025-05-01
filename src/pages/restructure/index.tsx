@@ -10,6 +10,7 @@ import ReactDOM from "react-dom/client";
 import {OnClickLink} from "../../components/alink";
 import {checkAccess} from "../../api/apploan";
 import {backofficeAccess} from "../../constants/variableConstata";
+import {calculateFilterExpressionCustom} from "../../utils/devExtremeUtils";
 
 export const RestructureListPage: FC = () => {
   const navigate = useNavigate();
@@ -106,18 +107,7 @@ export const RestructureListPage: FC = () => {
 			  caption={"Tanggal Dibuat"}
 			  dataType={"date"}
 			  format={"dd MMM yyyy HH:mm:ss"}
-			  calculateFilterExpression={(
-				  value: any,
-				  selectedFilterOperations: any,
-				  target: any
-			  ) => {
-				const column = this as any;
-				return column.defaultCalculateFilterExpression.apply(this, [
-				  new Date(value),
-				  selectedFilterOperations,
-				  target,
-				]);
-			  }}
+			  calculateFilterExpression={calculateFilterExpressionCustom}
 			  filterOperations={filterOperation.date}
 		  />
 		  <Column
@@ -125,18 +115,7 @@ export const RestructureListPage: FC = () => {
 			  caption={"Tanggal Diubah"}
 			  dataType={"date"}
 			  format={"dd MMM yyyy HH:mm:ss"}
-			  calculateFilterExpression={(
-				  value: any,
-				  selectedFilterOperations: any,
-				  target: any
-			  ) => {
-				const column = this as any;
-				return column.defaultCalculateFilterExpression.apply(this, [
-				  new Date(value),
-				  selectedFilterOperations,
-				  target,
-				]);
-			  }}
+			  calculateFilterExpression={calculateFilterExpressionCustom}
 			  filterOperations={filterOperation.date}
 		  />
 		  <Column
@@ -188,18 +167,7 @@ export const RestructureListPage: FC = () => {
 			  caption={"Berlaku Dari"}
 			  dataType={"date"}
 			  format={"dd MMM yyyy"}
-			  calculateFilterExpression={(
-				  value: any,
-				  selectedFilterOperations: any,
-				  target: any
-			  ) => {
-				const column = this as any;
-				return column.defaultCalculateFilterExpression.apply(this, [
-				  new Date(value),
-				  selectedFilterOperations,
-				  target,
-				]);
-			  }}
+			  calculateFilterExpression={calculateFilterExpressionCustom}
 			  filterOperations={filterOperation.date}
 		  />
 		  <Column
@@ -207,18 +175,7 @@ export const RestructureListPage: FC = () => {
 			  caption={"Berlaku Sampai"}
 			  dataType={"date"}
 			  format={"dd MMM yyyy"}
-			  calculateFilterExpression={(
-				  value: any,
-				  selectedFilterOperations: any,
-				  target: any
-			  ) => {
-				const column = this as any;
-				return column.defaultCalculateFilterExpression.apply(this, [
-				  new Date(value),
-				  selectedFilterOperations,
-				  target,
-				]);
-			  }}
+			  calculateFilterExpression={calculateFilterExpressionCustom}
 			  filterOperations={filterOperation.date}
 		  />
 		  <Column

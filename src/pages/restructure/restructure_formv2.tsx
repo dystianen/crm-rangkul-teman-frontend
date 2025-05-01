@@ -1,12 +1,9 @@
 import Form, {CustomRule, GroupItem, PatternRule, SimpleItem} from "devextreme-react/form";
-import {formatRupiah} from "../../utils/string.util";
-import {formatOnlyDateMonthYear} from "../../utils/dateUtils";
 import {DataGrid} from "devextreme-react";
 import {Column, Pager, Paging, Scrolling} from "devextreme-react/data-grid";
 import {filterOperation} from "../../constants/FilterOperation";
 import React from "react";
-import DataSource from "devextreme/data/data_source";
-import {frequencyStore} from "../../api/restructure_v2";
+import {calculateFilterExpressionCustom} from "../../utils/devExtremeUtils";
 
 
 export const RestructureFormV2 = (props: any) => {
@@ -116,18 +113,7 @@ export const RestructureFormV2 = (props: any) => {
 			  caption={"Payment Date"}
 			  dataType={"date"}
 			  format={"dd MMM yyyy"}
-			  calculateFilterExpression={(
-				  value: any,
-				  selectedFilterOperations: any,
-				  target: any
-			  ) => {
-				const column = this as any;
-				return column.defaultCalculateFilterExpression.apply(this, [
-				  new Date(value),
-				  selectedFilterOperations,
-				  target,
-				]);
-			  }}
+			  calculateFilterExpression={calculateFilterExpressionCustom}
 			  filterOperations={filterOperation.date}
 		  />
 		  <Column dataField={"paymentAmount"} caption={"Payment Amount"}

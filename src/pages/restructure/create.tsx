@@ -18,7 +18,7 @@ import {calc, frequencyStore, submit} from "../../api/restructure_v2";
 import {DataGrid} from "devextreme-react";
 import {Column, Pager, Paging, Scrolling} from "devextreme-react/data-grid";
 import {filterOperation} from "../../constants/FilterOperation";
-import {notifyError, notifySuccess, notifyWarning} from "../../utils/devExtremeUtils";
+import {calculateFilterExpressionCustom, notifyError, notifySuccess, notifyWarning} from "../../utils/devExtremeUtils";
 import {confirm} from "devextreme/ui/dialog";
 import {ValidationCallbackData} from "devextreme-react/common";
 import {backofficeAccess, restructure_max_periods} from "../../constants/variableConstata";
@@ -448,18 +448,7 @@ export const RestructureCreatePage: FC = () => {
                                 caption={"Payment Date"}
                                 dataType={"date"}
                                 format={"dd MMM yyyy"}
-                                calculateFilterExpression={(
-                                    value: any,
-                                    selectedFilterOperations: any,
-                                    target: any
-                                ) => {
-                                    const column = this as any;
-                                    return column.defaultCalculateFilterExpression.apply(this, [
-                                        new Date(value),
-                                        selectedFilterOperations,
-                                        target,
-                                    ]);
-                                }}
+                                calculateFilterExpression={calculateFilterExpressionCustom}
                                 filterOperations={filterOperation.date}
                             />
                             <Column dataField={"paymentAmount"} caption={"Payment Amount"}

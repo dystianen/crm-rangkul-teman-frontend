@@ -8,7 +8,7 @@ import type {
 } from "../interfaces/contactDto";
 import { FilterPss, setFilterPss } from "../interfaces/IFilterPss";
 import { customStore } from "../model/customStore";
-import { dataRawCustomStore } from "../model/datagrid";
+import {dataCustomStore, dataRawCustomStore} from "../model/datagrid";
 import { ajaxGet, ajaxPatch, ajaxPost } from "./http.api";
 import { API_PATH } from "./path_url";
 
@@ -177,7 +177,7 @@ export const processCancel = async (contactId: string): Promise<any> => {
 
 
 export const activityCategoryStore = dataRawCustomStore(`/api/contact/data/activityCategory?`);
-export const activityByCategoryStore = (categoryId: string) => customStore({ loadUrl: `/api/contact/activity/category/${categoryId}?` });
+export const activityByCategoryStore = (categoryId: string) => customStore({loadUrl: `/api/contact/activity/category/${categoryId}`});
 export const fetchActivityCategory = async (): Promise<any> => {
   const resp = await ajaxGet(`/api/contact/data/activityCategory`);
   return resp.data;

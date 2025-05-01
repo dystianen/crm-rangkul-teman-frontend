@@ -8,6 +8,7 @@ import { filterOperation } from "../../constants/FilterOperation";
 import ActivityContactForm, { IContactActivity } from "./contact-activity-form";
 import {backofficeAccess} from "../../constants/variableConstata";
 import {useAuth} from "../../contexts/auth";
+import {calculateFilterExpressionCustom} from "../../utils/devExtremeUtils";
 
 interface Iprops {
   contactId: string;
@@ -95,16 +96,7 @@ export default function ContactActivityV2(props: Iprops) {
 		  caption={"Modified At"}
 		  dataType={"date"}
 		  format={"dd MMM yyyy HH:mm:ss"}
-		  calculateFilterExpression={(value: any, selectedFilterOperations: any, target: any) => {
-			const grid = typeGridRef.current!.instance;
-			const columns = grid.getVisibleColumns();
-			const column:any = columns.find((col: any) => col.dataField === 'modifiedOn');
-			return column.defaultCalculateFilterExpression.apply(column, [
-			  new Date(value),
-			  selectedFilterOperations,
-			  target
-			]);
-		  }}
+		  calculateFilterExpression={calculateFilterExpressionCustom}
 		  filterOperations={filterOperation.date}
 	  />
 	  <Column dataField={"categoryName"} caption={"Category"}/>

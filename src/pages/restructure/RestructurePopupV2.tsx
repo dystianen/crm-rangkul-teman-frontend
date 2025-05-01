@@ -4,7 +4,7 @@ import Form, {Item, ButtonItem, PatternRule, SimpleItem, GroupItem} from "devext
 import {Popup} from "devextreme-react";
 import DataSource from "devextreme/data/data_source";
 import {calc, frequencyStore, submit} from "../../api/restructure_v2";
-import {notifyError, notifySuccess} from "../../utils/devExtremeUtils";
+import {calculateFilterExpressionCustom, notifyError, notifySuccess} from "../../utils/devExtremeUtils";
 import {Column, Pager, Paging, Scrolling} from "devextreme-react/data-grid";
 import {DataGrid} from "devextreme-react";
 import {filterOperation} from "../../constants/FilterOperation";
@@ -252,18 +252,7 @@ export const RestructurePopupV2: FC<any> = (props, context) => {
 				  caption={"Payment Date"}
 				  dataType={"date"}
 				  format={"dd MMM yyyy"}
-				  calculateFilterExpression={(
-					  value: any,
-					  selectedFilterOperations: any,
-					  target: any
-				  ) => {
-					const column = this as any;
-					return column.defaultCalculateFilterExpression.apply(this, [
-					  new Date(value),
-					  selectedFilterOperations,
-					  target,
-					]);
-				  }}
+				  calculateFilterExpression={calculateFilterExpressionCustom}
 				  filterOperations={filterOperation.date}
 			  />
 			  <Column dataField={"paymentAmount"} caption={"Payment Amount"}
