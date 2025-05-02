@@ -35,7 +35,7 @@ import { OnClickLink } from "../../components/alink";
 import { ApplicationStatus } from "../../components/application-status";
 import { backofficeAccess } from "../../constants/variableConstata";
 import { useAuth } from "../../contexts/auth";
-import { confirmNotify, notifyError, notifySuccess } from "../../utils/devExtremeUtils";
+import {calculateFilterExpressionCustom, confirmNotify, notifyError, notifySuccess} from "../../utils/devExtremeUtils";
 import "./loan-app.scss";
 
 export default function Index() {
@@ -82,7 +82,6 @@ export default function Index() {
       );
     }
 
-    // @ts-expect-error
     loanAppOnboarding[evt.dataField] = evt.value;
   };
 
@@ -286,19 +285,7 @@ export default function Index() {
               caption={"Tanggal Dibuat"}
               dataType={"date"}
               format={"dd MMM yyyy HH:mm:ss"}
-              calculateFilterExpression={(
-                value: any,
-                selectedFilterOperations: any,
-                target: any
-              ) => {
-                // @ts-ignore
-                const column = this as any;
-                return column.defaultCalculateFilterExpression.apply(column, [
-                  new Date(value),
-                  selectedFilterOperations,
-                  target
-                ]);
-              }}
+              calculateFilterExpression={calculateFilterExpressionCustom}
               filterOperations={filterOperation.date}
             />
             <Column
@@ -306,19 +293,7 @@ export default function Index() {
               caption={"Tanggal Diubah"}
               dataType={"date"}
               format={"dd MMM yyyy HH:mm:ss"}
-              calculateFilterExpression={(
-                value: any,
-                selectedFilterOperations: any,
-                target: any
-              ) => {
-                // @ts-ignore
-                const column = this as any;
-                return column.defaultCalculateFilterExpression.apply(column, [
-                  new Date(value),
-                  selectedFilterOperations,
-                  target
-                ]);
-              }}
+              calculateFilterExpression={calculateFilterExpressionCustom}
               filterOperations={filterOperation.date}
             />
             <Column

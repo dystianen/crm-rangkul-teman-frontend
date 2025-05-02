@@ -7,6 +7,7 @@ import {DataGrid} from "devextreme-react";
 import {Column, Pager, Paging, Scrolling} from "devextreme-react/data-grid";
 import {filterOperation} from "../../constants/FilterOperation";
 import "./style.scss";
+import {calculateFilterExpressionCustom} from "../../utils/devExtremeUtils";
 
 
 export const RestructureDetailFormPage = (props: any) => {
@@ -153,18 +154,7 @@ export const RestructureDetailFormPage = (props: any) => {
                             caption={"Payment Date"}
                             dataType={"date"}
                             format={"dd MMM yyyy"}
-                            calculateFilterExpression={(
-                                value: any,
-                                selectedFilterOperations: any,
-                                target: any
-                            ) => {
-                                const column = this as any;
-                                return column.defaultCalculateFilterExpression.apply(this, [
-                                    new Date(value),
-                                    selectedFilterOperations,
-                                    target,
-                                ]);
-                            }}
+                            calculateFilterExpression={calculateFilterExpressionCustom}
                             filterOperations={filterOperation.date}
                         />
                         <Column dataField={"paymentAmount"} caption={"Payment Amount"}

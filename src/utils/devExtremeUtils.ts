@@ -1,6 +1,16 @@
 import {alert, confirm, custom} from "devextreme/ui/dialog";
 import notify from "devextreme/ui/notify";
 
+export function calculateFilterExpressionCustom(value: any, selectedFilterOperations: any, target: any) {
+    //@ts-ignore
+    const column = this as any;
+    return column.defaultCalculateFilterExpression.apply(column, [
+      new Date(value),
+      selectedFilterOperations,
+      target
+    ]);
+}
+
 // Success message notification. Modeless
 export function notifySuccess(message: string) {
     notify({
