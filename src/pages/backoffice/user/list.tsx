@@ -131,8 +131,8 @@ export const UserListPage: FC = () => {
           />
           <Column
               width={100}
-              dataField={"lastLogin"}
-              caption={"Last Login"}
+              dataField={"lastActive"}
+              caption={"Last Active"}
               dataType="date"
               format="dd MMM yyyy HH:mm:ss"
               calculateFilterExpression={calculateFilterExpressionCustom}
@@ -156,7 +156,7 @@ export const UserListPage: FC = () => {
                       if (result) {
                         resetPasswordUser(key)
                         .then((resp: boolean) => {
-                          notifySuccess("sukses reset password user");
+                          notifySuccess("Reset password berhasil");
                           e.component.refresh(true).done(function () {
                             e.component.cancelEditData();
                           });
@@ -181,7 +181,7 @@ export const UserListPage: FC = () => {
                       if (result) {
                         enableUser(key)
                         .then((resp: boolean) => {
-                          notifySuccess("sukses disable user");
+                          notifySuccess("User sudah diaktifkan");
                           e.component.refresh(true).done(function () {
                             e.component.cancelEditData();
                           });
@@ -205,7 +205,7 @@ export const UserListPage: FC = () => {
                       if (result) {
                         disableUser(key)
                         .then((resp: boolean) => {
-                          notifySuccess("sukses disable user");
+                          notifySuccess("User sudah dinon-aktifkan");
                           e.component.refresh(true).done(function () {
                             e.component.cancelEditData();
                           });
