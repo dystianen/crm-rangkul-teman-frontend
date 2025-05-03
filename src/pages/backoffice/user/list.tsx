@@ -129,12 +129,13 @@ export const UserListPage: FC = () => {
                   }
                 }
               ]}
+              width={90}
           ></Column>
           <Column
               alignment={"center"}
               dataField={"seqId"}
               caption={"#NO"}
-              width={90}
+              width={50}
               cellTemplate={function (container: any, options: any) {
                 const dom = ReactDOM.createRoot(container);
                 dom.render(
@@ -151,12 +152,23 @@ export const UserListPage: FC = () => {
           />
           
           <Column
+              dataField={"createdOn"}
+              caption={"Tanggal Dibuat"}
+              dataType={"date"}
+              format={"dd MMM yyyy HH:mm:ss"}
+              calculateFilterExpression={calculateFilterExpressionCustom}
+              filterOperations={filterOperation.date}
+              width={100}
+          />
+          <Column
+              width={100}
               dataField={"modifiedByName"}
               caption={"Diubah oleh"}
               filterOperations={filterOperation.string}
           />
           
           <Column
+              width={100}
               dataField={"modifiedOn"}
               caption={"Tanggal Diubah"}
               dataType={"date"}
@@ -167,26 +179,29 @@ export const UserListPage: FC = () => {
           <Column
               dataField={"name"}
               caption={"Username"}
-              width={190}
+              width={160}
               filterOperations={filterOperation.string}
           />
           <Column
               dataField={"contactName"}
               caption={"Name"}
-              width={190}
+              width={160}
               filterOperations={filterOperation.string}
           />
           <Column
+              width={150}
               dataField={"contactPhoneNumber"}
               caption={"No. HP"}
               filterOperations={filterOperation.string}
           />
           <Column
+              width={130}
               dataField={"contactEmail"}
               caption={"Email"}
               filterOperations={filterOperation.string}
           />
           <Column
+              width={100}
               dataField={"isActive"}
               caption={"Active"}
               filterOperations={filterOperation.boolean}
@@ -197,6 +212,7 @@ export const UserListPage: FC = () => {
               }}
           />
           <Column
+              width={100}
               dataField={"lastLogin"}
               caption={"Last Login"}
               dataType="date"
