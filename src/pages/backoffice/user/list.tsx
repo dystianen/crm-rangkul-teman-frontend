@@ -49,88 +49,6 @@ export const UserListPage: FC = () => {
           </Toolbar>
           <Scrolling showScrollbar={"always"} />
           <FilterRow visible={true} />
-          
-          <Column
-              caption={"Action"}
-              type={"buttons"}
-              alignment={"center"}
-              buttons={[
-                {
-                  hint: "Reset Password",
-                  icon: "lock",
-                  name: "resetPassword",
-                  onClick: function (e: any) {
-                    const key = e.row.data.id;
-                    confirmNotify(
-                        `Apakah yakin reset password user ini #${e.row.data.seqId} ??`
-                    ).then((result) => {
-                      if (result) {
-                        resetPasswordUser(key)
-                        .then((resp: boolean) => {
-                          notifySuccess("sukses reset password user");
-                          e.component.refresh(true).done(function () {
-                            e.component.cancelEditData();
-                          });
-                        })
-                        .catch((e) => notifyError(e.message));
-                      }
-                    });
-                    
-                    e.event.preventDefault();
-                  }
-                },
-                {
-                  hint: "Enable User",
-                  icon: "check",
-                  name: "enable",
-                  
-                  onClick: function (e: any) {
-                    const key = e.row.data.id;
-                    confirmNotify(
-                        `Apakah yakin mengaktifkan user ini #${e.row.data.seqId} ??`
-                    ).then((result) => {
-                      if (result) {
-                        enableUser(key)
-                        .then((resp: boolean) => {
-                          notifySuccess("sukses disable user");
-                          e.component.refresh(true).done(function () {
-                            e.component.cancelEditData();
-                          });
-                        })
-                        .catch((e) => notifyError(e.message));
-                      }
-                    });
-                    
-                    e.event.preventDefault();
-                  }
-                },
-                {
-                  hint: "Disable User",
-                  icon: "close",
-                  name: "disable",
-                  onClick: function (e: any) {
-                    const key = e.row.data.id;
-                    confirmNotify(
-                        `Apakah yakin disable user ini #${e.row.data.seqId} ??`
-                    ).then((result) => {
-                      if (result) {
-                        disableUser(key)
-                        .then((resp: boolean) => {
-                          notifySuccess("sukses disable user");
-                          e.component.refresh(true).done(function () {
-                            e.component.cancelEditData();
-                          });
-                        })
-                        .catch((e) => notifyError(e.message));
-                      }
-                    });
-                    
-                    e.event.preventDefault();
-                  }
-                }
-              ]}
-              width={90}
-          ></Column>
           <Column
               alignment={"center"}
               dataField={"seqId"}
@@ -220,6 +138,88 @@ export const UserListPage: FC = () => {
               calculateFilterExpression={calculateFilterExpressionCustom}
               filterOperations={filterOperation.date}
           />
+          
+          <Column
+              caption={"Action"}
+              type={"buttons"}
+              alignment={"center"}
+              buttons={[
+                {
+                  hint: "Reset Password",
+                  icon: "lock",
+                  name: "resetPassword",
+                  onClick: function (e: any) {
+                    const key = e.row.data.id;
+                    confirmNotify(
+                        `Apakah yakin reset password user ini #${e.row.data.seqId} ??`
+                    ).then((result) => {
+                      if (result) {
+                        resetPasswordUser(key)
+                        .then((resp: boolean) => {
+                          notifySuccess("sukses reset password user");
+                          e.component.refresh(true).done(function () {
+                            e.component.cancelEditData();
+                          });
+                        })
+                        .catch((e) => notifyError(e.message));
+                      }
+                    });
+                    
+                    e.event.preventDefault();
+                  }
+                },
+                {
+                  hint: "Enable User",
+                  icon: "check",
+                  name: "enable",
+                  
+                  onClick: function (e: any) {
+                    const key = e.row.data.id;
+                    confirmNotify(
+                        `Apakah yakin mengaktifkan user ini #${e.row.data.seqId} ??`
+                    ).then((result) => {
+                      if (result) {
+                        enableUser(key)
+                        .then((resp: boolean) => {
+                          notifySuccess("sukses disable user");
+                          e.component.refresh(true).done(function () {
+                            e.component.cancelEditData();
+                          });
+                        })
+                        .catch((e) => notifyError(e.message));
+                      }
+                    });
+                    
+                    e.event.preventDefault();
+                  }
+                },
+                {
+                  hint: "Disable User",
+                  icon: "close",
+                  name: "disable",
+                  onClick: function (e: any) {
+                    const key = e.row.data.id;
+                    confirmNotify(
+                        `Apakah yakin disable user ini #${e.row.data.seqId} ??`
+                    ).then((result) => {
+                      if (result) {
+                        disableUser(key)
+                        .then((resp: boolean) => {
+                          notifySuccess("sukses disable user");
+                          e.component.refresh(true).done(function () {
+                            e.component.cancelEditData();
+                          });
+                        })
+                        .catch((e) => notifyError(e.message));
+                      }
+                    });
+                    
+                    e.event.preventDefault();
+                  }
+                }
+              ]}
+              width={90}
+          ></Column>
           <Paging defaultPageSize={50} />
           <Pager showPageSizeSelector={true} showInfo={true} allowedPageSizes={[10, 50, 100]} />
         </DataGrid>
