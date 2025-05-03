@@ -1,10 +1,9 @@
 import {alert, confirm, custom} from "devextreme/ui/dialog";
 import notify from "devextreme/ui/notify";
 
-export function calculateFilterExpressionCustom(value: any, selectedFilterOperations: any, target: any) {
-    //@ts-ignore
-    const column = this as any;
-    return column.defaultCalculateFilterExpression.apply(column, [
+export function calculateFilterExpressionCustom(
+    this: any, value: any, selectedFilterOperations: any, target: any) {
+    return this.defaultCalculateFilterExpression.apply(this, [
       new Date(value),
       selectedFilterOperations,
       target

@@ -5,17 +5,18 @@ import {listStore} from "../../api/message_log";
 import {filterOperation} from "../../constants/FilterOperation";
 import {downloadExcel} from "../../api/http.api";
 import * as downloadFile from "save-file";
+import {calculateFilterExpressionCustom} from "../../utils/devExtremeUtils";
 
 export const MessageLogPage: FC = () => {
     const navigate = useNavigate();
-    const dataGrid = useRef();
+    const dataGrid: any = useRef();
     const onClickDownload = (e: any) => {
         let instance = dataGrid.current?.instance;
         let fileName = `riwayat-pesan.xlsx`;
-        let columns = [];
-        let captions = [];
+        let columns: any[] = [];
+        let captions: any[] = [];
         const visibleColums = instance.getVisibleColumns();
-        visibleColums.filter(function (val) {
+        visibleColums.filter(function (val: any) {
             if (val.dataField != null) {
                 columns.push(val.dataField);
             }
@@ -85,18 +86,7 @@ export const MessageLogPage: FC = () => {
                         caption={"Tanggal Dibuat"}
                         dataType={"date"}
                         format={"dd MMM yyyy HH:mm:ss"}
-                        calculateFilterExpression={function (
-                            value: any,
-                            selectedFilterOperations: any,
-                            target: any
-                        ) {
-                            const column = this as any;
-                            return column.defaultCalculateFilterExpression.apply(this, [
-                                new Date(value),
-                                selectedFilterOperations,
-                                target,
-                            ]);
-                        }}
+                        calculateFilterExpression={calculateFilterExpressionCustom}
                         filterOperations={filterOperation.date}
                     />
                     <Column
@@ -104,18 +94,7 @@ export const MessageLogPage: FC = () => {
                         caption={"Tanggal Diubah"}
                         dataType={"date"}
                         format={"dd MMM yyyy HH:mm:ss"}
-                        calculateFilterExpression={function (
-                            value: any,
-                            selectedFilterOperations: any,
-                            target: any
-                        ) {
-                            const column = this as any;
-                            return column.defaultCalculateFilterExpression.apply(this, [
-                                new Date(value),
-                                selectedFilterOperations,
-                                target,
-                            ]);
-                        }}
+                        calculateFilterExpression={calculateFilterExpressionCustom}
                         filterOperations={filterOperation.date}
                     />
                     <Column

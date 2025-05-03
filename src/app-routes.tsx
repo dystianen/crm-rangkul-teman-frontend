@@ -31,7 +31,7 @@ import {
   Step2Page,
   TransactionDetailPage,
   TransactionPage,
-  UploadSignedPage
+  UploadSignedPage, UserListPage, CreateUserPage, DetailUserPage, UpdateUserPage
 } from "./pages";
 import ContactActivities from "./pages/contact-activities";
 import CreateEditContactLeads from "./pages/contact/CreateEditContactLeads";
@@ -246,6 +246,30 @@ const routes = [
     path: "/restructure/create",
     title: "Create Restruktur",
     element: RestructureCreatePage
+  },
+  {
+    ID: 32,
+    path: "/backoffice/user",
+    title: "Pengguna",
+    element: UserListPage
+  },
+  {
+    ID: 33,
+    path: "/backoffice/user/create",
+    title: "Buat Pengguna",
+    element: CreateUserPage
+  },
+  {
+    ID: 34,
+    path: "/backoffice/user/update",
+    title: "Ubah Pengguna",
+    element: UpdateUserPage
+  },
+  {
+    ID: 35,
+    path: "/backoffice/user/detail",
+    title: "Detil Pengguna",
+    element: DetailUserPage
   }
 ];
 
