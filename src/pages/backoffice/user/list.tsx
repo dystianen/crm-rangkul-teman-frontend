@@ -5,8 +5,13 @@ import {Button} from "devextreme-react/button";
 import ReactDOM from "react-dom/client";
 import {OnClickLink} from "../../../components/alink";
 import {filterOperation} from "../../../constants/FilterOperation";
-import {listUserStore} from "../../../api/user.api";
-import {calculateFilterExpressionCustom} from "../../../utils/devExtremeUtils";
+import {disableUser, enableUser, listUserStore, resetPasswordUser} from "../../../api/user.api";
+import {
+  calculateFilterExpressionCustom,
+  confirmNotify,
+  notifyError,
+  notifySuccess
+} from "../../../utils/devExtremeUtils";
 
 
 export const UserListPage: FC = () => {
@@ -24,10 +29,13 @@ export const UserListPage: FC = () => {
             focusedRowEnabled={true}
             remoteOperations={true}
             columnAutoWidth={true}
-            wordWrapEnabled={false}
+            wordWrapEnabled={true}
             showBorders={true}
             dateSerializationFormat={"yyyy-MM-ddTHH:mm:ss.SSSxxx"}
             repaintChangesOnly={true}
+            editing={{
+              allowDeleting: true
+            }}
         >
           <Toolbar>
             <Item location="after">
@@ -41,6 +49,87 @@ export const UserListPage: FC = () => {
           </Toolbar>
           <Scrolling showScrollbar={"always"} />
           <FilterRow visible={true} />
+          
+          <Column
+              caption={"Action"}
+              type={"buttons"}
+              alignment={"center"}
+              buttons={[
+                {
+                  hint: "Reset Password",
+                  icon: "lock",
+                  name: "resetPassword",
+                  onClick: function (e: any) {
+                    const key = e.row.data.id;
+                    confirmNotify(
+                        `Apakah yakin reset password user ini #${e.row.data.seqId} ??`
+                    ).then((result) => {
+                      if (result) {
+                        resetPasswordUser(key)
+                        .then((resp: boolean) => {
+                          notifySuccess("sukses reset password user");
+                          e.component.refresh(true).done(function () {
+                            e.component.cancelEditData();
+                          });
+                        })
+                        .catch((e) => notifyError(e.message));
+                      }
+                    });
+                    
+                    e.event.preventDefault();
+                  }
+                },
+                {
+                  hint: "Enable User",
+                  icon: "check",
+                  name: "enable",
+                  
+                  onClick: function (e: any) {
+                    const key = e.row.data.id;
+                    confirmNotify(
+                        `Apakah yakin mengaktifkan user ini #${e.row.data.seqId} ??`
+                    ).then((result) => {
+                      if (result) {
+                        enableUser(key)
+                        .then((resp: boolean) => {
+                          notifySuccess("sukses disable user");
+                          e.component.refresh(true).done(function () {
+                            e.component.cancelEditData();
+                          });
+                        })
+                        .catch((e) => notifyError(e.message));
+                      }
+                    });
+                    
+                    e.event.preventDefault();
+                  }
+                },
+                {
+                  hint: "Disable User",
+                  icon: "close",
+                  name: "disable",
+                  onClick: function (e: any) {
+                    const key = e.row.data.id;
+                    confirmNotify(
+                        `Apakah yakin disable user ini #${e.row.data.seqId} ??`
+                    ).then((result) => {
+                      if (result) {
+                        disableUser(key)
+                        .then((resp: boolean) => {
+                          notifySuccess("sukses disable user");
+                          e.component.refresh(true).done(function () {
+                            e.component.cancelEditData();
+                          });
+                        })
+                        .catch((e) => notifyError(e.message));
+                      }
+                    });
+                    
+                    e.event.preventDefault();
+                  }
+                }
+              ]}
+          ></Column>
           <Column
               alignment={"center"}
               dataField={"seqId"}
@@ -62,12 +151,9 @@ export const UserListPage: FC = () => {
           />
           
           <Column
-              dataField="createdOn"
-              caption="Tanggal Dibuat"
-              dataType="date"
-              format="dd MMM yyyy HH:mm:ss"
-              calculateFilterExpression={calculateFilterExpressionCustom}
-              filterOperations={filterOperation.date}
+              dataField={"modifiedByName"}
+              caption={"Diubah oleh"}
+              filterOperations={filterOperation.string}
           />
           
           <Column
@@ -117,11 +203,6 @@ export const UserListPage: FC = () => {
               format="dd MMM yyyy HH:mm:ss"
               calculateFilterExpression={calculateFilterExpressionCustom}
               filterOperations={filterOperation.date}
-          />
-          <Column
-              dataField={"modifiedByName"}
-              caption={"Diubah oleh"}
-              filterOperations={filterOperation.string}
           />
           <Paging defaultPageSize={50} />
           <Pager showPageSizeSelector={true} showInfo={true} allowedPageSizes={[10, 50, 100]} />
