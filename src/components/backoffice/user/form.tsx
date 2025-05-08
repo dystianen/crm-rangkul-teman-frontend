@@ -134,7 +134,7 @@ export default function UserForm({formRef, readonly, id, submit, loading}: {
 			
 			<SimpleItem
 				dataField="schemes"
-				label={{text: "Scheme"}}
+				label={{text: "Branches"}}
 				isRequired={true}
 				render={({component, dataField}) => (
 					<MultiSelect
@@ -142,7 +142,7 @@ export default function UserForm({formRef, readonly, id, submit, loading}: {
 						dataSource={schemeStore}
 						component={component}
 						fieldName={dataField}
-						placeholder={"Select Scheme"}
+						placeholder={"Select Branches"}
 					/>
 				)}
 			>

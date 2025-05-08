@@ -1,4 +1,4 @@
-import React, {FC, useRef} from "react";
+import React, {FC, useRef, useState} from "react";
 import {useNavigate} from "react-router";
 import DataGrid, {Column, FilterRow, Item, Pager, Paging, Scrolling, Toolbar} from "devextreme-react/data-grid";
 import {Button} from "devextreme-react/button";
@@ -12,11 +12,20 @@ import {
   notifyError,
   notifySuccess
 } from "../../../utils/devExtremeUtils";
+import UserPopup from "../../../components/backoffice/user/popup";
 
 
 export const UserListPage: FC = () => {
   const navigate = useNavigate();
-  
+
+  const [notifyPopup, setNotifyPopup] = useState({
+    title: "Sukses menambahkan user",
+    message: "Telah berhasil dibuat user baru",
+    username: "",
+    password: "",
+    visible: false
+  });
+
   const dataGrid: any = useRef();
   
   return <>
@@ -70,16 +79,15 @@ export const UserListPage: FC = () => {
           />
           
           <Column
+              width={100}
               dataField={"createdOn"}
               caption={"Tanggal Dibuat"}
               dataType={"date"}
               format={"dd MMM yyyy HH:mm:ss"}
               calculateFilterExpression={calculateFilterExpressionCustom}
               filterOperations={filterOperation.date}
-              width={100}
           />
           <Column
-              width={100}
               dataField={"modifiedByName"}
               caption={"Diubah oleh"}
               filterOperations={filterOperation.string}
@@ -97,29 +105,38 @@ export const UserListPage: FC = () => {
           <Column
               dataField={"name"}
               caption={"Username"}
-              width={160}
               filterOperations={filterOperation.string}
           />
           <Column
               dataField={"contactName"}
               caption={"Name"}
-              width={160}
               filterOperations={filterOperation.string}
           />
           <Column
-              width={150}
               dataField={"contactPhoneNumber"}
               caption={"No. HP"}
               filterOperations={filterOperation.string}
           />
           <Column
-              width={130}
               dataField={"contactEmail"}
               caption={"Email"}
               filterOperations={filterOperation.string}
           />
           <Column
-              width={100}
+              dataField={"listRoleName"}
+              caption={"Role"}
+              encodeHtml={false}
+              cssClass="pre-line"
+              filterOperations={filterOperation.string}
+          />
+          <Column
+              dataField={"listBranchName"}
+              caption={"Branch"}
+              encodeHtml={false}
+              cssClass="pre-line"
+              filterOperations={filterOperation.string}
+          />
+          <Column
               dataField={"isActive"}
               caption={"Active"}
               filterOperations={filterOperation.boolean}
@@ -155,8 +172,16 @@ export const UserListPage: FC = () => {
                     ).then((result) => {
                       if (result) {
                         resetPasswordUser(key)
-                        .then((resp: boolean) => {
-                          notifySuccess("Reset password berhasil");
+                        .then((rs: any) => {
+                          setNotifyPopup((prevState) => ({
+                            ...prevState,
+                            title: "Reset password berhasil",
+                            message: "Password user telah direset",
+                            username: rs.username,
+                            password: rs.password,
+                            visible: true
+                          }));
+
                           e.component.refresh(true).done(function () {
                             e.component.cancelEditData();
                           });
@@ -180,8 +205,16 @@ export const UserListPage: FC = () => {
                     ).then((result) => {
                       if (result) {
                         enableUser(key)
-                        .then((resp: boolean) => {
-                          notifySuccess("User sudah diaktifkan");
+                        .then((rs: any) => {
+                          setNotifyPopup((prevState) => ({
+                            ...prevState,
+                            title: "User Aktif",
+                            message: "User berhasil diaktifkan",
+                            username: rs.username,
+                            password: rs.password,
+                            visible: true
+                          }));
+
                           e.component.refresh(true).done(function () {
                             e.component.cancelEditData();
                           });
@@ -224,6 +257,20 @@ export const UserListPage: FC = () => {
           <Pager showPageSizeSelector={true} showInfo={true} allowedPageSizes={[10, 50, 100]} />
         </DataGrid>
       </div>
+
+      <UserPopup
+          title={notifyPopup.title}
+          message={notifyPopup.message}
+          username={notifyPopup.username}
+          password={notifyPopup.password}
+          show={notifyPopup.visible}
+          handleConfirm={() => {
+            setNotifyPopup((prevState) => ({
+              ...prevState,
+              visible: false
+            }));
+          }}
+      />
     </div>
   </>
 }
