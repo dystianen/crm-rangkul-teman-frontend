@@ -6,10 +6,10 @@ import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { bankCheckValid, getListBank } from "src/api/apploan";
 import { selectBoxOptions } from "src/api/contact";
-import { listProductDepositTerm } from "src/api/saving_deposit";
+import { listProductDepositTerm, submitSavingDeposit } from "src/api/saving_deposit";
 import { TReqSavingSubmit } from "src/api/types/ISavingDeposit";
 import { initSavingForm } from "src/interfaces/ISavingDeposit";
-import { notifyWarning } from "src/utils/devExtremeUtils";
+import { notifyError, notifyWarning } from "src/utils/devExtremeUtils";
 
 const FormSavingDeposit = () => {
   const navigate = useNavigate();
@@ -73,20 +73,17 @@ const FormSavingDeposit = () => {
   };
 
   const handleSubmit = () => {
-    // setIsLoadingSubmit(true);
-
-    console.log({ formData });
-
-    //   submitSavingDeposit(formData)
-    //     .then((res) => {
-    //       console.log({ res });
-    //     })
-    //     .catch((err) => {
-    //       notifyError(err);
-    //     })
-    //     .finally(() => {
-    //       setIsLoadingSubmit(false);
-    //     });
+    setIsLoadingSubmit(true);
+    submitSavingDeposit(formData)
+      .then((res) => {
+        console.log({ res });
+      })
+      .catch((err) => {
+        notifyError(err);
+      })
+      .finally(() => {
+        setIsLoadingSubmit(false);
+      });
   };
 
   const RadioGroupCell = React.memo(({ data }: { data: any }) => (

@@ -61,13 +61,13 @@ export default function SavingDeposit() {
   };
 
   const onFieldDataChanged = (evt: any) => {
+    const { dataField, value } = evt;
     // @ts-expect-error
-    loanAppOnboarding[evt.dataField] = evt.value;
+    savingApp[dataField] = value;
   };
 
   const onFormSubmit = (e: any) => {
     const form = formRef.current!.instance;
-
     createSavingDeposit(savingApp).then(
       (res) => {
         hide();
@@ -297,7 +297,7 @@ export default function SavingDeposit() {
             id="form"
             showColonAfterLabel={true}
             showValidationSummary={true}
-            validationGroup="OnboardingApplicationData"
+            validationGroup="savingDepositData"
             onFieldDataChanged={onFieldDataChanged}
           >
             <SimpleItem
@@ -309,7 +309,7 @@ export default function SavingDeposit() {
               <RequiredRule message="Product is required" />
             </SimpleItem>
             <SimpleItem
-              dataField="contactIdentity"
+              dataField="ktp"
               label={{ text: "Nomor KTP" }}
               editorOptions={{
                 min: 16,
