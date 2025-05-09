@@ -11,7 +11,7 @@ export const initSavingForm = {
   bankAccountNumber: "",
   bankAccountIsVerified: false,
   bankAccountVerificationId: "",
-  isDeductSaving: null,
-  isWithdrawOnDue: null,
-  isRenewOnDue: null
+  isDeductSaving: false,
+  isWithdrawOnDue: false,
+  isRenewOnDue: false
 };

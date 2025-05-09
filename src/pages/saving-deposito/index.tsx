@@ -7,7 +7,7 @@ import "devextreme/data/odata/store";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import ReactDOM from "react-dom/client";
 import { useNavigate } from "react-router";
-import { appCancel, checkAccess, detailAppStep } from "src/api/apploan";
+import { appCancel, checkAccess } from "src/api/apploan";
 import { selectBoxOptions, validateIdNumber } from "src/api/contact";
 import {
   createSavingDeposit,
@@ -148,31 +148,6 @@ export default function SavingDeposit() {
             <Scrolling showScrollbar={"always"} />
             <FilterRow visible={true} />
             <Column
-              alignment={"center"}
-              dataField={"seqId"}
-              caption={"#No"}
-              width={90}
-              filterOperations={filterOperation.numeric}
-              cellRender={({ row }) => (
-                <OnClickLink
-                  onClick={() => {
-                    detailAppStep(row.data.id).then((res) => {
-                      const { showPopup, message, url } = res;
-                      if (showPopup) {
-                        setShowPopupMessage(true);
-                        setPopupMessage(message);
-                        setUrl(url);
-                      } else {
-                        navigate(url);
-                      }
-                    });
-                  }}
-                >
-                  {row.data.seqId}
-                </OnClickLink>
-              )}
-            />
-            <Column
               dataField={"createdOn"}
               caption={"Tanggal Dibuat"}
               dataType={"date"}
@@ -189,7 +164,7 @@ export default function SavingDeposit() {
               filterOperations={filterOperation.date}
             />
             <Column
-              dataField={"productName"}
+              dataField={"product"}
               caption={"Produk"}
               filterOperations={filterOperation.string}
             />
@@ -200,19 +175,19 @@ export default function SavingDeposit() {
               format="Rp #,##0.00"
             />
             <Column
-              dataField={"statusName"}
+              dataField={"status"}
               caption={"Status"}
               filterOperations={filterOperation.string}
               cellRender={ApplicationStatus}
             />
             <Column
-              dataField={"termNameRequested"}
+              dataField={"term"}
               caption={"Jangka Waktu"}
               filterOperations={filterOperation.string}
             />
             <Column
               alignment={"center"}
-              dataField={"contactIdSeq"}
+              dataField={"contactSeqId"}
               caption={"#No.Kontak"}
               cellTemplate={function (container: any, options: any) {
                 const dom = ReactDOM.createRoot(container);
@@ -220,7 +195,7 @@ export default function SavingDeposit() {
                   <OnClickLink
                     onClick={() => navigate(`/contact/detail?id=${options.data.contactId}`)}
                   >
-                    {options.data.contactIdSeq}
+                    {options.data.contactSeqId}
                   </OnClickLink>
                 );
               }}
@@ -232,7 +207,7 @@ export default function SavingDeposit() {
               filterOperations={filterOperation.string}
             />
             <Column
-              dataField={"contactIdNumber"}
+              dataField={"idCardNumber"}
               caption={"No. KTP"}
               filterOperations={filterOperation.string}
             />
@@ -242,13 +217,13 @@ export default function SavingDeposit() {
               filterOperations={filterOperation.string}
             />
             <Column
-              dataField={"bankName"}
+              dataField={"destBankName"}
               caption={"Bank"}
               alignment={"left"}
               filterOperations={filterOperation.string}
             />
             <Column
-              dataField={"bankAccountNo"}
+              dataField={"destBankAccountNumber"}
               caption={"Bank Account Number"}
               alignment={"left"}
               filterOperations={filterOperation.string}

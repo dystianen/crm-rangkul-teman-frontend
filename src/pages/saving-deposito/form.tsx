@@ -148,8 +148,8 @@ const FormSavingDeposit = () => {
       id: ID
     };
     submitSavingDeposit(payload)
-      .then((res) => {
-        console.log({ res });
+      .then(() => {
+        navigate("/saving/deposito");
       })
       .catch((err) => {
         notifyError(err);
@@ -200,7 +200,7 @@ const FormSavingDeposit = () => {
           onFieldDataChanged={onFieldDataChanged}
           labelLocation="left"
         >
-          <GroupItem caption={"Simpanan Berjangka"}>
+          <GroupItem caption={"Buat Simpanan Berjangka"}>
             <GroupItem colCount={1}>
               <SimpleItem
                 dataField="amount"

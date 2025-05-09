@@ -25,6 +25,6 @@ export const createSavingDeposit = async (
 };
 
 export const submitSavingDeposit = async (payload: TReqSavingSubmit): Promise<TResSavingSubmit> => {
-  const resp = await ajaxPost(`${API_PATH.SAVING_DEPOSIT}/app/create`, payload);
+  const resp = await ajaxPost(`${API_PATH.SAVING_DEPOSIT}/app/submit`, payload);
   return resp.data;
 };
