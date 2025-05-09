@@ -7,6 +7,10 @@ export const schemeStore = dataRawCustomStore(`${API_PATH.DATA_MASTER}/branch/sc
 export const roleStore = dataRawCustomStore(`${API_PATH.DATA_MASTER}/sys/role/list?`);
 
 export const listUserStore = customStore({loadUrl: API_PATH.USER});
+export const sendWhatApp = async (data: any): Promise<any> => {
+  const resp = await ajaxPost(`${API_PATH.USER}/sendWhatApp`, data);
+  return resp.data;
+};
 export const createUser = async (data: any): Promise<any> => {
   const resp = await ajaxPost(`${API_PATH.USER}/create`, data);
   return resp.data;
