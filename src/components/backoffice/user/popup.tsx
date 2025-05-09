@@ -79,7 +79,7 @@ const UserPopup = ({title, message, username, password, show, handleConfirm}: {
                     </SimpleItem>
                 </Form>
             </div>
-            <Button text="Oke" type="normal" onClick={handleConfirm}/>
+            <Button text="OK" type="normal" onClick={handleConfirm}/>
         </Popup>
 
     </>
