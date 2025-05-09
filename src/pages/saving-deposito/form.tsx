@@ -6,10 +6,11 @@ import queryString from "query-string";
 import React, { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import SockJS from "sockjs-client";
-import { bankCheckValid, getListBank } from "src/api/apploan";
+import { bankCheckValid, checkAccess, getListBank } from "src/api/apploan";
 import { selectBoxOptions } from "src/api/contact";
 import { listProductDepositTerm, submitSavingDeposit } from "src/api/saving_deposit";
 import { TReqSavingSubmit } from "src/api/types/ISavingDeposit";
+import { backofficeAccess } from "src/constants/variableConstata";
 import { initSavingForm } from "src/interfaces/ISavingDeposit";
 import { notifyError, notifySuccess, notifyWarning } from "src/utils/devExtremeUtils";
 
@@ -32,6 +33,12 @@ const FormSavingDeposit = () => {
   );
 
   const stompClientRef = useRef<any>(null);
+
+  useEffect(() => {
+    checkAccess(backofficeAccess.backoffice_application_saving).then((res) => {
+      if (!res) navigate("/saving/deposito")
+    });
+  }, [navigate]);
 
   useEffect(() => {
     var socket = new SockJS(`${process.env.REACT_APP_BACKEND}api/bankAccountLive`);
@@ -213,7 +220,7 @@ const FormSavingDeposit = () => {
               <SimpleItem
                 dataField="termMonth"
                 editorType="dxSelectBox"
-                editorOptions={{ ...depositTermOptions, disabled: isDableBankIdBankAccNumber }}
+                editorOptions={depositTermOptions}
                 label={{ text: "Jangka Waktu" }}
               />
             </GroupItem>

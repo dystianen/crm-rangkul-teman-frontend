@@ -4,7 +4,7 @@ import { Popup } from "devextreme-react/popup";
 import { AsyncRule, RequiredRule, StringLengthRule } from "devextreme-react/validator";
 import DataSource from "devextreme/data/data_source";
 import "devextreme/data/odata/store";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import ReactDOM from "react-dom/client";
 import { useNavigate } from "react-router";
 import { appCancel, checkAccess } from "src/api/apploan";
@@ -15,7 +15,6 @@ import {
   listProductDepositStore
 } from "src/api/saving_deposit";
 import { TReqSavingAppCreate } from "src/api/types/ISavingDeposit";
-import PopupMessage from "src/components/popup-message";
 import { initSavingValues } from "src/interfaces/ISavingDeposit";
 import { allowOnlyNumbers } from "src/utils/helpers";
 import { OnClickLink } from "../../components/alink";
@@ -37,14 +36,11 @@ export default function SavingDeposit() {
   const dataGrid = useRef<DataGrid>(null);
   const [popupVisible, setPopupVisible] = React.useState(false);
   const [savingApp, setSavingApp] = useState<TReqSavingAppCreate>(initSavingValues);
-  const [isPengajuanVisible, setPengajuanVisible] = useState<boolean>(false);
-  const [isShowPopupMessage, setShowPopupMessage] = useState(false);
-  const [popupMessage, setPopupMessage] = useState("");
-  const [url, setUrl] = useState("");
+  const [isCreateSimpananVisible, setCreateSimpananVisible] = useState<boolean>(false);
 
   useEffect(() => {
-    checkAccess(backofficeAccess.backoffice_master_contact_write).then((res) => {
-      setPengajuanVisible(res);
+    checkAccess(backofficeAccess.backoffice_application_saving).then((res) => {
+      setCreateSimpananVisible(res);
     });
   }, []);
 
@@ -100,7 +96,7 @@ export default function SavingDeposit() {
 
   const onToolbarPreparing = (e: any) => {
     const items = e.toolbarOptions.items;
-    if (isPengajuanVisible) {
+    if (isCreateSimpananVisible) {
       items.push({
         location: "after",
         widget: "dxButton",
@@ -113,10 +109,6 @@ export default function SavingDeposit() {
       });
     }
   };
-
-  const handleConfirmPopupMessage = useCallback(() => {
-    navigate(url);
-  }, [navigate, url]);
 
   return (
     <React.Fragment>
@@ -319,12 +311,6 @@ export default function SavingDeposit() {
           </Form>
         </form>
       </Popup>
-
-      <PopupMessage
-        visible={isShowPopupMessage}
-        message={popupMessage}
-        handleConfirm={handleConfirmPopupMessage}
-      />
     </React.Fragment>
   );
 }

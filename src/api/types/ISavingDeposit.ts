@@ -17,9 +17,9 @@ export type TReqSavingSubmit = {
   bankAccountNumber: string;
   bankAccountIsVerified: boolean;
   bankAccountVerificationId: string;
-  isDeductSaving: boolean;
-  isWithdrawOnDue: boolean;
-  isRenewOnDue: boolean;
+  isDeductSaving: boolean | null;
+  isWithdrawOnDue: boolean | null;
+  isRenewOnDue: boolean | null;
 };
 
 export type TResSavingSubmit = {
