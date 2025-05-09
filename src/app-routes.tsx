@@ -285,13 +285,13 @@ const routes = [
   },
   {
     ID: 37,
-    path: "/saving/deposito/create",
+    path: "/saving/deposit/create",
     title: "Saving Deposito",
     element: FormSavingDeposit
   },
   {
     ID: 38,
-    path: "/saving/deposito/edit",
+    path: "/saving/deposit/edit",
     title: "Saving Deposito",
     element: FormSavingDeposit
   },

@@ -9,7 +9,7 @@ import {
   TResSavingSubmit
 } from "./types/ISavingDeposit";
 
-export const listStore = customStore({ loadUrl: API_PATH.SAVING_DEPOSIT });
+export const listProductDepositStore = customStore({ loadUrl: `${API_PATH.SAVING_DEPOSIT}/app` });
 
 export const listProductDeposit = dataRawCustomStore(`${API_PATH.SAVING_DEPOSIT}/product/deposit?`);
 

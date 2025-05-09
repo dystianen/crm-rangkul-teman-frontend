@@ -1,15 +1,17 @@
+import { Client } from "@stomp/stompjs";
 import { LoadIndicator, RadioGroup } from "devextreme-react";
 import Form, { ButtonItem, ButtonOptions, GroupItem, SimpleItem } from "devextreme-react/form";
 import DataSource from "devextreme/data/data_source";
 import queryString from "query-string";
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import SockJS from "sockjs-client";
 import { bankCheckValid, getListBank } from "src/api/apploan";
 import { selectBoxOptions } from "src/api/contact";
 import { listProductDepositTerm, submitSavingDeposit } from "src/api/saving_deposit";
 import { TReqSavingSubmit } from "src/api/types/ISavingDeposit";
 import { initSavingForm } from "src/interfaces/ISavingDeposit";
-import { notifyError, notifyWarning } from "src/utils/devExtremeUtils";
+import { notifyError, notifySuccess, notifyWarning } from "src/utils/devExtremeUtils";
 
 const FormSavingDeposit = () => {
   const navigate = useNavigate();
@@ -20,12 +22,79 @@ const FormSavingDeposit = () => {
   const [formData, setFormData] = useState<TReqSavingSubmit>(initSavingForm);
   const [isLoadingSubmit, setIsLoadingSubmit] = useState(false);
   const [isDableBankIdBankAccNumber, setDisableBankIdBankAccNumber] = useState(false);
+  const [isDisableButtonSubmit, setDisableButtonSubmit] = useState<boolean>(true);
+  const [waitingToReconnect, setWaitingToReconnect] = useState<boolean>(false);
 
   const listBank = selectBoxOptions(new DataSource(getListBank), "Pilih bank");
   const depositTermOptions = selectBoxOptions(
     new DataSource(listProductDepositTerm),
     "Select product deposit term"
   );
+
+  const stompClientRef = useRef<any>(null);
+
+  useEffect(() => {
+    var socket = new SockJS(`${process.env.REACT_APP_BACKEND}api/bankAccountLive`);
+    const stompClient = new Client({
+      webSocketFactory: () => socket,
+      reconnectDelay: 5000,
+      debug: (str) => {
+        console.log(str);
+      },
+      onDisconnect: () => {
+        if (waitingToReconnect) {
+          return;
+        }
+        setWaitingToReconnect(true);
+      },
+      onConnect: () => {
+        console.log("Connected to WebSocket");
+        stompClient.subscribe("/api/bankAccountResult", (response) => {
+          console.log("Received message:", response.body);
+          const res = JSON.parse(response.body);
+          if (res.appId === id) {
+            if (res.isWaiting) {
+              setDisableBankIdBankAccNumber(true);
+            } else {
+              setDisableBankIdBankAccNumber(false);
+
+              if (res.success) {
+                setFormData((prev) => ({
+                  ...prev,
+                  bankAccountIsVerified: res.success,
+                  bankAccountVerificationId: res.bankAccountHistoryId
+                }));
+
+                if (res?.error) {
+                  notifyWarning(res.message);
+                } else {
+                  notifySuccess(res.message);
+                }
+                setDisableButtonSubmit(false);
+              } else {
+                notifyError(res.message);
+                setDisableButtonSubmit(true);
+              }
+            }
+          }
+        });
+      },
+      onStompError: (frame) => {
+        console.error("Broker reported error: " + frame.headers["message"]);
+        console.error("Additional details: " + frame.body);
+      }
+    });
+
+    stompClient.activate();
+    stompClientRef.current = stompClient;
+
+    return () => {
+      // Dereference, so it will set up next time
+      console.log("Cleanup");
+      stompClientRef.current = null;
+      stompClient.deactivate();
+    };
+  }, [id, waitingToReconnect]);
 
   const sendBankCheck = () => {
     const payload = {
@@ -74,7 +143,11 @@ const FormSavingDeposit = () => {
 
   const handleSubmit = () => {
     setIsLoadingSubmit(true);
-    submitSavingDeposit(formData)
+    const payload = {
+      ...formData,
+      id: ID
+    };
+    submitSavingDeposit(payload)
       .then((res) => {
         console.log({ res });
       })
@@ -86,20 +159,36 @@ const FormSavingDeposit = () => {
       });
   };
 
-  const RadioGroupCell = React.memo(({ data }: { data: any }) => (
-    <RadioGroup
-      items={[
-        { label: "Yes", value: true },
-        { label: "No", value: false }
-      ]}
-      // value={selectedValues[data.questionId]}
-      layout="horizontal"
-      displayExpr="label"
-      valueExpr="value"
-      // readOnly={disabled || loadingStates[data.questionId]}
-      // onValueChanged={(e) => handleNeighbourRadioChange(data.questionId, e.value)}
-    />
-  ));
+  const handleRadioChange = (field: keyof TReqSavingSubmit, value: boolean) => {
+    setFormData((prev) => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const RadioGroupCell = React.memo(
+    ({
+      dataField,
+      value,
+      onChange
+    }: {
+      dataField: keyof TReqSavingSubmit;
+      value: boolean | null;
+      onChange: (field: keyof TReqSavingSubmit, value: boolean) => void;
+    }) => (
+      <RadioGroup
+        items={[
+          { label: "Ya", value: true },
+          { label: "Tidak", value: false }
+        ]}
+        value={value}
+        layout="horizontal"
+        displayExpr="label"
+        valueExpr="value"
+        onValueChanged={(e) => onChange(dataField, e.value)}
+      />
+    )
+  );
 
   return (
     <div className={"content-block"}>
@@ -174,21 +263,38 @@ const FormSavingDeposit = () => {
 
               <SimpleItem
                 dataField="isDeductSaving"
-                editorType="dxSelectBox"
                 label={{ text: "Ambil dari simpanan" }}
-                render={() => <RadioGroupCell data={[]} />}
+                render={() => (
+                  <RadioGroupCell
+                    dataField="isDeductSaving"
+                    value={formData.isDeductSaving}
+                    onChange={handleRadioChange}
+                  />
+                )}
               />
               <SimpleItem
                 dataField="isWithdrawOnDue"
                 editorType="dxSelectBox"
                 label={{ text: "Penarikan saat jatuh tempo" }}
-                render={() => <RadioGroupCell data={[]} />}
+                render={() => (
+                  <RadioGroupCell
+                    dataField="isWithdrawOnDue"
+                    value={formData.isWithdrawOnDue}
+                    onChange={handleRadioChange}
+                  />
+                )}
               />
               <SimpleItem
                 dataField="isRenewOnDue"
                 editorType="dxSelectBox"
                 label={{ text: "Perbarui saat jatuh tempo" }}
-                render={() => <RadioGroupCell data={[]} />}
+                render={() => (
+                  <RadioGroupCell
+                    dataField="isRenewOnDue"
+                    value={formData.isRenewOnDue}
+                    onChange={handleRadioChange}
+                  />
+                )}
               />
             </GroupItem>
           </GroupItem>
@@ -203,7 +309,7 @@ const FormSavingDeposit = () => {
               <ButtonOptions
                 type="default"
                 width={"100%"}
-                disabled={isLoadingSubmit}
+                disabled={isDisableButtonSubmit}
                 onClick={handleSubmit}
               >
                 <div className="button-options">

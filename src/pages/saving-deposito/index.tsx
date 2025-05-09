@@ -2,22 +2,25 @@ import DataGrid, { Column, FilterRow, Pager, Paging, Scrolling } from "devextrem
 import Form, { ButtonItem, PatternRule, SimpleItem } from "devextreme-react/form";
 import { Popup } from "devextreme-react/popup";
 import { AsyncRule, RequiredRule, StringLengthRule } from "devextreme-react/validator";
+import DataSource from "devextreme/data/data_source";
 import "devextreme/data/odata/store";
 import React, { useCallback, useEffect, useRef, useState } from "react";
+import ReactDOM from "react-dom/client";
 import { useNavigate } from "react-router";
 import { appCancel, checkAccess, detailAppStep } from "src/api/apploan";
 import { selectBoxOptions, validateIdNumber } from "src/api/contact";
-import { filterOperation } from "../../constants/FilterOperation";
-
-import DataSource from "devextreme/data/data_source";
-import ReactDOM from "react-dom/client";
-import { createSavingDeposit, listProductDeposit } from "src/api/saving_deposit";
+import {
+  createSavingDeposit,
+  listProductDeposit,
+  listProductDepositStore
+} from "src/api/saving_deposit";
 import { TReqSavingAppCreate } from "src/api/types/ISavingDeposit";
 import PopupMessage from "src/components/popup-message";
 import { initSavingValues } from "src/interfaces/ISavingDeposit";
 import { allowOnlyNumbers } from "src/utils/helpers";
 import { OnClickLink } from "../../components/alink";
 import { ApplicationStatus } from "../../components/application-status";
+import { filterOperation } from "../../constants/FilterOperation";
 import { backofficeAccess } from "../../constants/variableConstata";
 import { useAuth } from "../../contexts/auth";
 import {
@@ -76,7 +79,12 @@ export default function SavingDeposit() {
         navigate(`/saving/deposit/create?id=${res.id}`);
       },
       (error) => {
-        notifyError(error);
+        const { status } = error.options;
+        if (status === "20101") {
+          navigate(`/contact/leads/create?ktp=${savingApp.ktp}`);
+        } else {
+          notifyError(error);
+        }
       }
     );
     e.preventDefault();
@@ -112,12 +120,12 @@ export default function SavingDeposit() {
 
   return (
     <React.Fragment>
-      <h2 className={"content-block"}>Pengajuan</h2>
+      <h2 className={"content-block"}>Simpanan Berjangka</h2>
       <div className={"content-block"}>
         <div className={"dx-card"}>
           <DataGrid
             ref={dataGrid}
-            dataSource={{}}
+            dataSource={listProductDepositStore}
             focusedRowEnabled={true}
             remoteOperations={true}
             columnAutoWidth={true}
