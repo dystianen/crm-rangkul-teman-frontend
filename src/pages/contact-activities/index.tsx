@@ -1,10 +1,9 @@
 import "devextreme-react/file-uploader";
 import Tabs, { Item } from "devextreme-react/tabs";
 import "devextreme-react/text-area";
-import DataSource from "devextreme/data/data_source";
 import "devextreme/data/odata/store";
 import { useEffect, useState } from "react";
-import { activityByCategoryStore, fetchActivityCategory } from "src/api/contact";
+import { fetchActivityCategory } from "src/api/contact";
 import TableCollection from "./TableContactActivities/TableCollection";
 import TableSales from "./TableContactActivities/TableSales";
 import TableVerification from "./TableContactActivities/TableVerification";
@@ -16,15 +15,11 @@ type TOptions = {
 
 const ContactActivities = () => {
   const [activityCategory, setActivityCategory] = useState<TOptions>([]);
-  const [selectedCategory, setSelectedCategory] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState<string|undefined>(undefined);
 
   const isCollection = selectedCategory === "8aa1778c-9b63-45d3-905a-a724137c81b0";
   const isSales = selectedCategory === "e293bd9a-b321-432a-91e2-86fd8e7d65ac";
   const isVerification = selectedCategory === "a9291c97-0684-44eb-9c73-5ed2f154936f";
-
-  const activityByCategorySource = selectedCategory
-    ? new DataSource(activityByCategoryStore(selectedCategory))
-    : null;
 
   useEffect(() => {
     fetchActivityCategory().then((res) => {
@@ -49,11 +44,11 @@ const ContactActivities = () => {
             </Item>
           ))}
         </Tabs>
-        {activityByCategorySource && (
+        {selectedCategory && (
           <>
-            {isCollection && <TableCollection dataSource={activityByCategorySource} />}
-            {isSales && <TableSales dataSource={activityByCategorySource} />}
-            {isVerification && <TableVerification dataSource={activityByCategorySource} />}
+            {isCollection && <TableCollection categoryId={selectedCategory} />}
+            {isSales && <TableSales categoryId={selectedCategory} />}
+            {isVerification && <TableVerification categoryId={selectedCategory} />}
           </>
         )}
       </div>
