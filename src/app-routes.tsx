@@ -12,7 +12,9 @@ import {
   ContactPage,
   ContractDetailPage,
   ContractPage,
+  CreateUserPage,
   DetailPage,
+  DetailUserPage,
   DisburseDetailPage,
   DisbursePage,
   HomePage,
@@ -31,10 +33,14 @@ import {
   Step2Page,
   TransactionDetailPage,
   TransactionPage,
-  UploadSignedPage, UserListPage, CreateUserPage, DetailUserPage, UpdateUserPage
+  UpdateUserPage,
+  UploadSignedPage,
+  UserListPage
 } from "./pages";
 import ContactActivities from "./pages/contact-activities";
 import CreateEditContactLeads from "./pages/contact/CreateEditContactLeads";
+import SavingDeposit from "./pages/saving-deposito";
+import FormSavingDeposit from "./pages/saving-deposito/form";
 
 const routes = [
   {
@@ -270,6 +276,18 @@ const routes = [
     path: "/backoffice/user/detail",
     title: "Detil Pengguna",
     element: DetailUserPage
+  },
+  {
+    ID: 36,
+    path: "/saving/deposito",
+    title: "Saving Deposito",
+    element: SavingDeposit
+  },
+  {
+    ID: 37,
+    path: "/saving/deposit/create",
+    title: "Saving Deposito",
+    element: FormSavingDeposit
   }
 ];
 
