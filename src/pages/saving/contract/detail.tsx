@@ -1,9 +1,12 @@
 import Form, { GroupItem, SimpleItem } from "devextreme-react/form";
 import "devextreme/data/odata/store";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { OnClickLink } from "src/components/alink";
 import TableCashflow from "src/components/saving/TableCashflow";
 
 const SavingContractDetail = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState();
 
   return (
@@ -15,11 +18,11 @@ const SavingContractDetail = () => {
               <SimpleItem
                 dataField="id"
                 label={{ text: "ID" }}
-                editorType="dxTextBox"
                 editorOptions={{
                   readOnly: true
                 }}
               />
+
               <SimpleItem
                 dataField="startOn"
                 editorType="dxTextBox"
@@ -77,6 +80,13 @@ const SavingContractDetail = () => {
                 editorOptions={{
                   readOnly: true
                 }}
+                render={(options: any) => (
+                  <OnClickLink
+                    onClick={() => navigate(`/loan-app/detail?id=${options.data.loanId}`)}
+                  >
+                    {options.data.loanId}
+                  </OnClickLink>
+                )}
               />
             </GroupItem>
           </GroupItem>
