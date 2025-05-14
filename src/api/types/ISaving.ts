@@ -9,7 +9,7 @@ export type TResSavingAppCreate = {
   productId: string;
 };
 
-export type TReqSavingSubmit = {
+export type TReqResSavingSubmit = {
   id: string;
   amount: number;
   termMonth: number;
@@ -20,6 +20,7 @@ export type TReqSavingSubmit = {
   isDeductSaving: boolean | null;
   isWithdrawOnDue: boolean | null;
   isRenewOnDue: boolean | null;
+  isEditable?: boolean;
 };
 
 export type TResSavingSubmit = {

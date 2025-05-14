@@ -1,10 +1,10 @@
 import { customStore } from "../model/customStore";
 import { dataRawCustomStore } from "../model/datagrid";
-import { ajaxPost } from "./http.api";
+import { ajaxGet, ajaxPost } from "./http.api";
 import { API_PATH } from "./path_url";
 import {
+  TReqResSavingSubmit,
   TReqSavingAppCreate,
-  TReqSavingSubmit,
   TResSavingAppCreate,
   TResSavingSubmit
 } from "./types/ISaving";
@@ -29,8 +29,15 @@ export const createSavingApplication = async (
 };
 
 export const submitSavingApplication = async (
-  payload: TReqSavingSubmit
+  payload: TReqResSavingSubmit
 ): Promise<TResSavingSubmit> => {
   const resp = await ajaxPost(`${API_PATH.SAVING_DEPOSIT}/app/submit`, payload);
+  return resp.data;
+};
+
+export const getDetailSavingApplication = async (
+  savingId: string
+): Promise<TReqResSavingSubmit> => {
+  const resp = await ajaxGet(`${API_PATH.SAVING_DEPOSIT}/app/${savingId}`);
   return resp.data;
 };

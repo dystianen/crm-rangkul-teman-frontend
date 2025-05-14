@@ -8,8 +8,12 @@ import { useLocation, useNavigate } from "react-router-dom";
 import SockJS from "sockjs-client";
 import { bankCheckValid, checkAccess, getListBank } from "src/api/apploan";
 import { selectBoxOptions } from "src/api/contact";
-import { listProductApplicationTerm, submitSavingApplication } from "src/api/saving";
-import { TReqSavingSubmit } from "src/api/types/ISaving";
+import {
+  getDetailSavingApplication,
+  listProductApplicationTerm,
+  submitSavingApplication
+} from "src/api/saving";
+import { TReqResSavingSubmit } from "src/api/types/ISaving";
 import { backofficeAccess } from "src/constants/variableConstata";
 import { initSavingForm } from "src/interfaces/ISaving";
 import { notifyError, notifySuccess, notifyWarning } from "src/utils/devExtremeUtils";
@@ -20,11 +24,18 @@ const FormSavingApplication = () => {
   const { id } = queryString.parse(location.search);
   const ID = String(id);
 
-  const [formData, setFormData] = useState<TReqSavingSubmit>(initSavingForm);
+  const [formData, setFormData] = useState<TReqResSavingSubmit>(initSavingForm);
   const [isLoadingSubmit, setIsLoadingSubmit] = useState(false);
   const [isDableBankIdBankAccNumber, setDisableBankIdBankAccNumber] = useState(false);
   const [isDisableButtonSubmit, setDisableButtonSubmit] = useState<boolean>(true);
   const [waitingToReconnect, setWaitingToReconnect] = useState<boolean>(false);
+  const isReadonly = formData.isEditable;
+
+  useEffect(() => {
+    getDetailSavingApplication(ID).then((res) => {
+      setFormData(res);
+    });
+  }, [ID]);
 
   const listBank = selectBoxOptions(new DataSource(getListBank), "Pilih bank");
   const savingTermOptions = selectBoxOptions(
@@ -167,7 +178,7 @@ const FormSavingApplication = () => {
       });
   };
 
-  const handleRadioChange = (field: keyof TReqSavingSubmit, value: boolean) => {
+  const handleRadioChange = (field: keyof TReqResSavingSubmit, value: boolean) => {
     setFormData((prev) => ({
       ...prev,
       [field]: value
@@ -180,9 +191,9 @@ const FormSavingApplication = () => {
       value,
       onChange
     }: {
-      dataField: keyof TReqSavingSubmit;
+      dataField: keyof TReqResSavingSubmit;
       value: boolean | null;
-      onChange: (field: keyof TReqSavingSubmit, value: boolean) => void;
+      onChange: (field: keyof TReqResSavingSubmit, value: boolean) => void;
     }) => (
       <RadioGroup
         items={[
@@ -214,14 +225,15 @@ const FormSavingApplication = () => {
                 dataField="amount"
                 label={{ text: "Jumlah Simpanan" }}
                 editorOptions={{
-                  format: "Rp #,##0.00"
+                  format: "Rp #,##0.00",
+                  readOnly: isReadonly
                 }}
                 editorType="dxNumberBox"
               />
               <SimpleItem
                 dataField="termMonth"
                 editorType="dxSelectBox"
-                editorOptions={savingTermOptions}
+                editorOptions={{ ...savingTermOptions, readOnly: isReadonly }}
                 label={{ text: "Jangka Waktu" }}
               />
             </GroupItem>
@@ -230,7 +242,11 @@ const FormSavingApplication = () => {
               <SimpleItem
                 dataField="bankId"
                 editorType="dxSelectBox"
-                editorOptions={{ ...listBank, disabled: isDableBankIdBankAccNumber }}
+                editorOptions={{
+                  ...listBank,
+                  disabled: isDableBankIdBankAccNumber,
+                  readOnly: isReadonly
+                }}
                 label={{ text: "Bank" }}
               />
               <GroupItem colCount={5}>
@@ -240,6 +256,7 @@ const FormSavingApplication = () => {
                   label={{ text: "Nomor Rekening" }}
                   editorOptions={{
                     disabled: isDableBankIdBankAccNumber,
+                    readOnly: isReadonly,
                     onKeyDown: (e: any) => {
                       const key = e.event.key;
                       e.value = String.fromCharCode(e.event.keyCode);
