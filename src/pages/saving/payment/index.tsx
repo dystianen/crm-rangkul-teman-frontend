@@ -3,12 +3,9 @@ import "devextreme/data/odata/store";
 import React, { useRef } from "react";
 import { ApplicationStatus } from "src/components/application-status";
 import { filterOperation } from "src/constants/FilterOperation";
-import { backofficeAccess } from "src/constants/variableConstata";
-import { useAuth } from "src/contexts/auth";
 import { calculateFilterExpressionCustom } from "src/utils/devExtremeUtils";
 
 export default function SavingPayment() {
-  const { user } = useAuth();
   const dataGrid = useRef<DataGrid>(null);
 
   return (
@@ -26,16 +23,6 @@ export default function SavingPayment() {
             showBorders={true}
             dateSerializationFormat={"yyyy-MM-ddTHH:mm:ss.SSSxxx"}
             repaintChangesOnly={true}
-            editing={{
-              allowUpdating: (options: any) => {
-                let allowAccess =
-                  typeof user?.userAccess !== "undefined" &&
-                  user?.userAccess.some(
-                    (access: string) => access === backofficeAccess.backoffice_application_canceling
-                  );
-                return options.row.data.statusIsActive && allowAccess;
-              }
-            }}
           >
             <Scrolling showScrollbar={"always"} />
             <FilterRow visible={true} />

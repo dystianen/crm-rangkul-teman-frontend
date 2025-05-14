@@ -306,7 +306,7 @@ const FormSavingApplication = () => {
               />
             </GroupItem>
           </GroupItem>
-          <GroupItem colCountByScreen={{ xs: 4, sm: 8, md: 12, lg: 12 }}>
+          <GroupItem colCountByScreen={{ xs: 4, sm: 8, md: 10, lg: 8 }}>
             <ButtonItem horizontalAlignment="left">
               <ButtonOptions width={"100%"} onClick={handleBack}>
                 <span className="dx-button-text">Kembali</span>

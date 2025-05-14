@@ -1,14 +1,15 @@
 import DataGrid, { Column, FilterRow, Pager, Paging, Scrolling } from "devextreme-react/data-grid";
 import "devextreme/data/odata/store";
 import React, { useRef } from "react";
+import ReactDOM from "react-dom/client";
+import { useNavigate } from "react-router-dom";
+import { OnClickLink } from "src/components/alink";
 import { ApplicationStatus } from "src/components/application-status";
 import { filterOperation } from "src/constants/FilterOperation";
-import { backofficeAccess } from "src/constants/variableConstata";
-import { useAuth } from "src/contexts/auth";
 import { calculateFilterExpressionCustom } from "src/utils/devExtremeUtils";
 
 export default function SavingContract() {
-  const { user } = useAuth();
+  const navigate = useNavigate();
   const dataGrid = useRef<DataGrid>(null);
 
   return (
@@ -26,20 +27,25 @@ export default function SavingContract() {
             showBorders={true}
             dateSerializationFormat={"yyyy-MM-ddTHH:mm:ss.SSSxxx"}
             repaintChangesOnly={true}
-            editing={{
-              allowUpdating: (options: any) => {
-                let allowAccess =
-                  typeof user?.userAccess !== "undefined" &&
-                  user?.userAccess.some(
-                    (access: string) => access === backofficeAccess.backoffice_application_canceling
-                  );
-                return options.row.data.statusIsActive && allowAccess;
-              }
-            }}
           >
             <Scrolling showScrollbar={"always"} />
             <FilterRow visible={true} />
-            <Column dataField={"id"} caption={"ID"} filterOperations={filterOperation.string} />
+            <Column
+              alignment={"center"}
+              dataField={"ID"}
+              caption={"#ID"}
+              cellTemplate={function (container: any, options: any) {
+                const dom = ReactDOM.createRoot(container);
+                dom.render(
+                  <OnClickLink
+                    onClick={() => navigate(`/saving/contract/form?id=${options.data.seqId}`)}
+                  >
+                    {options.data.seqId}
+                  </OnClickLink>
+                );
+              }}
+              filterOperations={filterOperation.numeric}
+            />
             <Column
               dataField={"startOn"}
               caption={"Tanggal Mulai"}
@@ -79,9 +85,20 @@ export default function SavingContract() {
               filterOperations={filterOperation.string}
             />
             <Column
-              dataField={"term"}
+              alignment={"center"}
+              dataField={"nomorPengajuan"}
               caption={"#Nomor Pengajuan"}
-              filterOperations={filterOperation.string}
+              cellTemplate={function (container: any, options: any) {
+                const dom = ReactDOM.createRoot(container);
+                dom.render(
+                  <OnClickLink
+                    onClick={() => navigate(`/loan-app/detail?id=${options.data.loanId}`)}
+                  >
+                    {options.data.loanId}
+                  </OnClickLink>
+                );
+              }}
+              filterOperations={filterOperation.numeric}
             />
 
             <Paging defaultPageSize={50} />

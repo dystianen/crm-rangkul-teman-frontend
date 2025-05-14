@@ -42,7 +42,9 @@ import CreateEditContactLeads from "./pages/contact/CreateEditContactLeads";
 import SavingApplication from "./pages/saving/application";
 import FormSavingApplication from "./pages/saving/application/form";
 import SavingContract from "./pages/saving/contract";
+import SavingContractDetail from "./pages/saving/contract/detail";
 import SavingCustomer from "./pages/saving/customer";
+import SavingCustomerDetail from "./pages/saving/customer/detail";
 import SavingPayment from "./pages/saving/payment";
 
 const routes = [
@@ -306,9 +308,21 @@ const routes = [
   },
   {
     ID: 40,
+    path: "/saving/contract/detail",
+    title: "Saving Contract Detail",
+    element: SavingContractDetail
+  },
+  {
+    ID: 41,
     path: "/saving/customer",
     title: "Saving Customer",
     element: SavingCustomer
+  },
+  {
+    ID: 42,
+    path: "/saving/customer/detail",
+    title: "Saving Customer Detail",
+    element: SavingCustomerDetail
   }
 ];
 
