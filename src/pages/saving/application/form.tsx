@@ -8,13 +8,13 @@ import { useLocation, useNavigate } from "react-router-dom";
 import SockJS from "sockjs-client";
 import { bankCheckValid, checkAccess, getListBank } from "src/api/apploan";
 import { selectBoxOptions } from "src/api/contact";
-import { listProductDepositTerm, submitSavingDeposit } from "src/api/saving_deposit";
-import { TReqSavingSubmit } from "src/api/types/ISavingDeposit";
+import { listProductApplicationTerm, submitSavingApplication } from "src/api/saving";
+import { TReqSavingSubmit } from "src/api/types/ISaving";
 import { backofficeAccess } from "src/constants/variableConstata";
-import { initSavingForm } from "src/interfaces/ISavingDeposit";
+import { initSavingForm } from "src/interfaces/ISaving";
 import { notifyError, notifySuccess, notifyWarning } from "src/utils/devExtremeUtils";
 
-const FormSavingDeposit = () => {
+const FormSavingApplication = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { id } = queryString.parse(location.search);
@@ -27,16 +27,16 @@ const FormSavingDeposit = () => {
   const [waitingToReconnect, setWaitingToReconnect] = useState<boolean>(false);
 
   const listBank = selectBoxOptions(new DataSource(getListBank), "Pilih bank");
-  const depositTermOptions = selectBoxOptions(
-    new DataSource(listProductDepositTerm),
-    "Select product deposit term"
+  const savingTermOptions = selectBoxOptions(
+    new DataSource(listProductApplicationTerm),
+    "Select product saving term"
   );
 
   const stompClientRef = useRef<any>(null);
 
   useEffect(() => {
     checkAccess(backofficeAccess.backoffice_application_saving).then((res) => {
-      if (!res) navigate("/saving/deposito")
+      if (!res) navigate("/saving/application");
     });
   }, [navigate]);
 
@@ -154,12 +154,13 @@ const FormSavingDeposit = () => {
       ...formData,
       id: ID
     };
-    submitSavingDeposit(payload)
+    submitSavingApplication(payload)
       .then(() => {
-        navigate("/saving/deposito");
+        navigate("/saving/application");
       })
       .catch((err) => {
-        notifyError(err);
+        const { detail } = err.options;
+        notifyError(detail);
       })
       .finally(() => {
         setIsLoadingSubmit(false);
@@ -220,7 +221,7 @@ const FormSavingDeposit = () => {
               <SimpleItem
                 dataField="termMonth"
                 editorType="dxSelectBox"
-                editorOptions={depositTermOptions}
+                editorOptions={savingTermOptions}
                 label={{ text: "Jangka Waktu" }}
               />
             </GroupItem>
@@ -332,4 +333,4 @@ const FormSavingDeposit = () => {
   );
 };
 
-export default FormSavingDeposit;
+export default FormSavingApplication;

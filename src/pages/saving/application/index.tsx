@@ -10,26 +10,26 @@ import { useNavigate } from "react-router";
 import { appCancel, checkAccess } from "src/api/apploan";
 import { selectBoxOptions, validateIdNumber } from "src/api/contact";
 import {
-  createSavingDeposit,
-  listProductDeposit,
-  listProductDepositStore
-} from "src/api/saving_deposit";
-import { TReqSavingAppCreate } from "src/api/types/ISavingDeposit";
-import { initSavingValues } from "src/interfaces/ISavingDeposit";
-import { allowOnlyNumbers } from "src/utils/helpers";
-import { OnClickLink } from "../../components/alink";
-import { ApplicationStatus } from "../../components/application-status";
-import { filterOperation } from "../../constants/FilterOperation";
-import { backofficeAccess } from "../../constants/variableConstata";
-import { useAuth } from "../../contexts/auth";
+  createSavingApplication,
+  listProductApplication,
+  listProductApplicationStore
+} from "src/api/saving";
+import { TReqSavingAppCreate } from "src/api/types/ISaving";
+import { OnClickLink } from "src/components/alink";
+import { ApplicationStatus } from "src/components/application-status";
+import { filterOperation } from "src/constants/FilterOperation";
+import { backofficeAccess } from "src/constants/variableConstata";
+import { useAuth } from "src/contexts/auth";
+import { initSavingValues } from "src/interfaces/ISaving";
 import {
   calculateFilterExpressionCustom,
   confirmNotify,
   notifyError,
   notifySuccess
-} from "../../utils/devExtremeUtils";
+} from "src/utils/devExtremeUtils";
+import { allowOnlyNumbers } from "src/utils/helpers";
 
-export default function SavingDeposit() {
+export default function SavingApplication() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const formRef = useRef<Form>(null);
@@ -45,7 +45,7 @@ export default function SavingDeposit() {
   }, []);
 
   const productOptions = selectBoxOptions(
-    new DataSource(listProductDeposit),
+    new DataSource(listProductApplication),
     "Select product deposit"
   );
 
@@ -67,19 +67,19 @@ export default function SavingDeposit() {
 
   const onFormSubmit = (e: any) => {
     const form = formRef.current!.instance;
-    createSavingDeposit(savingApp).then(
+    createSavingApplication(savingApp).then(
       (res) => {
         hide();
         form.clear();
         setSavingApp(initSavingValues);
-        navigate(`/saving/deposit/create?id=${res.id}`);
+        navigate(`/saving/application/form?id=${res.id}`);
       },
       (error) => {
-        const { status } = error.options;
-        if (status === "20101") {
+        const { errorCode, data } = error.options;
+        if (errorCode === 1020001) {
           navigate(`/contact/leads/create?ktp=${savingApp.ktp}`);
         } else {
-          notifyError(error);
+          notifyError(data.message);
         }
       }
     );
@@ -117,7 +117,7 @@ export default function SavingDeposit() {
         <div className={"dx-card"}>
           <DataGrid
             ref={dataGrid}
-            dataSource={listProductDepositStore}
+            dataSource={listProductApplicationStore}
             focusedRowEnabled={true}
             remoteOperations={true}
             columnAutoWidth={true}
@@ -272,7 +272,7 @@ export default function SavingDeposit() {
             id="form"
             showColonAfterLabel={true}
             showValidationSummary={true}
-            validationGroup="savingDepositData"
+            validationGroup="savingApplicationData"
             onFieldDataChanged={onFieldDataChanged}
           >
             <SimpleItem

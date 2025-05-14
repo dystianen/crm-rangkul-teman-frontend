@@ -39,8 +39,11 @@ import {
 } from "./pages";
 import ContactActivities from "./pages/contact-activities";
 import CreateEditContactLeads from "./pages/contact/CreateEditContactLeads";
-import SavingDeposit from "./pages/saving-deposito";
-import FormSavingDeposit from "./pages/saving-deposito/form";
+import SavingApplication from "./pages/saving/application";
+import FormSavingApplication from "./pages/saving/application/form";
+import SavingContract from "./pages/saving/contract";
+import SavingCustomer from "./pages/saving/customer";
+import SavingPayment from "./pages/saving/payment";
 
 const routes = [
   {
@@ -279,15 +282,33 @@ const routes = [
   },
   {
     ID: 36,
-    path: "/saving/deposito",
-    title: "Saving Deposito",
-    element: SavingDeposit
+    path: "/saving/application",
+    title: "Saving Application",
+    element: SavingApplication
   },
   {
     ID: 37,
-    path: "/saving/deposit/create",
-    title: "Saving Deposito",
-    element: FormSavingDeposit
+    path: "/saving/application/form",
+    title: "Saving Application",
+    element: FormSavingApplication
+  },
+  {
+    ID: 38,
+    path: "/saving/payment",
+    title: "Saving Payment",
+    element: SavingPayment
+  },
+  {
+    ID: 39,
+    path: "/saving/contract",
+    title: "Saving Contract",
+    element: SavingContract
+  },
+  {
+    ID: 40,
+    path: "/saving/customer",
+    title: "Saving Customer",
+    element: SavingCustomer
   }
 ];
 
