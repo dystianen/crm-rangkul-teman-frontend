@@ -13,7 +13,7 @@ export default function SavingContract() {
 
   return (
     <React.Fragment>
-      <h2 className={"content-block"}>Simpanan Anggota</h2>
+      <h2 className={"content-block"}>Perjanjian Simpanan</h2>
       <div className={"content-block"}>
         <div className={"dx-card"}>
           <DataGrid
