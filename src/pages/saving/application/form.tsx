@@ -29,7 +29,7 @@ const FormSavingApplication = () => {
   const [isDableBankIdBankAccNumber, setDisableBankIdBankAccNumber] = useState(false);
   const [isDisableButtonSubmit, setDisableButtonSubmit] = useState<boolean>(true);
   const [waitingToReconnect, setWaitingToReconnect] = useState<boolean>(false);
-  const isReadonly = formData.isEditable;
+  const isReadonly = !formData.isEditable;
 
   useEffect(() => {
     getDetailSavingApplication(ID).then((res) => {
@@ -205,6 +205,7 @@ const FormSavingApplication = () => {
         displayExpr="label"
         valueExpr="value"
         onValueChanged={(e) => onChange(dataField, e.value)}
+        readOnly={isReadonly}
       />
     )
   );
@@ -251,7 +252,7 @@ const FormSavingApplication = () => {
               />
               <GroupItem colCount={5}>
                 <SimpleItem
-                  colSpan={4}
+                  colSpan={isReadonly ? 5 : 4}
                   dataField="bankAccountNumber"
                   label={{ text: "Nomor Rekening" }}
                   editorOptions={{
@@ -267,7 +268,11 @@ const FormSavingApplication = () => {
                     }
                   }}
                 />
-                <ButtonItem horizontalAlignment={"center"} verticalAlignment={"center"}>
+                <ButtonItem
+                  horizontalAlignment={"center"}
+                  verticalAlignment={"center"}
+                  visible={!isReadonly}
+                >
                   <ButtonOptions
                     type="default"
                     width={"100%"}
@@ -330,7 +335,7 @@ const FormSavingApplication = () => {
               </ButtonOptions>
             </ButtonItem>
 
-            <ButtonItem horizontalAlignment="left">
+            <ButtonItem horizontalAlignment="left" visible={!isReadonly}>
               <ButtonOptions
                 type="default"
                 width={"100%"}

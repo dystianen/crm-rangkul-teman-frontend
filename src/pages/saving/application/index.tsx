@@ -7,7 +7,7 @@ import "devextreme/data/odata/store";
 import React, { useEffect, useRef, useState } from "react";
 import ReactDOM from "react-dom/client";
 import { useNavigate } from "react-router";
-import { appCancel, checkAccess } from "src/api/apploan";
+import { checkAccess } from "src/api/apploan";
 import { selectBoxOptions, validateIdNumber } from "src/api/contact";
 import {
   createSavingApplication,
@@ -19,18 +19,11 @@ import { OnClickLink } from "src/components/alink";
 import { ApplicationStatus } from "src/components/application-status";
 import { filterOperation } from "src/constants/FilterOperation";
 import { backofficeAccess } from "src/constants/variableConstata";
-import { useAuth } from "src/contexts/auth";
 import { initSavingValues } from "src/interfaces/ISaving";
-import {
-  calculateFilterExpressionCustom,
-  confirmNotify,
-  notifyError,
-  notifySuccess
-} from "src/utils/devExtremeUtils";
+import { calculateFilterExpressionCustom, notifyError } from "src/utils/devExtremeUtils";
 import { allowOnlyNumbers } from "src/utils/helpers";
 
 export default function SavingApplication() {
-  const { user } = useAuth();
   const navigate = useNavigate();
   const formRef = useRef<Form>(null);
   const dataGrid = useRef<DataGrid>(null);
@@ -126,19 +119,32 @@ export default function SavingApplication() {
             dateSerializationFormat={"yyyy-MM-ddTHH:mm:ss.SSSxxx"}
             repaintChangesOnly={true}
             onToolbarPreparing={onToolbarPreparing}
-            editing={{
-              allowUpdating: (options: any) => {
-                let allowAccess =
-                  typeof user?.userAccess !== "undefined" &&
-                  user?.userAccess.some(
-                    (access: string) => access === backofficeAccess.backoffice_application_canceling
-                  );
-                return options.row.data.statusIsActive && allowAccess;
-              }
-            }}
           >
             <Scrolling showScrollbar={"always"} />
             <FilterRow visible={true} />
+
+            <Column
+              alignment={"center"}
+              dataField={"contactSeqId"}
+              caption={"#Nomor Pengajuan"}
+              cellTemplate={function (container: any, options: any) {
+                const dom = ReactDOM.createRoot(container);
+                dom.render(
+                  <OnClickLink
+                    onClick={() => navigate(`/saving/application/form?id=${options.data.id}`)}
+                  >
+                    {options.data.contactSeqId}
+                  </OnClickLink>
+                );
+              }}
+              filterOperations={filterOperation.numeric}
+            />
+            <Column
+              dataField={"status"}
+              caption={"Status"}
+              filterOperations={filterOperation.string}
+              cellRender={ApplicationStatus}
+            />
             <Column
               dataField={"createdOn"}
               caption={"Tanggal Dibuat"}
@@ -156,8 +162,8 @@ export default function SavingApplication() {
               filterOperations={filterOperation.date}
             />
             <Column
-              dataField={"product"}
-              caption={"Produk"}
+              dataField={"contactName"}
+              caption={"Nama Anggota"}
               filterOperations={filterOperation.string}
             />
             <Column
@@ -167,90 +173,40 @@ export default function SavingApplication() {
               format="Rp #,##0.00"
             />
             <Column
-              dataField={"status"}
-              caption={"Status"}
-              filterOperations={filterOperation.string}
-              cellRender={ApplicationStatus}
-            />
-            <Column
-              dataField={"term"}
-              caption={"Jangka Waktu"}
-              filterOperations={filterOperation.string}
-            />
-            <Column
-              alignment={"center"}
-              dataField={"contactSeqId"}
-              caption={"#No.Kontak"}
-              cellTemplate={function (container: any, options: any) {
-                const dom = ReactDOM.createRoot(container);
-                dom.render(
-                  <OnClickLink
-                    onClick={() => navigate(`/contact/detail?id=${options.data.contactId}`)}
-                  >
-                    {options.data.contactSeqId}
-                  </OnClickLink>
-                );
-              }}
-              filterOperations={filterOperation.numeric}
-            />
-            <Column
               dataField={"contactName"}
-              caption={"Nama Lengkap"}
-              filterOperations={filterOperation.string}
-            />
-            <Column
-              dataField={"idCardNumber"}
-              caption={"No. KTP"}
-              filterOperations={filterOperation.string}
-            />
-            <Column
-              dataField={"contactPhone"}
-              caption={"No. HP"}
+              caption={"Nomor Virtual Account"}
               filterOperations={filterOperation.string}
             />
             <Column
               dataField={"destBankName"}
-              caption={"Bank"}
-              alignment={"left"}
+              caption={"Bank Pencairan"}
               filterOperations={filterOperation.string}
             />
             <Column
               dataField={"destBankAccountNumber"}
-              caption={"Bank Account Number"}
-              alignment={"left"}
+              caption={"No. Rekening Pencairan"}
               filterOperations={filterOperation.string}
             />
             <Column
-              type={"buttons"}
-              alignment={"center"}
-              width={"50"}
-              buttons={[
-                {
-                  hint: "Cancel app",
-                  icon: "close",
-                  name: "edit",
-                  onClick: function (e: any) {
-                    const key = e.row.data.id;
-                    confirmNotify(
-                      `Apakah yakin untuk melakukan cancel app #${e.row.data.seqId} ??`
-                    ).then((result) => {
-                      if (result) {
-                        appCancel(key)
-                          .then((resp: boolean) => {
-                            notifySuccess("sukses cancel aplikasi");
-                            e.component.refresh(true).done(function () {
-                              e.component.cancelEditData();
-                            });
-                          })
-                          .catch((e) => notifyError(e.message));
-                      }
-                    });
-
-                    e.event.preventDefault();
-                  }
-                }
-              ]}
-            ></Column>
+              dataField={"idCardNumber"}
+              caption={"Nomor KTP"}
+              filterOperations={filterOperation.string}
+            />
+            <Column
+              dataField={"contactPhone"}
+              caption={"Nomor HP"}
+              filterOperations={filterOperation.string}
+            />
+            <Column
+              dataField={"creator"}
+              caption={"Dibuat Oleh"}
+              filterOperations={filterOperation.string}
+            />
+            <Column
+              dataField={"modifier"}
+              caption={"Dirubah Oleh"}
+              filterOperations={filterOperation.string}
+            />
             <Paging defaultPageSize={50} />
             <Pager showPageSizeSelector={true} showInfo={true} allowedPageSizes={[10, 50, 100]} />
           </DataGrid>
