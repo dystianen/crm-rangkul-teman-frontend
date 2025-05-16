@@ -8,35 +8,50 @@ import { useLocation, useNavigate } from "react-router-dom";
 import SockJS from "sockjs-client";
 import { bankCheckValid, checkAccess, getListBank } from "src/api/apploan";
 import { selectBoxOptions } from "src/api/contact";
-import { listProductDepositTerm, submitSavingDeposit } from "src/api/saving_deposit";
-import { TReqSavingSubmit } from "src/api/types/ISavingDeposit";
+import {
+  getDetailSavingApplication,
+  listProductApplicationTerm,
+  submitSavingApplication
+} from "src/api/saving";
+import { TReqResSavingSubmit } from "src/api/types/ISaving";
 import { backofficeAccess } from "src/constants/variableConstata";
-import { initSavingForm } from "src/interfaces/ISavingDeposit";
+import { initSavingForm } from "src/interfaces/ISaving";
 import { notifyError, notifySuccess, notifyWarning } from "src/utils/devExtremeUtils";
+import { allowOnlyNumbers } from "src/utils/helpers";
 
-const FormSavingDeposit = () => {
+const FormSavingApplication = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { id } = queryString.parse(location.search);
   const ID = String(id);
 
-  const [formData, setFormData] = useState<TReqSavingSubmit>(initSavingForm);
+  const [formData, setFormData] = useState<TReqResSavingSubmit>(initSavingForm);
   const [isLoadingSubmit, setIsLoadingSubmit] = useState(false);
   const [isDableBankIdBankAccNumber, setDisableBankIdBankAccNumber] = useState(false);
   const [isDisableButtonSubmit, setDisableButtonSubmit] = useState<boolean>(true);
   const [waitingToReconnect, setWaitingToReconnect] = useState<boolean>(false);
+  const isReadonly = !formData.isEditable;
+
+  useEffect(() => {
+    getDetailSavingApplication(ID).then((res) => {
+      setFormData(res);
+      if (res.bankAccountIsVerified) {
+        setDisableButtonSubmit(false);
+      }
+    });
+  }, [ID]);
 
   const listBank = selectBoxOptions(new DataSource(getListBank), "Pilih bank");
-  const depositTermOptions = selectBoxOptions(
-    new DataSource(listProductDepositTerm),
-    "Select product deposit term"
+  const savingTermOptions = selectBoxOptions(
+    new DataSource(listProductApplicationTerm),
+    "Select product saving term"
   );
 
   const stompClientRef = useRef<any>(null);
 
   useEffect(() => {
     checkAccess(backofficeAccess.backoffice_application_saving).then((res) => {
-      if (!res) navigate("/saving/deposito")
+      if (!res) navigate("/saving/application");
     });
   }, [navigate]);
 
@@ -154,19 +169,20 @@ const FormSavingDeposit = () => {
       ...formData,
       id: ID
     };
-    submitSavingDeposit(payload)
+    submitSavingApplication(payload)
       .then(() => {
-        navigate("/saving/deposito");
+        navigate("/saving/application");
       })
       .catch((err) => {
-        notifyError(err);
+        const { detail } = err.options;
+        notifyError(detail);
       })
       .finally(() => {
         setIsLoadingSubmit(false);
       });
   };
 
-  const handleRadioChange = (field: keyof TReqSavingSubmit, value: boolean) => {
+  const handleRadioChange = (field: keyof TReqResSavingSubmit, value: boolean) => {
     setFormData((prev) => ({
       ...prev,
       [field]: value
@@ -179,9 +195,9 @@ const FormSavingDeposit = () => {
       value,
       onChange
     }: {
-      dataField: keyof TReqSavingSubmit;
+      dataField: keyof TReqResSavingSubmit;
       value: boolean | null;
-      onChange: (field: keyof TReqSavingSubmit, value: boolean) => void;
+      onChange: (field: keyof TReqResSavingSubmit, value: boolean) => void;
     }) => (
       <RadioGroup
         items={[
@@ -193,6 +209,7 @@ const FormSavingDeposit = () => {
         displayExpr="label"
         valueExpr="value"
         onValueChanged={(e) => onChange(dataField, e.value)}
+        readOnly={isReadonly}
       />
     )
   );
@@ -213,14 +230,15 @@ const FormSavingDeposit = () => {
                 dataField="amount"
                 label={{ text: "Jumlah Simpanan" }}
                 editorOptions={{
-                  format: "Rp #,##0.00"
+                  format: "Rp #,##0.00",
+                  readOnly: isReadonly
                 }}
                 editorType="dxNumberBox"
               />
               <SimpleItem
                 dataField="termMonth"
                 editorType="dxSelectBox"
-                editorOptions={depositTermOptions}
+                editorOptions={{ ...savingTermOptions, readOnly: isReadonly }}
                 label={{ text: "Jangka Waktu" }}
               />
             </GroupItem>
@@ -229,27 +247,29 @@ const FormSavingDeposit = () => {
               <SimpleItem
                 dataField="bankId"
                 editorType="dxSelectBox"
-                editorOptions={{ ...listBank, disabled: isDableBankIdBankAccNumber }}
+                editorOptions={{
+                  ...listBank,
+                  disabled: isDableBankIdBankAccNumber,
+                  readOnly: isReadonly
+                }}
                 label={{ text: "Bank" }}
               />
               <GroupItem colCount={5}>
                 <SimpleItem
-                  colSpan={4}
+                  colSpan={isReadonly ? 5 : 4}
                   dataField="bankAccountNumber"
                   label={{ text: "Nomor Rekening" }}
                   editorOptions={{
                     disabled: isDableBankIdBankAccNumber,
-                    onKeyDown: (e: any) => {
-                      const key = e.event.key;
-                      e.value = String.fromCharCode(e.event.keyCode);
-                      let forbiddenChars = ["!", "@", "#", "$", "%", "^", "&", "*", "(", ")"];
-                      if (forbiddenChars.includes(key)) e.event.preventDefault();
-                      if (!/[0-9]/.test(e.value) && key !== "Backspace" && key !== "Delete")
-                        e.event.preventDefault();
-                    }
+                    readOnly: isReadonly,
+                    onKeyDown: (e: any) => allowOnlyNumbers(e.event)
                   }}
                 />
-                <ButtonItem horizontalAlignment={"center"} verticalAlignment={"center"}>
+                <ButtonItem
+                  horizontalAlignment={"center"}
+                  verticalAlignment={"center"}
+                  visible={!isReadonly}
+                >
                   <ButtonOptions
                     type="default"
                     width={"100%"}
@@ -305,14 +325,14 @@ const FormSavingDeposit = () => {
               />
             </GroupItem>
           </GroupItem>
-          <GroupItem colCountByScreen={{ xs: 4, sm: 8, md: 12, lg: 12 }}>
+          <GroupItem colCountByScreen={{ xs: 4, sm: 8, md: 10, lg: 8 }}>
             <ButtonItem horizontalAlignment="left">
               <ButtonOptions width={"100%"} onClick={handleBack}>
                 <span className="dx-button-text">Kembali</span>
               </ButtonOptions>
             </ButtonItem>
 
-            <ButtonItem horizontalAlignment="left">
+            <ButtonItem horizontalAlignment="left" visible={!isReadonly}>
               <ButtonOptions
                 type="default"
                 width={"100%"}
@@ -332,4 +352,4 @@ const FormSavingDeposit = () => {
   );
 };
 
-export default FormSavingDeposit;
+export default FormSavingApplication;

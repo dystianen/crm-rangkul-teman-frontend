@@ -8,7 +8,8 @@
   }
 }
 
-.status-approved {
+.status-approved,
+.status-paid {
   background: #10d710;
   color: #ffffff;
 }
@@ -22,11 +23,13 @@
   background: #d77310;
   color: #ffffff;
 }
-.status-onverifcation{
+.status-onverifcation,
+.status-waitingforpayment {
   background: #d7a910;
   color: #ffffff;
 }
-.status-incomplete{
+.status-incomplete,
+.status-draft {
   background: #707070;
   color: #ffffff;
 }
@@ -49,7 +52,6 @@
 }
 
 .status-canceled {
-
 }
 .status-toverify {
   background: #cad710;
