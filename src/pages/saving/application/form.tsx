@@ -1,6 +1,7 @@
 import { Client } from "@stomp/stompjs";
 import { LoadIndicator, RadioGroup } from "devextreme-react";
 import Form, { ButtonItem, ButtonOptions, GroupItem, SimpleItem } from "devextreme-react/form";
+import * as Title from "devextreme-react/toolbar";
 import DataSource from "devextreme/data/data_source";
 import queryString from "query-string";
 import React, { useEffect, useRef, useState } from "react";
@@ -215,7 +216,20 @@ const FormSavingApplication = () => {
   );
 
   return (
-    <div className={"content-block"}>
+    <div className={"content-block"} style={{ marginTop: "16px" }}>
+      <Title.Toolbar className={"dx-card"}>
+        <Title.Item
+          location="before"
+          widget="dxButton"
+          options={{
+            icon: "back",
+            text: "Kembali",
+            onClick: () => {
+              navigate(-1);
+            }
+          }}
+        />
+      </Title.Toolbar>
       <div className={"form__tabs dx-card responsive-paddings"}>
         <Form
           colCount={1}
@@ -325,14 +339,14 @@ const FormSavingApplication = () => {
               />
             </GroupItem>
           </GroupItem>
-          <GroupItem colCountByScreen={{ xs: 4, sm: 8, md: 10, lg: 8 }}>
+          <GroupItem visible={!isReadonly} colCountByScreen={{ xs: 4, sm: 8, md: 10, lg: 8 }}>
             <ButtonItem horizontalAlignment="left">
               <ButtonOptions width={"100%"} onClick={handleBack}>
-                <span className="dx-button-text">Kembali</span>
+                <span className="dx-button-text">Batal</span>
               </ButtonOptions>
             </ButtonItem>
 
-            <ButtonItem horizontalAlignment="left" visible={!isReadonly}>
+            <ButtonItem horizontalAlignment="left">
               <ButtonOptions
                 type="default"
                 width={"100%"}
