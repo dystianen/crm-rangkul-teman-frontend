@@ -26,7 +26,7 @@ export default function LoginForm() {
         const {email, password} = formData.current;
         setLoading(true);
 
-        const result = await signIn(email, password);
+        const result: any = await signIn(email, password);
         if (!result.isOk) {
             setLoading(false);
             notify(result.message, 'error', 2000);
