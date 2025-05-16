@@ -18,13 +18,15 @@ export default function LoginForm() {
     const {signIn} = useAuth();
     const [loading, setLoading] = useState(false);
     const formData = useRef({email: '', password: ''});
+    const [showPassword, setShowPassword] = useState(false);
+    const [iconPassword, setIconPassword] = useState('eyeopen');
 
     const onSubmit = useCallback(async (e: any) => {
         e.preventDefault();
         const {email, password} = formData.current;
         setLoading(true);
 
-        const result = await signIn(email, password);
+        const result: any = await signIn(email, password);
         if (!result.isOk) {
             setLoading(false);
             notify(result.message, 'error', 2000);
@@ -42,6 +44,34 @@ export default function LoginForm() {
     const onCreateAccountClick = useCallback(() => {
         navigate('/create-account');
     }, [navigate]);
+
+
+    const emailEditorOptions = {stylingMode: 'filled', placeholder: 'Username'};
+    const passwordEditorOptions = {
+        stylingMode: 'filled',
+        placeholder: 'Password',
+        mode: showPassword ? 'text': 'password',
+        buttons: [
+            {
+                name: 'copyPassword',
+                location: 'after',
+                options: {
+                    stylingMode: 'text',
+                    icon: iconPassword,
+                    onClick: () => {
+                        if(!showPassword){
+                            setShowPassword(true);
+                            setIconPassword('eyeclose');
+                        } else {
+                            setShowPassword(false);
+                            setIconPassword('eyeopen');
+                        }
+                    },
+                },
+            },
+        ],
+    };
+    const rememberMeEditorOptions = {text: 'Remember me', elementAttr: {class: 'form-text'}};
 
     return (
         <form className={'login-form'} onSubmit={onSubmit}>
@@ -101,6 +131,3 @@ export default function LoginForm() {
     );
 }
 
-const emailEditorOptions = {stylingMode: 'filled', placeholder: 'Username'};
-const passwordEditorOptions = {stylingMode: 'filled', placeholder: 'Password', mode: 'password'};
-const rememberMeEditorOptions = {text: 'Remember me', elementAttr: {class: 'form-text'}};
