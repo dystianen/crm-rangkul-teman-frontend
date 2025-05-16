@@ -1,9 +1,14 @@
 import DataGrid, { Column, FilterRow, Pager, Paging, Scrolling } from "devextreme-react/data-grid";
 import "devextreme/data/odata/store";
 import React, { useRef } from "react";
+import ReactDOM from "react-dom/client";
+import { useNavigate } from "react-router-dom";
+import { listSavingCustomerStore } from "src/api/saving";
+import { OnClickLink } from "src/components/alink";
 import { filterOperation } from "src/constants/FilterOperation";
 
 export default function SavingCustomer() {
+  const navigate = useNavigate();
   const dataGrid = useRef<DataGrid>(null);
 
   return (
@@ -13,7 +18,7 @@ export default function SavingCustomer() {
         <div className={"dx-card"}>
           <DataGrid
             ref={dataGrid}
-            dataSource={[]}
+            dataSource={listSavingCustomerStore}
             focusedRowEnabled={true}
             remoteOperations={true}
             columnAutoWidth={true}
@@ -25,17 +30,28 @@ export default function SavingCustomer() {
             <Scrolling showScrollbar={"always"} />
             <FilterRow visible={true} />
             <Column
+              alignment={"center"}
               dataField={"seqId"}
               caption={"#Nomor Anggota"}
-              filterOperations={filterOperation.string}
+              cellTemplate={function (container: any, options: any) {
+                const dom = ReactDOM.createRoot(container);
+                dom.render(
+                  <OnClickLink
+                    onClick={() => navigate(`/saving/customer/detail?id=${options.data.id}`)}
+                  >
+                    {options.data.seqId}
+                  </OnClickLink>
+                );
+              }}
+              filterOperations={filterOperation.numeric}
             />
             <Column
-              dataField={"idNumber"}
+              dataField={"contactIdCardNumber"}
               caption={"Nomor KTP"}
               filterOperations={filterOperation.string}
             />
             <Column
-              dataField={"mobileNumber"}
+              dataField={"contactPhone"}
               caption={"Nomor HP"}
               filterOperations={filterOperation.string}
             />
@@ -46,13 +62,13 @@ export default function SavingCustomer() {
               format="Rp #,##0.00"
             />
             <Column
-              dataField={"amount"}
+              dataField={"depositAmountBalance"}
               caption={"Saldo Deposito"}
               filterOperations={filterOperation.numeric}
               format="Rp #,##0.00"
             />
             <Column
-              dataField={"amount"}
+              dataField={"totalBalance"}
               caption={"Total Saldo"}
               filterOperations={filterOperation.numeric}
               format="Rp #,##0.00"

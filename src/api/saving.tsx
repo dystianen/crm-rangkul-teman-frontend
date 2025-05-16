@@ -7,6 +7,7 @@ import {
   TReqSavingAppCreate,
   TResSavingAppCreate,
   TResSavingContractDetail,
+  TResSavingCustomerDetail,
   TResSavingSubmit
 } from "./types/ISaving";
 
@@ -35,6 +36,10 @@ export const listSavingContractCashflowStore = (id: string) =>
     loadUrl: `${API_PATH.SAVING_DEPOSIT}/contract/${id}/cashflow`
   });
 
+export const listSavingCustomerStore = customStore({
+  loadUrl: `${API_PATH.SAVING_DEPOSIT}/member`
+});
+
 export const createSavingApplication = async (
   payload: TReqSavingAppCreate
 ): Promise<TResSavingAppCreate> => {
@@ -60,5 +65,12 @@ export const getDetailSavingContract = async (
   savingId: string
 ): Promise<TResSavingContractDetail> => {
   const resp = await ajaxGet(`${API_PATH.SAVING_DEPOSIT}/contract/${savingId}`);
+  return resp.data;
+};
+
+export const getDetailSavingCustomer = async (
+  savingId: string
+): Promise<TResSavingCustomerDetail> => {
+  const resp = await ajaxGet(`${API_PATH.SAVING_DEPOSIT}/member/${savingId}`);
   return resp.data;
 };

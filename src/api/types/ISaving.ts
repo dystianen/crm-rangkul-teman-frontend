@@ -44,3 +44,27 @@ export type TResSavingContractDetail = {
   appId: string;
   appSeqId: string;
 };
+
+export type TResSavingCustomerDetail = {
+  createdOn: string;
+  modifiedOn: string;
+  createdBy: string;
+  modifiedBy: string;
+  seqId: number;
+  id: string;
+  appId: string;
+  startOn: string;
+  finishOn: string;
+  closedOn: string;
+  amount: number;
+  accrualInterest: number;
+  statusId: string;
+  appSeqId: string;
+  contactId: string;
+  contactSeqId: string;
+  contactIdCardNumber: string;
+  contactPhone: string;
+  savingAmountBalance: number;
+  depositAmountBalance: number;
+  totalBalance: number;
+};
