@@ -1,6 +1,7 @@
 import DataGrid, { Column, FilterRow, Pager, Paging, Scrolling } from "devextreme-react/data-grid";
 import "devextreme/data/odata/store";
 import React, { useRef } from "react";
+import { listSavingPaymentStore } from "src/api/saving";
 import { ApplicationStatus } from "src/components/application-status";
 import { filterOperation } from "src/constants/FilterOperation";
 import { calculateFilterExpressionCustom } from "src/utils/devExtremeUtils";
@@ -15,7 +16,7 @@ export default function SavingPayment() {
         <div className={"dx-card"}>
           <DataGrid
             ref={dataGrid}
-            dataSource={[]}
+            dataSource={listSavingPaymentStore}
             focusedRowEnabled={true}
             remoteOperations={true}
             columnAutoWidth={true}
@@ -26,9 +27,9 @@ export default function SavingPayment() {
           >
             <Scrolling showScrollbar={"always"} />
             <FilterRow visible={true} />
-            <Column dataField={"id"} caption={"ID"} filterOperations={filterOperation.string} />
+            <Column dataField={"seqId"} caption={"ID"} filterOperations={filterOperation.string} />
             <Column
-              dataField={"modifiedOn"}
+              dataField={"paymentOn"}
               caption={"Tanggal Pembayaran"}
               dataType={"date"}
               format={"dd MMM yyyy HH:mm:ss"}
@@ -36,7 +37,7 @@ export default function SavingPayment() {
               filterOperations={filterOperation.date}
             />
             <Column
-              dataField={"product"}
+              dataField={"contactName"}
               caption={"Nama Anggota"}
               filterOperations={filterOperation.string}
             />
@@ -47,13 +48,13 @@ export default function SavingPayment() {
               format="Rp #,##0.00"
             />
             <Column
-              dataField={"status"}
+              dataField={"statusName"}
               caption={"Status"}
               filterOperations={filterOperation.string}
               cellRender={ApplicationStatus}
             />
             <Column
-              dataField={"term"}
+              dataField={"vaName"}
               caption={"No. Virtual Account"}
               filterOperations={filterOperation.string}
             />

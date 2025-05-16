@@ -3,6 +3,7 @@ import "devextreme/data/odata/store";
 import React, { useRef } from "react";
 import ReactDOM from "react-dom/client";
 import { useNavigate } from "react-router-dom";
+import { listSavingContractStore } from "src/api/saving";
 import { OnClickLink } from "src/components/alink";
 import { ApplicationStatus } from "src/components/application-status";
 import { filterOperation } from "src/constants/FilterOperation";
@@ -19,7 +20,7 @@ export default function SavingContract() {
         <div className={"dx-card"}>
           <DataGrid
             ref={dataGrid}
-            dataSource={[]}
+            dataSource={listSavingContractStore}
             focusedRowEnabled={true}
             remoteOperations={true}
             columnAutoWidth={true}
@@ -32,13 +33,13 @@ export default function SavingContract() {
             <FilterRow visible={true} />
             <Column
               alignment={"center"}
-              dataField={"ID"}
+              dataField={"seqId"}
               caption={"#ID"}
               cellTemplate={function (container: any, options: any) {
                 const dom = ReactDOM.createRoot(container);
                 dom.render(
                   <OnClickLink
-                    onClick={() => navigate(`/saving/contract/form?id=${options.data.seqId}`)}
+                    onClick={() => navigate(`/saving/contract/detail?id=${options.data.id}`)}
                   >
                     {options.data.seqId}
                   </OnClickLink>
@@ -63,13 +64,13 @@ export default function SavingContract() {
               filterOperations={filterOperation.date}
             />
             <Column
-              dataField={"status"}
+              dataField={"statusName"}
               caption={"Status"}
               filterOperations={filterOperation.string}
               cellRender={ApplicationStatus}
             />
             <Column
-              dataField={"name"}
+              dataField={"contactName"}
               caption={"Nama Anggota"}
               filterOperations={filterOperation.string}
             />
@@ -80,21 +81,22 @@ export default function SavingContract() {
               format="Rp #,##0.00"
             />
             <Column
-              dataField={"amount"}
+              dataField={"accrualInterest"}
               caption={"Jumlah Bunga"}
-              filterOperations={filterOperation.string}
+              filterOperations={filterOperation.numeric}
+              format="Rp #,##0.00"
             />
             <Column
               alignment={"center"}
-              dataField={"nomorPengajuan"}
+              dataField={"appSeqId"}
               caption={"#Nomor Pengajuan"}
               cellTemplate={function (container: any, options: any) {
                 const dom = ReactDOM.createRoot(container);
                 dom.render(
                   <OnClickLink
-                    onClick={() => navigate(`/loan-app/detail?id=${options.data.loanId}`)}
+                    onClick={() => navigate(`/saving/application/form?id=${options.data.appId}`)}
                   >
-                    {options.data.loanId}
+                    {options.data.appSeqId}
                   </OnClickLink>
                 );
               }}

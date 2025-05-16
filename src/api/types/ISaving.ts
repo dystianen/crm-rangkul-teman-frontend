@@ -26,3 +26,21 @@ export type TReqResSavingSubmit = {
 export type TResSavingSubmit = {
   id: string;
 };
+
+export type TResSavingContractDetail = {
+  createdOn: string;
+  modifiedOn: string;
+  createdBy: string;
+  modifiedBy: string;
+  id: string;
+  seqId: string;
+  startOn: string;
+  finishOn: string;
+  statusId: string;
+  statusName: string;
+  contactName: string;
+  amount: number;
+  accrualInterest: number;
+  appId: string;
+  appSeqId: string;
+};

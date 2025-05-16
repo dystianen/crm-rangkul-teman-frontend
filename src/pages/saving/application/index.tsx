@@ -125,7 +125,7 @@ export default function SavingApplication() {
 
             <Column
               alignment={"center"}
-              dataField={"contactSeqId"}
+              dataField={"seqId"}
               caption={"#Nomor Pengajuan"}
               cellTemplate={function (container: any, options: any) {
                 const dom = ReactDOM.createRoot(container);
@@ -133,7 +133,7 @@ export default function SavingApplication() {
                   <OnClickLink
                     onClick={() => navigate(`/saving/application/form?id=${options.data.id}`)}
                   >
-                    {options.data.contactSeqId}
+                    {options.data.seqId}
                   </OnClickLink>
                 );
               }}
@@ -173,7 +173,7 @@ export default function SavingApplication() {
               format="Rp #,##0.00"
             />
             <Column
-              dataField={"contactName"}
+              dataField={"contactVa"}
               caption={"Nomor Virtual Account"}
               filterOperations={filterOperation.string}
             />

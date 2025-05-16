@@ -17,6 +17,7 @@ import { TReqResSavingSubmit } from "src/api/types/ISaving";
 import { backofficeAccess } from "src/constants/variableConstata";
 import { initSavingForm } from "src/interfaces/ISaving";
 import { notifyError, notifySuccess, notifyWarning } from "src/utils/devExtremeUtils";
+import { allowOnlyNumbers } from "src/utils/helpers";
 
 const FormSavingApplication = () => {
   const navigate = useNavigate();
@@ -34,6 +35,9 @@ const FormSavingApplication = () => {
   useEffect(() => {
     getDetailSavingApplication(ID).then((res) => {
       setFormData(res);
+      if (res.bankAccountIsVerified) {
+        setDisableButtonSubmit(false);
+      }
     });
   }, [ID]);
 
@@ -258,14 +262,7 @@ const FormSavingApplication = () => {
                   editorOptions={{
                     disabled: isDableBankIdBankAccNumber,
                     readOnly: isReadonly,
-                    onKeyDown: (e: any) => {
-                      const key = e.event.key;
-                      e.value = String.fromCharCode(e.event.keyCode);
-                      let forbiddenChars = ["!", "@", "#", "$", "%", "^", "&", "*", "(", ")"];
-                      if (forbiddenChars.includes(key)) e.event.preventDefault();
-                      if (!/[0-9]/.test(e.value) && key !== "Backspace" && key !== "Delete")
-                        e.event.preventDefault();
-                    }
+                    onKeyDown: (e: any) => allowOnlyNumbers(e.event)
                   }}
                 />
                 <ButtonItem

@@ -1,19 +1,25 @@
 import { DataGrid } from "devextreme-react";
 import { Column, FilterRow, Pager, Paging, Scrolling } from "devextreme-react/data-grid";
 import "devextreme/data/odata/store";
+import queryString from "query-string";
 import { useRef } from "react";
+import { useLocation } from "react-router-dom";
+import { listSavingContractCashflowStore } from "src/api/saving";
 import { filterOperation } from "src/constants/FilterOperation";
 import { calculateFilterExpressionCustom } from "src/utils/devExtremeUtils";
 
 const TableCashflow = () => {
   const dataGrid = useRef<DataGrid>(null);
+  const location = useLocation();
+  const { id } = queryString.parse(location.search);
+  const ID = String(id);
 
   return (
     <div className={"form__tabs dx-card responsive-paddings"}>
       <h5 style={{ marginTop: 0, marginBottom: "10px" }}>Cashflow</h5>
       <DataGrid
         ref={dataGrid}
-        dataSource={[]}
+        dataSource={listSavingContractCashflowStore(ID)}
         focusedRowEnabled={true}
         remoteOperations={true}
         columnAutoWidth={true}
@@ -33,7 +39,7 @@ const TableCashflow = () => {
           calculateFilterExpression={calculateFilterExpressionCustom}
           filterOperations={filterOperation.date}
         />
-        <Column dataField={"name"} caption={"Tipe"} filterOperations={filterOperation.string} />
+        <Column dataField={"typeId"} caption={"Tipe"} filterOperations={filterOperation.string} />
         <Column
           dataField={"category"}
           caption={"Kategori"}
@@ -43,8 +49,22 @@ const TableCashflow = () => {
           dataField={"amount"}
           caption={"Jumlah"}
           filterOperations={filterOperation.numeric}
-          format="Rp #,##0.00"
+          cellRender={({ row }) => {
+            const isOutflow = row.data.typeId === "OUTFLOW";
+            const amount = row.data.amount;
+
+            const formattedAmount = amount.toLocaleString("id-ID", {
+              style: "currency",
+              currency: "IDR"
+            });
+
+            const style = { color: isOutflow ? "red" : "green" };
+            return (
+              <span style={style}>{isOutflow ? `(${formattedAmount})` : formattedAmount}</span>
+            );
+          }}
         />
+
         <Paging defaultPageSize={50} />
         <Pager showPageSizeSelector={true} showInfo={true} allowedPageSizes={[10, 50, 100]} />
       </DataGrid>
