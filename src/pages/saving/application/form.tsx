@@ -184,10 +184,28 @@ const FormSavingApplication = () => {
   };
 
   const handleRadioChange = (field: keyof TReqResSavingSubmit, value: boolean) => {
-    setFormData((prev) => ({
-      ...prev,
-      [field]: value
-    }));
+    setFormData((prev) => {
+      if (field === "isWithdrawOnDue") {
+        return {
+          ...prev,
+          isWithdrawOnDue: value,
+          isRenewOnDue: !value
+        };
+      }
+
+      if (field === "isRenewOnDue") {
+        return {
+          ...prev,
+          isWithdrawOnDue: !value,
+          isRenewOnDue: value
+        };
+      }
+
+      return {
+        ...prev,
+        [field]: value
+      };
+    });
   };
 
   const RadioGroupCell = React.memo(
@@ -314,18 +332,6 @@ const FormSavingApplication = () => {
                 )}
               />
               <SimpleItem
-                dataField="isWithdrawOnDue"
-                editorType="dxSelectBox"
-                label={{ text: "Penarikan saat jatuh tempo" }}
-                render={() => (
-                  <RadioGroupCell
-                    dataField="isWithdrawOnDue"
-                    value={formData.isWithdrawOnDue}
-                    onChange={handleRadioChange}
-                  />
-                )}
-              />
-              <SimpleItem
                 dataField="isRenewOnDue"
                 editorType="dxSelectBox"
                 label={{ text: "Perbarui saat jatuh tempo" }}
@@ -333,6 +339,18 @@ const FormSavingApplication = () => {
                   <RadioGroupCell
                     dataField="isRenewOnDue"
                     value={formData.isRenewOnDue}
+                    onChange={handleRadioChange}
+                  />
+                )}
+              />
+              <SimpleItem
+                dataField="isWithdrawOnDue"
+                editorType="dxSelectBox"
+                label={{ text: "Penarikan saat jatuh tempo" }}
+                render={() => (
+                  <RadioGroupCell
+                    dataField="isWithdrawOnDue"
+                    value={formData.isWithdrawOnDue}
                     onChange={handleRadioChange}
                   />
                 )}
