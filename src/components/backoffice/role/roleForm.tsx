@@ -120,7 +120,7 @@ export default function RoleForm({formRef, readonly, id, submit, loading}: {
                             isRequired={true}
                             render={({component, dataField}) => (
                                 <MultiSelect
-                                    value={roleFormData.access}
+                                    value={roleFormData.accessIds}
                                     dataSource={accessStore}
                                     component={component}
                                     fieldName={dataField}
