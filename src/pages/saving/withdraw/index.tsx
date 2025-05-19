@@ -3,22 +3,23 @@ import "devextreme/data/odata/store";
 import React, { useRef } from "react";
 import ReactDOM from "react-dom/client";
 import { useNavigate } from "react-router-dom";
-import { listSavingCustomerStore } from "src/api/saving";
+import { listSavingWithdrawStore } from "src/api/saving";
 import { OnClickLink } from "src/components/alink";
+import { ApplicationStatus } from "src/components/application-status";
 import { filterOperation } from "src/constants/FilterOperation";
 
-export default function SavingCustomer() {
+export default function SavingWithdraw() {
   const navigate = useNavigate();
   const dataGrid = useRef<DataGrid>(null);
 
   return (
     <React.Fragment>
-      <h2 className={"content-block"}>Simpanan Anggota</h2>
+      <h2 className={"content-block"}>Penarikan Simpanan</h2>
       <div className={"content-block"}>
         <div className={"dx-card"}>
           <DataGrid
             ref={dataGrid}
-            dataSource={listSavingCustomerStore}
+            dataSource={listSavingWithdrawStore}
             focusedRowEnabled={true}
             remoteOperations={true}
             columnAutoWidth={true}
@@ -31,13 +32,41 @@ export default function SavingCustomer() {
             <FilterRow visible={true} />
             <Column
               alignment={"center"}
-              dataField={"contactSeqId"}
-              caption={"#Nomor Anggota"}
+              dataField={"seqId"}
+              caption={"#ID"}
               cellTemplate={function (container: any, options: any) {
                 const dom = ReactDOM.createRoot(container);
                 dom.render(
                   <OnClickLink
-                    onClick={() => navigate(`/saving/customer/detail?id=${options.data.id}`)}
+                    onClick={() => navigate(`/saving/withdraw/detail?id=${options.data.id}`)}
+                  >
+                    {options.data.seqId}
+                  </OnClickLink>
+                );
+              }}
+              filterOperations={filterOperation.numeric}
+            />
+            <Column
+              dataField={"amount"}
+              caption={"Jumlah"}
+              filterOperations={filterOperation.numeric}
+              format="Rp #,##0.00"
+            />
+            <Column
+              dataField={"statusName"}
+              caption={"Status"}
+              filterOperations={filterOperation.string}
+              cellRender={ApplicationStatus}
+            />
+            <Column
+              alignment={"center"}
+              dataField={"contactSeqId"}
+              caption={"#No.Kontak"}
+              cellTemplate={function (container: any, options: any) {
+                const dom = ReactDOM.createRoot(container);
+                dom.render(
+                  <OnClickLink
+                    onClick={() => navigate(`/contact/detail?id=${options.data.contactId}`)}
                   >
                     {options.data.contactSeqId}
                   </OnClickLink>
@@ -51,37 +80,34 @@ export default function SavingCustomer() {
               filterOperations={filterOperation.string}
             />
             <Column
+              dataField={"contactIdNumber"}
+              caption={"No. KTP"}
+              filterOperations={filterOperation.string}
+            />
+            <Column
               dataField={"contactPhone"}
-              caption={"Nomor HP"}
+              caption={"No. HP"}
               filterOperations={filterOperation.string}
             />
             <Column
-              dataField={"contactEmail"}
-              caption={"Email"}
+              dataField={"bankAccName"}
+              caption={"Bank"}
               filterOperations={filterOperation.string}
             />
             <Column
-              dataField={"contactIdCardNumber"}
-              caption={"Nomor KTP"}
+              dataField={"bankAccNumber"}
+              caption={"Nomor Rekening"}
               filterOperations={filterOperation.string}
             />
             <Column
-              dataField={"amount"}
-              caption={"Saldo Simpanan"}
-              filterOperations={filterOperation.numeric}
-              format="Rp #,##0.00"
+              dataField={"createdByName"}
+              caption={"Dibuat oleh"}
+              filterOperations={filterOperation.string}
             />
             <Column
-              dataField={"depositAmountBalance"}
-              caption={"Saldo Deposito"}
-              filterOperations={filterOperation.numeric}
-              format="Rp #,##0.00"
-            />
-            <Column
-              dataField={"totalBalance"}
-              caption={"Total Saldo"}
-              filterOperations={filterOperation.numeric}
-              format="Rp #,##0.00"
+              dataField={"modifiedByName"}
+              caption={"Dirubah oleh"}
+              filterOperations={filterOperation.string}
             />
 
             <Paging defaultPageSize={50} />

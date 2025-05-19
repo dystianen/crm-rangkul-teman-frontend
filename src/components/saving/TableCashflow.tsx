@@ -46,14 +46,21 @@ const TableCashflow = () => {
           filterOperations={filterOperation.string}
         />
         <Column
-          dataField={"amount"}
-          caption={"Jumlah"}
+          dataField="amount"
+          caption="Jumlah Simpanan Pokok"
           filterOperations={filterOperation.numeric}
           cellRender={({ row }) => {
             const isOutflow = row.data.typeId === "OUTFLOW";
-            const amount = row.data.amountStr;
+            const amount = row.data.amount;
+
+            const formatted = amount.toLocaleString("id-ID", {
+              style: "currency",
+              currency: "IDR"
+            });
+
             const style = { color: isOutflow ? "red" : "green" };
-            return <span style={style}>{amount}</span>;
+
+            return <span style={style}>{isOutflow ? `(${formatted})` : formatted}</span>;
           }}
         />
 

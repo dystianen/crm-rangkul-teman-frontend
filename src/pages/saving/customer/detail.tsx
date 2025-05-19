@@ -37,31 +37,27 @@ const SavingCustomerDetail = () => {
           }}
         />
       </Title.Toolbar>
-      <div className={"form__tabs dx-card responsive-paddings"}>
-        <Form colCount={1} id="form" formData={formData} labelLocation="left">
-          <GroupItem caption={"Detail Simpanan Anggota"}>
-            <GroupItem colCount={1}>
+      <div className={"form__tabs"}>
+        <Form colCount={1} id="form" formData={formData}>
+          <GroupItem caption={"Informasi Simpanan"} cssClass="dx-card responsive-paddings">
+            <GroupItem colCount={2}>
               <SimpleItem
-                dataField="seqId"
-                label={{ text: "Nomor Anggota" }}
-                editorType="dxTextBox"
+                dataField="startOn"
+                editorType="dxDateBox"
+                label={{ text: "Tanggal Mulai" }}
                 editorOptions={{
+                  displayFormat: "dd MMM yyyy",
+                  type: "datetime",
                   readOnly: true
                 }}
               />
               <SimpleItem
-                dataField="contactIdCardNumber"
-                editorType="dxTextBox"
-                label={{ text: "Nomor KTP" }}
+                dataField="finishOn"
+                editorType="dxDateBox"
+                label={{ text: "Tanggal Selesai" }}
                 editorOptions={{
-                  readOnly: true
-                }}
-              />
-              <SimpleItem
-                dataField="contactPhone"
-                editorType="dxTextBox"
-                label={{ text: "Nomor HP" }}
-                editorOptions={{
+                  displayFormat: "dd MMM yyyy",
+                  type: "datetime",
                   readOnly: true
                 }}
               />
@@ -91,6 +87,44 @@ const SavingCustomerDetail = () => {
                   readOnly: true
                 }}
                 editorType="dxNumberBox"
+              />
+            </GroupItem>
+          </GroupItem>
+
+          <GroupItem caption={"Informasi Kontak"} cssClass="dx-card responsive-paddings next-card">
+            <GroupItem colCount={2}>
+              <SimpleItem label={{ text: "#No" }} editorType="dxTextBox" dataField="contactSeqId" />
+              <SimpleItem
+                dataField="contactName"
+                label={{ text: "Nama Anggota" }}
+                editorOptions={{
+                  readOnly: true
+                }}
+              />
+              <SimpleItem
+                dataField="contactPhone"
+                label={{ text: "No. HP" }}
+                editorOptions={{
+                  readOnly: true,
+                  mask: "+00 (X00) 000-0000",
+                  maskRules: { X: /[02-9]/ }
+                }}
+              />
+              <SimpleItem
+                dataField="contactEmail"
+                editorType="dxTextBox"
+                label={{ text: "Email" }}
+                editorOptions={{
+                  readOnly: true
+                }}
+              />
+              <SimpleItem
+                dataField="contactIdCardNumber"
+                editorType="dxTextBox"
+                label={{ text: "Nomor KTP" }}
+                editorOptions={{
+                  readOnly: true
+                }}
               />
             </GroupItem>
           </GroupItem>

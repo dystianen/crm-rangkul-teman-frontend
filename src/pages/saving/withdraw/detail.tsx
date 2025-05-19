@@ -6,18 +6,16 @@ import queryString from "query-string";
 import { useCallback, useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
-  getDetailSavingContract,
-  getSavingContractActivity,
-  postWithdrawDeposit
+  approveSavingWithdraw,
+  getDetailSavingWithdraw,
+  getSavingWithdrawActivity
 } from "src/api/saving";
 import { TResSavingContractDetail } from "src/api/types/ISaving";
-import { OnClickLink } from "src/components/alink";
 import PopupConfirm from "src/components/popup/popup-confirm";
-import TableCashflow from "src/components/saving/TableCashflow";
 import { initSavingContractDetail } from "src/interfaces/ISaving";
-import { notifyError } from "src/utils/devExtremeUtils";
+import { notifyError, notifySuccess } from "src/utils/devExtremeUtils";
 
-const SavingContractDetail = () => {
+const SavingWithdrawDetail = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { id } = queryString.parse(location.search);
@@ -27,22 +25,27 @@ const SavingContractDetail = () => {
   const [visible, setVisible] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    getDetailSavingContract(ID).then((res) => {
+  const handleFetchDetail = () => {
+    getDetailSavingWithdraw(ID).then((res) => {
       setFormData(res);
     });
 
-    getSavingContractActivity(ID).then((res) => {
+    getSavingWithdrawActivity(ID).then((res) => {
       setActivity(res);
     });
+  };
+
+  useEffect(() => {
+    handleFetchDetail();
   }, [ID]);
 
-  const handleDisbursement = () => {
+  const handleWithdraw = () => {
     setLoading(true);
-    postWithdrawDeposit(ID)
-      .then((res) => {
+    approveSavingWithdraw(ID)
+      .then(() => {
         setVisible(false);
-        navigate(`/withdraw/detail/${res.id}`);
+        handleFetchDetail();
+        notifySuccess("Penarikan simpanan berhasil disetujui");
       })
       .catch((err) => {
         notifyError(err);
@@ -59,7 +62,7 @@ const SavingContractDetail = () => {
   return (
     <>
       <div className="title-detail">
-        <h2 className={"content-block"}>Detail Perjanjian Simpanan</h2>
+        <h2 className={"content-block"}>Detail Penarikan Simpanan</h2>
         <DropDownButton
           visible={activity.length > 0}
           useSelectMode={false}
@@ -70,7 +73,7 @@ const SavingContractDetail = () => {
           }}
           items={activity}
           onItemClick={(e) => {
-            if (e.itemData === "Pencairan sebelum jatuh tempo") {
+            if (e.itemData === "Approve") {
               setVisible(true);
             }
           }}
@@ -95,27 +98,15 @@ const SavingContractDetail = () => {
         <div className={"form__tabs"}>
           <Form colCount={1} id="form" formData={formData}>
             <GroupItem
-              caption={"Detail Perjanjian Simpanan"}
+              caption={"Informasi Penarikan"}
               cssClass="dx-card responsive-paddings next-card"
             >
               <GroupItem colCount={2}>
                 <SimpleItem
-                  dataField="startOn"
-                  editorType="dxDateBox"
-                  label={{ text: "Tanggal Mulai" }}
+                  dataField="seqId"
+                  editorType="dxTextBox"
+                  label={{ text: "#ID" }}
                   editorOptions={{
-                    displayFormat: "dd MMM yyyy",
-                    type: "datetime",
-                    readOnly: true
-                  }}
-                />
-                <SimpleItem
-                  dataField="finishOn"
-                  editorType="dxDateBox"
-                  label={{ text: "Tanggal Selesai" }}
-                  editorOptions={{
-                    displayFormat: "dd MMM yyyy",
-                    type: "datetime",
                     readOnly: true
                   }}
                 />
@@ -137,28 +128,11 @@ const SavingContractDetail = () => {
                   editorType="dxNumberBox"
                 />
                 <SimpleItem
-                  dataField="accrualInterest"
-                  label={{ text: "Jumlah Bunga" }}
-                  editorOptions={{
-                    format: "Rp #,##0.00",
-                    readOnly: true
-                  }}
-                  editorType="dxNumberBox"
-                />
-                <SimpleItem
-                  label={{ text: "#Nomor Pengajuan" }}
+                  dataField="description"
                   editorType="dxTextBox"
-                  dataField="appSeqId"
-                  render={(data: any) => {
-                    return (
-                      <div style={{ marginTop: "8px" }}>
-                        <OnClickLink
-                          onClick={() => navigate(`/saving/application/form?id=${formData.appId}`)}
-                        >
-                          {data.editorOptions.value || "-"}
-                        </OnClickLink>
-                      </div>
-                    );
+                  label={{ text: "Deskripsi" }}
+                  editorOptions={{
+                    readOnly: true
                   }}
                 />
               </GroupItem>
@@ -192,15 +166,34 @@ const SavingContractDetail = () => {
                 />
                 <SimpleItem
                   dataField="contactEmail"
+                  editorType="dxTextBox"
                   label={{ text: "Email" }}
                   editorOptions={{
                     readOnly: true
                   }}
                 />
                 <SimpleItem
-                  dataField="contactIdCardNumber"
-                  editorType="dxTextBox"
-                  label={{ text: "Nomor KTP" }}
+                  dataField="contactIdNumber"
+                  label={{ text: "No. KTP" }}
+                  editorOptions={{
+                    readOnly: true
+                  }}
+                />
+              </GroupItem>
+            </GroupItem>
+
+            <GroupItem caption={"Informasi Bank"} cssClass="dx-card responsive-paddings next-card">
+              <GroupItem colCount={2}>
+                <SimpleItem
+                  dataField="bankAccName"
+                  label={{ text: "Bank" }}
+                  editorOptions={{
+                    readOnly: true
+                  }}
+                />
+                <SimpleItem
+                  dataField="bankAccNumber"
+                  label={{ text: "Nomor Rekening" }}
                   editorOptions={{
                     readOnly: true
                   }}
@@ -210,18 +203,16 @@ const SavingContractDetail = () => {
           </Form>
         </div>
 
-        <TableCashflow />
-
         <PopupConfirm
           visible={visible}
           handleCancel={handleCancel}
-          handleConfirm={handleDisbursement}
+          handleConfirm={handleWithdraw}
           loading={loading}
-          message="Simpanan berjangka masih belum jatuh tempo. Lanjutkan ke penarikan dana? Nasabah tidak akan mendapatkan jasa atau bunga."
+          message="Apakah anda yakin ingin menyetujui penarikan simpanan ini?"
         />
       </div>
     </>
   );
 };
 
-export default SavingContractDetail;
+export default SavingWithdrawDetail;

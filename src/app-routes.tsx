@@ -46,6 +46,8 @@ import SavingContractDetail from "./pages/saving/contract/detail";
 import SavingCustomer from "./pages/saving/customer";
 import SavingCustomerDetail from "./pages/saving/customer/detail";
 import SavingPayment from "./pages/saving/payment";
+import SavingWithdraw from "./pages/saving/withdraw";
+import SavingWithdrawDetail from "./pages/saving/withdraw/detail";
 
 const routes = [
   {
@@ -323,6 +325,18 @@ const routes = [
     path: "/saving/customer/detail",
     title: "Saving Customer Detail",
     element: SavingCustomerDetail
+  },
+  {
+    ID: 43,
+    path: "/saving/withdraw",
+    title: "Saving Withdraw",
+    element: SavingWithdraw
+  },
+  {
+    ID: 43,
+    path: "/saving/withdraw/detail",
+    title: "Saving Withdraw Detail",
+    element: SavingWithdrawDetail
   }
 ];
 
