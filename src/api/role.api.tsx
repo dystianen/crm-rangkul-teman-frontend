@@ -1,7 +1,7 @@
 import {customStore} from "../model/customStore";
 import {API_PATH} from "./path_url";
 import {dataRawCustomStore} from "../model/datagrid";
-import {ajaxPatch, ajaxPost} from "./http.api";
+import {ajaxGet, ajaxPatch, ajaxPost} from "./http.api";
 
 export const accessStore = dataRawCustomStore(`${API_PATH.ACCESS}?`);
 export const createAccess = async (data: any): Promise<any> => {
@@ -26,5 +26,9 @@ export const createRole = async (data: any): Promise<any> => {
 };
 export const updateRole = async (data: any): Promise<any> => {
   const resp = await ajaxPatch(`${API_PATH.ROLE}/update`, data);
+  return resp.data;
+};
+export const getRoleDetail = async (id: string): Promise<any> => {
+  const resp = await ajaxGet(`${API_PATH.ROLE}/${id}`);
   return resp.data;
 };
