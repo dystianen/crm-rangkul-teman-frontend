@@ -26,7 +26,7 @@ export const UpdateRolePage: FC = () => {
     return (<>
         <div className={"content-block"}>
 
-            <h2>Edit Peran Pengguna</h2>dev
+            <h2>Edit Peran Pengguna</h2>
 
             <Title.Toolbar className={"dx-card"}>
                 <Title.Item location="before" widget="dxButton" options={{
