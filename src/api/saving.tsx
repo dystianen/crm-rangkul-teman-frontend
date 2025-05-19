@@ -74,3 +74,15 @@ export const getDetailSavingCustomer = async (
   const resp = await ajaxGet(`${API_PATH.SAVING_DEPOSIT}/member/${savingId}`);
   return resp.data;
 };
+
+export const getSavingContractActivity = async (contractId: string): Promise<any> => {
+  const resp = await ajaxGet(`${API_PATH.SAVING_DEPOSIT}/contract/activity/${contractId}`);
+  return resp.data;
+};
+
+export const postWithdrawDeposit = async (contractId: string): Promise<any> => {
+  const resp = await ajaxPost(`${API_PATH.SAVING_DEPOSIT}/withdraw/create/deposit`, {
+    contractId
+  });
+  return resp.data;
+};
