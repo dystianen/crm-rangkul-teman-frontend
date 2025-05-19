@@ -12,9 +12,7 @@ import {
   ContactPage,
   ContractDetailPage,
   ContractPage,
-  CreateUserPage,
   DetailPage,
-  DetailUserPage,
   DisburseDetailPage,
   DisbursePage,
   HomePage,
@@ -33,9 +31,8 @@ import {
   Step2Page,
   TransactionDetailPage,
   TransactionPage,
-  UpdateUserPage,
-  UploadSignedPage,
-  UserListPage
+  UploadSignedPage, UserListPage, CreateUserPage, DetailUserPage, UpdateUserPage,
+  RoleListPage, CreateRolePage, UpdateRolePage
 } from "./pages";
 import ContactActivities from "./pages/contact-activities";
 import CreateEditContactLeads from "./pages/contact/CreateEditContactLeads";
@@ -323,7 +320,25 @@ const routes = [
     path: "/saving/customer/detail",
     title: "Saving Customer Detail",
     element: SavingCustomerDetail
-  }
+  },
+  {
+    ID: 43,
+    path: "/backoffice/role",
+    title: "Peran Pengguna",
+    element: RoleListPage
+  },
+  {
+    ID: 44,
+    path: "/backoffice/role/create",
+    title: "Buat Peran Pengguna",
+    element: CreateRolePage
+  },
+  {
+    ID: 45,
+    path: "/backoffice/role/update",
+    title: "Ubah Peran Pengguna",
+    element: UpdateRolePage
+  },
 ];
 
 //@ts-ignore
