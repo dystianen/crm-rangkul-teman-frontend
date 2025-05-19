@@ -27,7 +27,7 @@ const SavingContractDetail = () => {
   const [visible, setVisible] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
+  const handleFetchDetail = () => {
     getDetailSavingContract(ID).then((res) => {
       setFormData(res);
     });
@@ -35,6 +35,10 @@ const SavingContractDetail = () => {
     getSavingContractActivity(ID).then((res) => {
       setActivity(res);
     });
+  };
+
+  useEffect(() => {
+    handleFetchDetail();
   }, [ID]);
 
   const handleDisbursement = () => {
@@ -43,6 +47,7 @@ const SavingContractDetail = () => {
       .then(() => {
         notifySuccess("Penarikan dana berhasil");
         setVisible(false);
+        handleFetchDetail();
       })
       .catch((err) => {
         notifyError(err);

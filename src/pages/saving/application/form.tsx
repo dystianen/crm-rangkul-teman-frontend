@@ -185,19 +185,19 @@ const FormSavingApplication = () => {
 
   const handleRadioChange = (field: keyof TReqResSavingSubmit, value: boolean) => {
     setFormData((prev) => {
-      if (field === "isWithdrawOnDue") {
+      if (field === "isWithdrawOnDue" && value === true) {
         return {
           ...prev,
-          isWithdrawOnDue: value,
-          isRenewOnDue: !value
+          isWithdrawOnDue: true,
+          isRenewOnDue: false
         };
       }
 
-      if (field === "isRenewOnDue") {
+      if (field === "isRenewOnDue" && value === true) {
         return {
           ...prev,
-          isWithdrawOnDue: !value,
-          isRenewOnDue: value
+          isWithdrawOnDue: false,
+          isRenewOnDue: true
         };
       }
 
