@@ -82,12 +82,10 @@ export default function RoleForm({formRef, readonly, id, submit, loading}: {
                             editorOptions={{
                                 readonly: readonly,
                                 min: 0,
-                                maxLength: 150,
-                                onKeyDown: (e: any) => allowOnlyText(e.event)
+                                maxLength: 150
                             }}
                         >
                             <RequiredRule message="Nama wajib diisi"/>
-                            <PatternRule message="Tidak boleh angka" pattern={/^[^0-9]+$/}/>
                         </SimpleItem>
 
                         <SimpleItem
