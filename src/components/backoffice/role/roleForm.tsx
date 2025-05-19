@@ -22,7 +22,7 @@ export default function RoleForm({formRef, readonly, id, submit, loading}: {
     submit?: FormEventHandler | undefined,
     loading: boolean
 }) {
-    const [roleFormData, setRoleFormData] = useState<any>({isRoot: false});
+    const [roleFormData, setRoleFormData] = useState<any>({isRoot: false, accessIds: []});
 
     const onFieldDataChanged = (evt: any) => {
         const {dataField, value} = evt;
@@ -44,7 +44,7 @@ export default function RoleForm({formRef, readonly, id, submit, loading}: {
             name: "",
             isRoot: false,
             defaultPage: "",
-            access: []
+            accessIds: []
 
         });
         if (typeof id !== "undefined") {
@@ -55,7 +55,7 @@ export default function RoleForm({formRef, readonly, id, submit, loading}: {
                     name: rs.name,
                     isRoot: rs.isRoot,
                     defaultPage: rs.defaultPage,
-                    access: accessIds
+                    accessIds: accessIds
                 });
             })
         }
@@ -115,7 +115,7 @@ export default function RoleForm({formRef, readonly, id, submit, loading}: {
                         </SimpleItem>
 
                         <SimpleItem
-                            dataField="access"
+                            dataField="accessIds"
                             label={{text: "Akses"}}
                             isRequired={true}
                             render={({component, dataField}) => (
