@@ -32,3 +32,4 @@ export {RestructureDetailPage} from "./restructure/detail";
 export {RestructureCreatePage} from "./restructure/create";
 
 export {UserListPage, CreateUserPage, DetailUserPage, UpdateUserPage} from "./backoffice/user";
+export {RoleListPage, CreateRolePage, UpdateRolePage} from "./backoffice/role";
