@@ -7,6 +7,7 @@ import { useLocation } from "react-router-dom";
 import { listSavingContractCashflowStore } from "src/api/saving";
 import { filterOperation } from "src/constants/FilterOperation";
 import { calculateFilterExpressionCustom } from "src/utils/devExtremeUtils";
+import { ApplicationStatus } from "../application-status";
 
 const TableCashflow = () => {
   const dataGrid = useRef<DataGrid>(null);
@@ -39,21 +40,33 @@ const TableCashflow = () => {
           calculateFilterExpression={calculateFilterExpressionCustom}
           filterOperations={filterOperation.date}
         />
-        <Column dataField={"typeId"} caption={"Tipe"} filterOperations={filterOperation.string} />
+        <Column
+          dataField={"typeId"}
+          caption={"Tipe"}
+          filterOperations={filterOperation.string}
+          cellRender={ApplicationStatus}
+        />
         <Column
           dataField={"category"}
           caption={"Kategori"}
           filterOperations={filterOperation.string}
         />
         <Column
-          dataField={"amount"}
-          caption={"Jumlah"}
+          dataField="amount"
+          caption="Jumlah Simpanan Pokok"
           filterOperations={filterOperation.numeric}
           cellRender={({ row }) => {
             const isOutflow = row.data.typeId === "OUTFLOW";
-            const amount = row.data.amountStr;
-            const style = { color: isOutflow ? "red" : "green" };
-            return <span style={style}>{amount}</span>;
+            const amount = row.data.amount;
+
+            const formatted = amount.toLocaleString("id-ID", {
+              style: "currency",
+              currency: "IDR"
+            });
+
+            const style = { color: isOutflow ? "#d71010" : "#10d710" };
+
+            return <span style={style}>{isOutflow ? `(${formatted})` : formatted}</span>;
           }}
         />
 

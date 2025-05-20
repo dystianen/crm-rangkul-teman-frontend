@@ -15,7 +15,7 @@ import { OnClickLink } from "src/components/alink";
 import PopupConfirm from "src/components/popup/popup-confirm";
 import TableCashflow from "src/components/saving/TableCashflow";
 import { initSavingContractDetail } from "src/interfaces/ISaving";
-import { notifyError, notifySuccess } from "src/utils/devExtremeUtils";
+import { notifyError } from "src/utils/devExtremeUtils";
 
 const SavingContractDetail = () => {
   const navigate = useNavigate();
@@ -27,7 +27,7 @@ const SavingContractDetail = () => {
   const [visible, setVisible] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const handleFetchDetail = () => {
+  useEffect(() => {
     getDetailSavingContract(ID).then((res) => {
       setFormData(res);
     });
@@ -35,19 +35,14 @@ const SavingContractDetail = () => {
     getSavingContractActivity(ID).then((res) => {
       setActivity(res);
     });
-  };
-
-  useEffect(() => {
-    handleFetchDetail();
   }, [ID]);
 
   const handleDisbursement = () => {
     setLoading(true);
     postWithdrawDeposit(ID)
-      .then(() => {
-        notifySuccess("Penarikan dana berhasil");
+      .then((res) => {
         setVisible(false);
-        handleFetchDetail();
+        navigate(`/withdraw/detail/${res.id}`);
       })
       .catch((err) => {
         notifyError(err);
@@ -64,7 +59,7 @@ const SavingContractDetail = () => {
   return (
     <>
       <div className="title-detail">
-        <h2 className={"content-block"}>Perjanjian Simpanan</h2>
+        <h2 className={"content-block"}>Detail Perjanjian Simpanan</h2>
         <DropDownButton
           visible={activity.length > 0}
           useSelectMode={false}
@@ -97,18 +92,13 @@ const SavingContractDetail = () => {
           />
         </Title.Toolbar>
 
-        <div className={"form__tabs dx-card responsive-paddings"}>
-          <Form colCount={1} id="form" formData={formData} labelLocation="left">
-            <GroupItem caption={"Detail Perjanjian Simpanan"}>
-              <GroupItem colCount={1}>
-                <SimpleItem
-                  dataField="seqId"
-                  label={{ text: "ID" }}
-                  editorOptions={{
-                    readOnly: true
-                  }}
-                />
-
+        <div className={"form__tabs"}>
+          <Form colCount={1} id="form" formData={formData}>
+            <GroupItem
+              caption={"Detail Perjanjian Simpanan"}
+              cssClass="dx-card responsive-paddings next-card"
+            >
+              <GroupItem colCount={2}>
                 <SimpleItem
                   dataField="startOn"
                   editorType="dxDateBox"
@@ -138,14 +128,6 @@ const SavingContractDetail = () => {
                   }}
                 />
                 <SimpleItem
-                  dataField="contactName"
-                  editorType="dxTextBox"
-                  label={{ text: "Nama Anggota" }}
-                  editorOptions={{
-                    readOnly: true
-                  }}
-                />
-                <SimpleItem
                   dataField="amount"
                   label={{ text: "Jumlah Simpanan Pokok" }}
                   editorOptions={{
@@ -164,18 +146,63 @@ const SavingContractDetail = () => {
                   editorType="dxNumberBox"
                 />
                 <SimpleItem
-                  label={{ text: "Nomor Pengajuan" }}
+                  label={{ text: "#Nomor Pengajuan" }}
                   editorType="dxTextBox"
                   dataField="appSeqId"
                   render={(data: any) => {
-                    console.log(data);
                     return (
-                      <OnClickLink
-                        onClick={() => navigate(`/saving/application/form?id=${formData.appId}`)}
-                      >
-                        {data.editorOptions.value || "-"}
-                      </OnClickLink>
+                      <div style={{ marginTop: "8px" }}>
+                        <OnClickLink
+                          onClick={() => navigate(`/saving/application/form?id=${formData.appId}`)}
+                        >
+                          {data.editorOptions.value || "-"}
+                        </OnClickLink>
+                      </div>
                     );
+                  }}
+                />
+              </GroupItem>
+            </GroupItem>
+
+            <GroupItem
+              caption={"Informasi Kontak"}
+              cssClass="dx-card responsive-paddings next-card"
+            >
+              <GroupItem colCount={2}>
+                <SimpleItem
+                  label={{ text: "#No" }}
+                  editorType="dxTextBox"
+                  dataField="contactSeqId"
+                />
+                <SimpleItem
+                  dataField="contactName"
+                  label={{ text: "Nama Anggota" }}
+                  editorOptions={{
+                    readOnly: true
+                  }}
+                />
+                <SimpleItem
+                  dataField="contactPhone"
+                  label={{ text: "No. HP" }}
+                  editorOptions={{
+                    readOnly: true,
+                    mask: "+00 (X00) 000-0000",
+                    maskRules: { X: /[02-9]/ }
+                  }}
+                />
+                <SimpleItem
+                  dataField="contactEmail"
+                  label={{ text: "Email" }}
+                  editorOptions={{
+                    readOnly: true
+                  }}
+                />
+                <SimpleItem
+                  dataField="contactIdCardNumber"
+                  editorType="dxTextBox"
+                  label={{ text: "Nomor KTP" }}
+                  editorOptions={{
+                    readOnly: true
                   }}
                 />
               </GroupItem>

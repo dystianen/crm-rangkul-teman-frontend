@@ -86,3 +86,24 @@ export const postWithdrawDeposit = async (contractId: string): Promise<any> => {
   });
   return resp.data;
 };
+
+export const listSavingWithdrawStore = customStore({
+  loadUrl: `${API_PATH.SAVING_DEPOSIT}/withdraw`
+});
+
+export const getDetailSavingWithdraw = async (id: string): Promise<TResSavingContractDetail> => {
+  const resp = await ajaxGet(`${API_PATH.SAVING_DEPOSIT}/withdraw/${id}`);
+  return resp.data;
+};
+
+export const getSavingWithdrawActivity = async (id: string): Promise<any> => {
+  const resp = await ajaxGet(`${API_PATH.SAVING_DEPOSIT}/withdraw/activity/${id}`);
+  return resp.data;
+};
+
+export const approveSavingWithdraw = async (withdrawId: string): Promise<any> => {
+  const resp = await ajaxPost(`${API_PATH.SAVING_DEPOSIT}/withdraw/approve`, {
+    withdrawId
+  });
+  return resp.data;
+};
