@@ -7,6 +7,7 @@ import { listSavingWithdrawStore } from "src/api/saving";
 import { OnClickLink } from "src/components/alink";
 import { ApplicationStatus } from "src/components/application-status";
 import { filterOperation } from "src/constants/FilterOperation";
+import { calculateFilterExpressionCustom } from "src/utils/devExtremeUtils";
 
 export default function SavingWithdraw() {
   const navigate = useNavigate();
@@ -47,8 +48,24 @@ export default function SavingWithdraw() {
               filterOperations={filterOperation.numeric}
             />
             <Column
+              dataField={"createdOn"}
+              caption={"Tanggal Dibuat"}
+              dataType={"date"}
+              format={"dd MMM yyyy HH:mm:ss"}
+              calculateFilterExpression={calculateFilterExpressionCustom}
+              filterOperations={filterOperation.date}
+            />
+            <Column
+              dataField={"modifiedOn"}
+              caption={"Tanggal Diubah"}
+              dataType={"date"}
+              format={"dd MMM yyyy HH:mm:ss"}
+              calculateFilterExpression={calculateFilterExpressionCustom}
+              filterOperations={filterOperation.date}
+            />
+            <Column
               dataField={"amount"}
-              caption={"Jumlah"}
+              caption={"Jumlah Penarikan"}
               filterOperations={filterOperation.numeric}
               format="Rp #,##0.00"
             />
@@ -81,12 +98,13 @@ export default function SavingWithdraw() {
             />
             <Column
               dataField={"contactIdNumber"}
-              caption={"No. KTP"}
+              caption={"Nomor KTP"}
+              alignment={"left"}
               filterOperations={filterOperation.string}
             />
             <Column
               dataField={"contactPhone"}
-              caption={"No. HP"}
+              caption={"Nomor HP"}
               filterOperations={filterOperation.string}
             />
             <Column
