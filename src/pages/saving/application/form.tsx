@@ -234,153 +234,202 @@ const FormSavingApplication = () => {
   );
 
   return (
-    <div className={"content-block"} style={{ marginTop: "16px" }}>
-      <Title.Toolbar className={"dx-card"}>
-        <Title.Item
-          location="before"
-          widget="dxButton"
-          options={{
-            icon: "back",
-            text: "Kembali",
-            onClick: () => {
-              navigate(-1);
-            }
-          }}
-        />
-      </Title.Toolbar>
-      <div className={"form__tabs dx-card responsive-paddings"}>
-        <Form
-          colCount={1}
-          id="form"
-          formData={formData}
-          onFieldDataChanged={onFieldDataChanged}
-          labelLocation="left"
-        >
-          <GroupItem caption={"Buat Simpanan Berjangka"}>
-            <GroupItem colCount={1}>
-              <SimpleItem
-                dataField="amount"
-                label={{ text: "Jumlah Simpanan" }}
-                editorOptions={{
-                  format: "Rp #,##0.00",
-                  readOnly: isReadonly
-                }}
-                editorType="dxNumberBox"
-              />
-              <SimpleItem
-                dataField="termMonth"
-                editorType="dxSelectBox"
-                editorOptions={{ ...savingTermOptions, readOnly: isReadonly }}
-                label={{ text: "Jangka Waktu" }}
-              />
-            </GroupItem>
+    <>
+      <div className="title-detail">
+        <h2 className={"content-block"}>Pengajuan Simpanan</h2>
+      </div>
 
-            <GroupItem colCount={1}>
-              <SimpleItem
-                dataField="bankId"
-                editorType="dxSelectBox"
-                editorOptions={{
-                  ...listBank,
-                  disabled: isDableBankIdBankAccNumber,
-                  readOnly: isReadonly
-                }}
-                label={{ text: "Bank" }}
-              />
-              <GroupItem colCount={5}>
-                <SimpleItem
-                  colSpan={isReadonly ? 5 : 4}
-                  dataField="bankAccountNumber"
-                  label={{ text: "Nomor Rekening" }}
-                  editorOptions={{
-                    disabled: isDableBankIdBankAccNumber,
-                    readOnly: isReadonly,
-                    onKeyDown: (e: any) => allowOnlyNumbers(e.event)
-                  }}
-                />
-                <ButtonItem
-                  horizontalAlignment={"center"}
-                  verticalAlignment={"center"}
-                  visible={!isReadonly}
-                >
-                  <ButtonOptions
-                    type="default"
-                    width={"100%"}
-                    disabled={isDableBankIdBankAccNumber}
-                    onClick={handleCheckBankAccount}
-                  >
-                    <div className="button-options">
-                      <LoadIndicator
-                        width="20px"
-                        height="20px"
-                        visible={isDableBankIdBankAccNumber}
-                      />
-                      <span className="dx-button-text">Periksa</span>
-                    </div>
-                  </ButtonOptions>
-                </ButtonItem>
+      <div className={"content-block"}>
+        <Title.Toolbar className={"dx-card"}>
+          <Title.Item
+            location="before"
+            widget="dxButton"
+            options={{
+              icon: "back",
+              text: "Kembali",
+              onClick: () => {
+                navigate(-1);
+              }
+            }}
+          />
+        </Title.Toolbar>
+        <div className={"form__tabs form-container"}>
+          <Form
+            colCount={1}
+            id="form"
+            formData={formData}
+            onFieldDataChanged={onFieldDataChanged}
+            labelLocation="left"
+          >
+            <GroupItem>
+              <GroupItem caption={"Detail Anggota"} cssClass="dx-card responsive-paddings">
+                <GroupItem colCount={1}>
+                  <SimpleItem
+                    dataField="contactName"
+                    label={{ text: "Nama Anggota" }}
+                    editorOptions={{
+                      readOnly: true
+                    }}
+                  />
+                  <SimpleItem
+                    dataField="contactPhone"
+                    label={{ text: "No. HP" }}
+                    editorOptions={{
+                      readOnly: true,
+                      mask: "+00 (X00) 000-0000",
+                      maskRules: { X: /[02-9]/ }
+                    }}
+                  />
+                  <SimpleItem
+                    dataField="idCardNumber"
+                    editorType="dxTextBox"
+                    label={{ text: "Nomor KTP" }}
+                    editorOptions={{
+                      readOnly: true
+                    }}
+                  />
+                </GroupItem>
               </GroupItem>
 
-              <SimpleItem
-                dataField="isDeductSaving"
-                label={{ text: "Ambil dari simpanan" }}
-                render={() => (
-                  <RadioGroupCell
-                    dataField="isDeductSaving"
-                    value={formData.isDeductSaving}
-                    onChange={handleRadioChange}
-                  />
-                )}
-              />
-              <SimpleItem
-                dataField="isRenewOnDue"
-                editorType="dxSelectBox"
-                label={{ text: "Perbarui saat jatuh tempo" }}
-                render={() => (
-                  <RadioGroupCell
-                    dataField="isRenewOnDue"
-                    value={formData.isRenewOnDue}
-                    onChange={handleRadioChange}
-                  />
-                )}
-              />
-              <SimpleItem
-                dataField="isWithdrawOnDue"
-                editorType="dxSelectBox"
-                label={{ text: "Penarikan saat jatuh tempo" }}
-                render={() => (
-                  <RadioGroupCell
-                    dataField="isWithdrawOnDue"
-                    value={formData.isWithdrawOnDue}
-                    onChange={handleRadioChange}
-                  />
-                )}
-              />
-            </GroupItem>
-          </GroupItem>
-          <GroupItem visible={!isReadonly} colCountByScreen={{ xs: 4, sm: 8, md: 10, lg: 8 }}>
-            <ButtonItem horizontalAlignment="left">
-              <ButtonOptions width={"100%"} onClick={handleBack}>
-                <span className="dx-button-text">Batal</span>
-              </ButtonOptions>
-            </ButtonItem>
-
-            <ButtonItem horizontalAlignment="left">
-              <ButtonOptions
-                type="default"
-                width={"100%"}
-                disabled={isDisableButtonSubmit}
-                onClick={handleSubmit}
+              <GroupItem
+                caption={"Detail Simpanan"}
+                colCount={1}
+                cssClass="dx-card responsive-paddings next-card"
               >
-                <div className="button-options">
-                  <LoadIndicator width="20px" height="20px" visible={isLoadingSubmit} />
-                  <span className="dx-button-text">Simpan</span>
-                </div>
-              </ButtonOptions>
-            </ButtonItem>
-          </GroupItem>
-        </Form>
+                <SimpleItem
+                  dataField="amount"
+                  label={{ text: "Jumlah Simpanan" }}
+                  editorOptions={{
+                    format: "Rp #,##0.00",
+                    readOnly: isReadonly
+                  }}
+                  editorType="dxNumberBox"
+                />
+                <SimpleItem
+                  dataField="termMonth"
+                  editorType="dxSelectBox"
+                  editorOptions={{ ...savingTermOptions, readOnly: isReadonly }}
+                  label={{ text: "Jangka Waktu" }}
+                />
+              </GroupItem>
+
+              <GroupItem
+                caption={"Pencairan Simpanan"}
+                colCount={1}
+                cssClass="dx-card responsive-paddings next-card"
+              >
+                <SimpleItem
+                  dataField="bankId"
+                  editorType="dxSelectBox"
+                  editorOptions={{
+                    ...listBank,
+                    disabled: isDableBankIdBankAccNumber,
+                    readOnly: isReadonly
+                  }}
+                  label={{ text: "Bank" }}
+                />
+                <GroupItem colCount={5} cssClass="m0">
+                  <SimpleItem
+                    colSpan={isReadonly ? 5 : 4}
+                    dataField="bankAccountNumber"
+                    label={{ text: "Nomor Rekening" }}
+                    editorOptions={{
+                      disabled: isDableBankIdBankAccNumber,
+                      readOnly: isReadonly,
+                      onKeyDown: (e: any) => allowOnlyNumbers(e.event)
+                    }}
+                  />
+                  <ButtonItem
+                    horizontalAlignment={"center"}
+                    verticalAlignment={"center"}
+                    visible={!isReadonly}
+                  >
+                    <ButtonOptions
+                      type="default"
+                      width={"100%"}
+                      disabled={isDableBankIdBankAccNumber}
+                      onClick={handleCheckBankAccount}
+                    >
+                      <div className="button-options">
+                        <LoadIndicator
+                          width="20px"
+                          height="20px"
+                          visible={isDableBankIdBankAccNumber}
+                        />
+                        <span className="dx-button-text">Periksa</span>
+                      </div>
+                    </ButtonOptions>
+                  </ButtonItem>
+                </GroupItem>
+              </GroupItem>
+
+              <GroupItem
+                caption="Preferensi"
+                colCount={1}
+                cssClass="dx-card responsive-paddings next-card"
+              >
+                <SimpleItem
+                  dataField="isDeductSaving"
+                  label={{ text: "Ambil dari simpanan" }}
+                  render={() => (
+                    <RadioGroupCell
+                      dataField="isDeductSaving"
+                      value={formData.isDeductSaving}
+                      onChange={handleRadioChange}
+                    />
+                  )}
+                />
+                <SimpleItem
+                  dataField="isRenewOnDue"
+                  editorType="dxSelectBox"
+                  label={{ text: "Perbarui saat jatuh tempo" }}
+                  render={() => (
+                    <RadioGroupCell
+                      dataField="isRenewOnDue"
+                      value={formData.isRenewOnDue}
+                      onChange={handleRadioChange}
+                    />
+                  )}
+                />
+                <SimpleItem
+                  dataField="isWithdrawOnDue"
+                  editorType="dxSelectBox"
+                  label={{ text: "Penarikan saat jatuh tempo" }}
+                  render={() => (
+                    <RadioGroupCell
+                      dataField="isWithdrawOnDue"
+                      value={formData.isWithdrawOnDue}
+                      onChange={handleRadioChange}
+                    />
+                  )}
+                />
+              </GroupItem>
+            </GroupItem>
+            <GroupItem visible={!isReadonly} colCountByScreen={{ xs: 4, sm: 8, md: 10, lg: 8 }}>
+              <ButtonItem horizontalAlignment="left">
+                <ButtonOptions width={"100%"} onClick={handleBack}>
+                  <span className="dx-button-text">Batal</span>
+                </ButtonOptions>
+              </ButtonItem>
+
+              <ButtonItem horizontalAlignment="left">
+                <ButtonOptions
+                  type="default"
+                  width={"100%"}
+                  disabled={isDisableButtonSubmit}
+                  onClick={handleSubmit}
+                >
+                  <div className="button-options">
+                    <LoadIndicator width="20px" height="20px" visible={isLoadingSubmit} />
+                    <span className="dx-button-text">Simpan</span>
+                  </div>
+                </ButtonOptions>
+              </ButtonItem>
+            </GroupItem>
+          </Form>
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 

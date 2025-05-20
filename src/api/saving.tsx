@@ -1,4 +1,4 @@
-import { customStore } from "../model/customStore";
+import {customStore, customStoreSaving} from "../model/customStore";
 import { dataRawCustomStore } from "../model/datagrid";
 import { ajaxGet, ajaxPost } from "./http.api";
 import { API_PATH } from "./path_url";
@@ -8,7 +8,8 @@ import {
   TResSavingAppCreate,
   TResSavingContractDetail,
   TResSavingCustomerDetail,
-  TResSavingSubmit
+  TResSavingSubmit,
+  TResSavingWithdrawDetail
 } from "./types/ISaving";
 
 export const listProductApplicationStore = customStore({
@@ -36,7 +37,7 @@ export const listSavingContractCashflowStore = (id: string) =>
     loadUrl: `${API_PATH.SAVING_DEPOSIT}/contract/${id}/cashflow`
   });
 
-export const listSavingCustomerStore = customStore({
+export const listSavingCustomerStore = customStoreSaving({
   loadUrl: `${API_PATH.SAVING_DEPOSIT}/member`
 });
 
@@ -68,6 +69,11 @@ export const getDetailSavingContract = async (
   return resp.data;
 };
 
+export const getSavingContractActivity = async (contractId: string): Promise<any> => {
+  const resp = await ajaxGet(`${API_PATH.SAVING_DEPOSIT}/contract/activity/${contractId}`);
+  return resp.data;
+};
+
 export const getDetailSavingCustomer = async (
   savingId: string
 ): Promise<TResSavingCustomerDetail> => {
@@ -75,8 +81,8 @@ export const getDetailSavingCustomer = async (
   return resp.data;
 };
 
-export const getSavingContractActivity = async (contractId: string): Promise<any> => {
-  const resp = await ajaxGet(`${API_PATH.SAVING_DEPOSIT}/contract/activity/${contractId}`);
+export const getSavingCustomerActivity = async (contractId: string): Promise<any> => {
+  const resp = await ajaxGet(`${API_PATH.SAVING_DEPOSIT}/member/activity/${contractId}`);
   return resp.data;
 };
 
@@ -91,7 +97,7 @@ export const listSavingWithdrawStore = customStore({
   loadUrl: `${API_PATH.SAVING_DEPOSIT}/withdraw`
 });
 
-export const getDetailSavingWithdraw = async (id: string): Promise<TResSavingContractDetail> => {
+export const getDetailSavingWithdraw = async (id: string): Promise<TResSavingWithdrawDetail> => {
   const resp = await ajaxGet(`${API_PATH.SAVING_DEPOSIT}/withdraw/${id}`);
   return resp.data;
 };
@@ -107,3 +113,16 @@ export const approveSavingWithdraw = async (withdrawId: string): Promise<any> =>
   });
   return resp.data;
 };
+
+export const rejectSavingWithdraw = async (payload: {
+  withdrawId: string;
+  rejectList: string[];
+  description: string;
+}): Promise<any> => {
+  const resp = await ajaxPost(`${API_PATH.SAVING_DEPOSIT}/withdraw/reject`, payload);
+  return resp.data;
+};
+
+export const rejectReasonWithdrawStore = dataRawCustomStore(
+  `${API_PATH.SAVING_DEPOSIT}/withdraw/reject/reason?`
+);

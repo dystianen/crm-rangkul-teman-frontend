@@ -43,6 +43,9 @@ export type TResSavingContractDetail = {
   accrualInterest: number;
   appId: string;
   appSeqId: string;
+  contactId?: string;
+  isRenewOnDue: boolean | null;
+  isWithdrawOnDue: boolean | null;
 };
 
 export type TResSavingCustomerDetail = {
@@ -67,4 +70,30 @@ export type TResSavingCustomerDetail = {
   savingAmountBalance: number;
   depositAmountBalance: number;
   totalBalance: number;
+};
+
+export type TResSavingWithdrawDetail = {
+  createdOn: string;
+  modifiedOn: string;
+  createdBy: string;
+  modifiedBy: string;
+  id: string;
+  seqId: number;
+  description: string;
+  contactId: string;
+  amount: number;
+  statusId: string;
+  contractId: string;
+  productId: string;
+  bankId: string;
+  bankAccNumber: string;
+  bankAccName: string;
+  statusName: string;
+  contractSeqId: number;
+  contactSeqId: number;
+  contactName: string;
+  contactPhone: string;
+  contactIdNumber: string;
+  createdByName: string;
+  modifiedByName: string;
 };

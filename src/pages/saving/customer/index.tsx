@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { listSavingCustomerStore } from "src/api/saving";
 import { OnClickLink } from "src/components/alink";
 import { filterOperation } from "src/constants/FilterOperation";
+import {calculateFilterExpressionCustom} from "../../../utils/devExtremeUtils";
 
 export default function SavingCustomer() {
   const navigate = useNavigate();
@@ -22,7 +23,7 @@ export default function SavingCustomer() {
             focusedRowEnabled={true}
             remoteOperations={true}
             columnAutoWidth={true}
-            wordWrapEnabled={false}
+            wordWrapEnabled={true}
             showBorders={true}
             dateSerializationFormat={"yyyy-MM-ddTHH:mm:ss.SSSxxx"}
             repaintChangesOnly={true}
@@ -30,8 +31,9 @@ export default function SavingCustomer() {
             <Scrolling showScrollbar={"always"} />
             <FilterRow visible={true} />
             <Column
+                width={80}
               alignment={"center"}
-              dataField={"contactSeqId"}
+              dataField={"seqId"}
               caption={"#Nomor Anggota"}
               cellTemplate={function (container: any, options: any) {
                 const dom = ReactDOM.createRoot(container);
@@ -39,14 +41,14 @@ export default function SavingCustomer() {
                   <OnClickLink
                     onClick={() => navigate(`/saving/customer/detail?id=${options.data.id}`)}
                   >
-                    {options.data.contactSeqId}
+                    {options.data.seqId}
                   </OnClickLink>
                 );
               }}
               filterOperations={filterOperation.numeric}
             />
             <Column
-              dataField={"contactName"}
+              dataField={"contactFullName"}
               caption={"Nama Anggota"}
               filterOperations={filterOperation.string}
             />
@@ -56,29 +58,33 @@ export default function SavingCustomer() {
               filterOperations={filterOperation.string}
             />
             <Column
-              dataField={"contactEmail"}
-              caption={"Email"}
-              filterOperations={filterOperation.string}
-            />
-            <Column
               dataField={"contactIdCardNumber"}
               caption={"Nomor KTP"}
               filterOperations={filterOperation.string}
             />
             <Column
-              dataField={"amount"}
+              width={100}
+              dataField={"lastTransactionOn"}
+              caption={"Terakhir Transaksi"}
+              dataType="date"
+              format="dd MMM yyyy HH:mm:ss"
+              calculateFilterExpression={calculateFilterExpressionCustom}
+              filterOperations={filterOperation.date}
+          />
+            <Column
+              dataField={"balanceSaving"}
               caption={"Saldo Simpanan"}
               filterOperations={filterOperation.numeric}
               format="Rp #,##0.00"
             />
             <Column
-              dataField={"depositAmountBalance"}
+              dataField={"balanceDeposit"}
               caption={"Saldo Deposito"}
               filterOperations={filterOperation.numeric}
               format="Rp #,##0.00"
             />
             <Column
-              dataField={"totalBalance"}
+              dataField={"balanceTotal"}
               caption={"Total Saldo"}
               filterOperations={filterOperation.numeric}
               format="Rp #,##0.00"

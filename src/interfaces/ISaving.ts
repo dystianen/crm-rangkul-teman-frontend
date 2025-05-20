@@ -1,4 +1,4 @@
-import { TResSavingCustomerDetail } from "src/api/types/ISaving";
+import { TResSavingCustomerDetail, TResSavingWithdrawDetail } from "src/api/types/ISaving";
 
 export const initSavingValues = {
   productId: "",
@@ -33,7 +33,9 @@ export const initSavingContractDetail = {
   amount: 0,
   accrualInterest: 0,
   appId: "",
-  appSeqId: ""
+  appSeqId: "",
+  isWithdrawOnDue: null,
+  isRenewOnDue: null
 };
 
 export const defaultSavingCustomerDetail: TResSavingCustomerDetail = {
@@ -58,4 +60,30 @@ export const defaultSavingCustomerDetail: TResSavingCustomerDetail = {
   savingAmountBalance: 0,
   depositAmountBalance: 0,
   totalBalance: 0
+};
+
+export const defaultSavingWithdrawDetail: TResSavingWithdrawDetail = {
+  createdOn: "",
+  modifiedOn: "",
+  createdBy: "",
+  modifiedBy: "",
+  id: "",
+  seqId: 0,
+  description: "",
+  contactId: "",
+  amount: 0,
+  statusId: "",
+  contractId: "",
+  productId: "",
+  bankId: "",
+  bankAccNumber: "",
+  bankAccName: "",
+  statusName: "",
+  contractSeqId: 0,
+  contactSeqId: 0,
+  contactName: "",
+  contactPhone: "",
+  contactIdNumber: "",
+  createdByName: "",
+  modifiedByName: ""
 };
