@@ -12,6 +12,7 @@ import {
   ContactPage,
   ContractDetailPage,
   ContractPage,
+  CreateRolePage,
   CreateUserPage,
   DetailPage,
   DetailUserPage,
@@ -29,10 +30,12 @@ import {
   RestructureCreatePage,
   RestructureDetailPage,
   RestructureListPage,
+  RoleListPage,
   Step1Page,
   Step2Page,
   TransactionDetailPage,
   TransactionPage,
+  UpdateRolePage,
   UpdateUserPage,
   UploadSignedPage,
   UserListPage
@@ -337,6 +340,24 @@ const routes = [
     path: "/saving/withdraw/detail",
     title: "Saving Withdraw Detail",
     element: SavingWithdrawDetail
+  },
+  {
+    ID: 44,
+    path: "/backoffice/role",
+    title: "Peran Pengguna",
+    element: RoleListPage
+  },
+  {
+    ID: 45,
+    path: "/backoffice/role/create",
+    title: "Buat Peran Pengguna",
+    element: CreateRolePage
+  },
+  {
+    ID: 46,
+    path: "/backoffice/role/update",
+    title: "Ubah Peran Pengguna",
+    element: UpdateRolePage
   }
 ];
 

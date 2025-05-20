@@ -1,119 +1,110 @@
-import DataGrid, { Button, Column, Pager, Paging } from "devextreme-react/data-grid";
+import DataGrid, {Button, Column, Pager, Paging} from "devextreme-react/data-grid";
 import DataSource from "devextreme/data/data_source";
-import { FC, useCallback, useRef } from "react";
-import { approvalHistoryStore, retryApprovalHistory } from "../../api/approval1";
-import { filterOperation } from "../../constants/FilterOperation";
+import {FC, useCallback, useEffect, useRef, useState} from "react";
+import {approvalHistoryStore, retryApprovalHistory} from "../../api/approval1";
+import {filterOperation} from "../../constants/FilterOperation";
+import {calculateFilterExpressionCustom} from "../../utils/devExtremeUtils";
+import {checkAccess} from "../../api/apploan";
+import {backofficeAccess} from "../../constants/variableConstata";
 
-export const ApprovalHistory: FC<any> = ({ id }) => {
-  const historyListStoreRef = useRef(new DataSource(approvalHistoryStore(id)));
-  const historyListStore = historyListStoreRef.current;
+export const ApprovalHistory: FC<any> = ({id}) => {
+    const historyListStoreRef = useRef(new DataSource(approvalHistoryStore(id)));
+    const historyListStore = historyListStoreRef.current;
 
-  const refreshData = useCallback(() => {
-    historyListStoreRef.current.reload();
-  }, []);
+    const [isFlowVisible, setIsFlowVisible] = useState(false);
 
-  const handleretryApprovalHistory = async (type: string) => {
-    await retryApprovalHistory(type, id);
-    refreshData();
-  };
+    const refreshData = useCallback(() => {
+        historyListStoreRef.current.reload();
+    }, []);
 
-  return (
-    <>
-      <div className="dx-form-group-with-caption mb14">
-        <span className="dx-form-group-caption">Histori Persetujuan</span>
-      </div>
-      <DataGrid
-        loadPanel={{ enabled: false }}
-        dataSource={historyListStore}
-        focusedRowEnabled={true}
-        remoteOperations={true}
-        columnAutoWidth={true}
-        wordWrapEnabled={false}
-        showBorders={true}
-        dateSerializationFormat={"yyyy-MM-ddTHH:mm:ss.SSSxxx"}
-        repaintChangesOnly={true}
-      >
-        <Column
-          alignment={"center"}
-          dataField={"seqId"}
-          caption={"No."}
-          width={100}
-          sortOrder={"asc"}
-        />
-        <Column
-          dataField={"createdOn"}
-          caption={"Tanggal Dibuat"}
-          dataType={"date"}
-          format={"dd MMM yyyy HH:mm:ss"}
-          calculateFilterExpression={function (
-            value: any,
-            selectedFilterOperations: any,
-            target: any
-          ) {
-            const column = this as any;
-            return column.defaultCalculateFilterExpression.apply(this, [
-              new Date(value),
-              selectedFilterOperations,
-              target
-            ]);
-          }}
-          filterOperations={filterOperation.date}
-        />
-        <Column
-          dataField={"modifiedOn"}
-          caption={"Tanggal Diubah"}
-          dataType={"date"}
-          format={"dd MMM yyyy HH:mm:ss"}
-          calculateFilterExpression={function (
-            value: any,
-            selectedFilterOperations: any,
-            target: any
-          ) {
-            const column = this as any;
-            return column.defaultCalculateFilterExpression.apply(this, [
-              new Date(value),
-              selectedFilterOperations,
-              target
-            ]);
-          }}
-          filterOperations={filterOperation.date}
-        />
-        <Column dataField={"typeName"} caption={"Tipe Dokumen"} />
-        <Column
-          dataField={"description"}
-          caption={"Deskripsi"}
-          encodeHtml={false}
-          cssClass="pre-line"
-        />
-        <Column dataField={"statusName"} caption={"Status"} />
-        <Column dataField={"processedByName"} caption={"Diproses Oleh"} />
-        <Column
-          dataField={"rejectReason"}
-          caption={"Alasan Ditolak"}
-          encodeHtml={false}
-          cssClass="pre-line"
-        />
-        <Column type="buttons">
-          <Button
-            icon="refresh"
-            hint="Retry"
-            visible={({ row }) =>
-              row?.data?.statusIsRetry &&
-              ["Get CBI Data", "SEON Check"].some((type) => row?.data?.typeName?.includes(type))
-            }
-            onClick={async (e) => {
-              const type = e.row?.data?.typeName;
-              if (!type) return;
+    const handleretryApprovalHistory = async (type: string) => {
+        await retryApprovalHistory(type, id);
+        refreshData();
+    };
 
-              const retryType = type.includes("Get CBI Data") ? "cbi" : "seon";
-              await handleretryApprovalHistory(retryType);
-            }}
-          />
-        </Column>
+    useEffect(() => {
+        checkAccess(backofficeAccess.backoffice_application_flow_show_comment).then((res) => {
+            setIsFlowVisible(res);
+        });
+    }, []);
 
-        <Paging defaultPageSize={50} />
-        <Pager showPageSizeSelector={true} showInfo={true} allowedPageSizes={[10, 50, 100]} />
-      </DataGrid>
-    </>
-  );
+    return (
+        <>
+            <div className="dx-form-group-with-caption mb14">
+                <span className="dx-form-group-caption">Histori Persetujuan</span>
+            </div>
+            <DataGrid
+                loadPanel={{enabled: false}}
+                dataSource={historyListStore}
+                focusedRowEnabled={true}
+                remoteOperations={true}
+                columnAutoWidth={true}
+                wordWrapEnabled={false}
+                showBorders={true}
+                dateSerializationFormat={"yyyy-MM-ddTHH:mm:ss.SSSxxx"}
+                repaintChangesOnly={true}
+            >
+                <Column
+                    alignment={"center"}
+                    dataField={"seqId"}
+                    caption={"No."}
+                    width={100}
+                    sortOrder={"asc"}
+                />
+                <Column
+                    dataField={"createdOn"}
+                    caption={"Tanggal Dibuat"}
+                    dataType={"date"}
+                    format={"dd MMM yyyy HH:mm:ss"}
+                    calculateFilterExpression={calculateFilterExpressionCustom}
+                    filterOperations={filterOperation.date}
+                />
+                <Column
+                    dataField={"modifiedOn"}
+                    caption={"Tanggal Diubah"}
+                    dataType={"date"}
+                    format={"dd MMM yyyy HH:mm:ss"}
+                    calculateFilterExpression={calculateFilterExpressionCustom}
+                    filterOperations={filterOperation.date}
+                />
+                <Column dataField={"typeName"} caption={"Tipe Dokumen"}/>
+                <Column
+                    visible={isFlowVisible}
+                    dataField={"description"}
+                    caption={"Deskripsi"}
+                    encodeHtml={false}
+                    cssClass="pre-line"
+                />
+                <Column dataField={"statusName"} caption={"Status"}/>
+                <Column dataField={"processedByName"} caption={"Diproses Oleh"}/>
+                <Column
+                    visible={isFlowVisible}
+                    dataField={"rejectReason"}
+                    caption={"Alasan Ditolak"}
+                    encodeHtml={false}
+                    cssClass="pre-line"
+                />
+                <Column type="buttons">
+                    <Button
+                        icon="refresh"
+                        hint="Retry"
+                        visible={({row}) =>
+                            row?.data?.statusIsRetry &&
+                            ["Get CBI Data", "SEON Check"].some((type) => row?.data?.typeName?.includes(type))
+                        }
+                        onClick={async (e) => {
+                            const type = e.row?.data?.typeName;
+                            if (!type) return;
+
+                            const retryType = type.includes("Get CBI Data") ? "cbi" : "seon";
+                            await handleretryApprovalHistory(retryType);
+                        }}
+                    />
+                </Column>
+
+                <Paging defaultPageSize={50}/>
+                <Pager showPageSizeSelector={true} showInfo={true} allowedPageSizes={[10, 50, 100]}/>
+            </DataGrid>
+        </>
+    );
 };

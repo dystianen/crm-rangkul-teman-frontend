@@ -102,18 +102,18 @@ export default function UserForm({formRef, readonly, id, submit, loading}: {
 				editorOptions={{
 				  readonly: readonly,
 				  min: 0,
-				  maxLength: 32
+				  maxLength: 100
 				}}
 			>
 			  <EmailRule message="Email is invalid"/>
 			</SimpleItem>
 			
-			{(submit && id) && <SimpleItem dataField={"password"}
-                               label={{text: "Password"}} editorOptions={{
-			  readonly: readonly,
-			  min: 8,
-			  maxLength: 20
-			}} />}
+			{/*{(submit && id) && <SimpleItem dataField={"password"}*/}
+            {/*                   label={{text: "Password"}} editorOptions={{*/}
+			{/*  readonly: readonly,*/}
+			{/*  min: 8,*/}
+			{/*  maxLength: 20*/}
+			{/*}} />}*/}
 			
 			<SimpleItem
 				dataField="roles"
@@ -134,7 +134,7 @@ export default function UserForm({formRef, readonly, id, submit, loading}: {
 			
 			<SimpleItem
 				dataField="schemes"
-				label={{text: "Scheme"}}
+				label={{text: "Branches"}}
 				isRequired={true}
 				render={({component, dataField}) => (
 					<MultiSelect
@@ -142,7 +142,7 @@ export default function UserForm({formRef, readonly, id, submit, loading}: {
 						dataSource={schemeStore}
 						component={component}
 						fieldName={dataField}
-						placeholder={"Select Scheme"}
+						placeholder={"Select Branches"}
 					/>
 				)}
 			>

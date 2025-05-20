@@ -21,5 +21,7 @@ export enum API_PATH {
   QUESTION = "/api/app/question",
   USER = "/api/bo/user",
   DATA_MASTER = "/api/data",
-  SAVING_DEPOSIT = "/api/saving"
+  SAVING_DEPOSIT = "/api/saving",
+  ROLE = "/api/bo/role",
+  ACCESS = "/api/bo/access",
 }
