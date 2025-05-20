@@ -1,4 +1,4 @@
-import { customStore } from "../model/customStore";
+import {customStore, customStoreSaving} from "../model/customStore";
 import { dataRawCustomStore } from "../model/datagrid";
 import { ajaxGet, ajaxPost } from "./http.api";
 import { API_PATH } from "./path_url";
@@ -37,7 +37,7 @@ export const listSavingContractCashflowStore = (id: string) =>
     loadUrl: `${API_PATH.SAVING_DEPOSIT}/contract/${id}/cashflow`
   });
 
-export const listSavingCustomerStore = customStore({
+export const listSavingCustomerStore = customStoreSaving({
   loadUrl: `${API_PATH.SAVING_DEPOSIT}/member`
 });
 

@@ -7,6 +7,7 @@ import * as downloadFile from "save-file";
 import ReactDOM from "react-dom/client";
 import {OnClickLink} from "../../components/alink";
 import {useNavigate} from "react-router";
+import {calculateFilterExpressionCustom} from "../../utils/devExtremeUtils";
 
 export const TransactionPage: FC = () => {
     const navigate = useNavigate();
@@ -14,10 +15,10 @@ export const TransactionPage: FC = () => {
     const onClickDownload = (e: any) => {
         let instance = dataGrid.current?.instance;
         let fileName = `transaksi-akun.xlsx`;
-        let columns = [];
-        let captions = [];
+        let columns: any[] = [];
+        let captions: any[] = [];
         const visibleColums = instance.getVisibleColumns();
-        visibleColums.filter(function (val) {
+        visibleColums.filter(function (val: any) {
             if (val.dataField != null) {
                 columns.push(val.dataField);
             }
@@ -87,18 +88,7 @@ export const TransactionPage: FC = () => {
                         caption={"Tanggal"}
                         dataType={"date"}
                         format={"dd MMM yyyy"}
-                        calculateFilterExpression={function (
-                            value: any,
-                            selectedFilterOperations: any,
-                            target: any
-                        ) {
-                            const column = this as any;
-                            return column.defaultCalculateFilterExpression.apply(this, [
-                                new Date(value),
-                                selectedFilterOperations,
-                                target,
-                            ]);
-                        }}
+                        calculateFilterExpression={calculateFilterExpressionCustom}
                         filterOperations={filterOperation.date}
                     />
                     <Column
@@ -139,18 +129,7 @@ export const TransactionPage: FC = () => {
                         caption={"Tanggal Dibuat"}
                         dataType={"date"}
                         format={"dd MMM yyyy HH:mm:ss"}
-                        calculateFilterExpression={function (
-                            value: any,
-                            selectedFilterOperations: any,
-                            target: any
-                        ) {
-                            const column = this as any;
-                            return column.defaultCalculateFilterExpression.apply(this, [
-                                new Date(value),
-                                selectedFilterOperations,
-                                target,
-                            ]);
-                        }}
+                        calculateFilterExpression={calculateFilterExpressionCustom}
                         filterOperations={filterOperation.date}
                     />
                     <Column
@@ -158,18 +137,7 @@ export const TransactionPage: FC = () => {
                         caption={"Tanggal Diubah"}
                         dataType={"date"}
                         format={"dd MMM yyyy HH:mm:ss"}
-                        calculateFilterExpression={function (
-                            value: any,
-                            selectedFilterOperations: any,
-                            target: any
-                        ) {
-                            const column = this as any;
-                            return column.defaultCalculateFilterExpression.apply(this, [
-                                new Date(value),
-                                selectedFilterOperations,
-                                target,
-                            ]);
-                        }}
+                        calculateFilterExpression={calculateFilterExpressionCustom}
                         filterOperations={filterOperation.date}
                     />
                     <Column
@@ -177,18 +145,7 @@ export const TransactionPage: FC = () => {
                         caption={"Jatuh Tempo"}
                         dataType={"date"}
                         format={"dd MMM yyyy"}
-                        calculateFilterExpression={function (
-                            value: any,
-                            selectedFilterOperations: any,
-                            target: any
-                        ) {
-                            const column = this as any;
-                            return column.defaultCalculateFilterExpression.apply(this, [
-                                new Date(value),
-                                selectedFilterOperations,
-                                target,
-                            ]);
-                        }}
+                        calculateFilterExpression={calculateFilterExpressionCustom}
                         filterOperations={filterOperation.date}
                     />
                     <Column
