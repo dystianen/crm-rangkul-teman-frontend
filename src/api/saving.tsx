@@ -1,6 +1,6 @@
 import { customStore, customStoreSaving } from "../model/customStore";
 import { dataRawCustomStore } from "../model/datagrid";
-import { ajaxGet, ajaxPost } from "./http.api";
+import { ajaxGet, ajaxPatch, ajaxPost } from "./http.api";
 import { API_PATH } from "./path_url";
 import {
   TReqResSavingSubmit,
@@ -74,6 +74,14 @@ export const getSavingContractActivity = async (contractId: string): Promise<any
   return resp.data;
 };
 
+export const postSavingContractPartialUpdate = async (
+  id: string,
+  payload: { isRenewOnDue: boolean; isWithdrawOnDue: boolean }
+): Promise<any> => {
+  const resp = await ajaxPatch(`${API_PATH.SAVING_DEPOSIT}/contract/partialupdate/${id}`, payload);
+  return resp.data;
+};
+
 export const getDetailSavingCustomer = async (
   savingId: string
 ): Promise<TResSavingCustomerDetail> => {
@@ -116,7 +124,7 @@ export const approveSavingWithdraw = async (withdrawId: string): Promise<any> =>
 
 export const rejectSavingWithdraw = async (payload: {
   withdrawId: string;
-  rejectList: string[];
+  rejectReason: string;
   description: string;
 }): Promise<any> => {
   const resp = await ajaxPost(`${API_PATH.SAVING_DEPOSIT}/withdraw/reject`, payload);

@@ -7,7 +7,6 @@ import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { getDetailSavingCustomer, getSavingCustomerActivity } from "src/api/saving";
 import { TResSavingCustomerDetail } from "src/api/types/ISaving";
-import { OnClickLink } from "src/components/alink";
 import TableCashflow from "src/components/saving/TableCashflow";
 import { defaultSavingCustomerDetail } from "src/interfaces/ISaving";
 
@@ -71,23 +70,7 @@ const SavingCustomerDetail = () => {
             <GroupItem caption={"Detail Anggota"} cssClass="dx-card responsive-paddings">
               <GroupItem colCount={2}>
                 <SimpleItem
-                  label={{ text: "#ID Anggota" }}
-                  editorType="dxTextBox"
-                  dataField="contactSeqId"
-                  render={(data: any) => {
-                    return (
-                      <div style={{ marginTop: "10px" }}>
-                        <OnClickLink
-                          onClick={() => navigate(`/contact/detail?id=${formData.contactId}`)}
-                        >
-                          {data.editorOptions.value || "-"}
-                        </OnClickLink>
-                      </div>
-                    );
-                  }}
-                />
-                <SimpleItem
-                  dataField="contactFullName"
+                  dataField="name"
                   label={{ text: "Nama Anggota" }}
                   editorOptions={{
                     readOnly: true
@@ -103,7 +86,7 @@ const SavingCustomerDetail = () => {
                   }}
                 />
                 <SimpleItem
-                  dataField="contactIdCardNumber"
+                  dataField="ktp"
                   editorType="dxTextBox"
                   label={{ text: "Nomor KTP" }}
                   editorOptions={{
@@ -116,19 +99,9 @@ const SavingCustomerDetail = () => {
             <GroupItem caption={"Detail Simpanan"} cssClass="dx-card responsive-paddings next-card">
               <GroupItem colCount={2}>
                 <SimpleItem
-                  dataField="startOn"
+                  dataField="lastTransactionOn"
                   editorType="dxDateBox"
-                  label={{ text: "Tanggal Mulai" }}
-                  editorOptions={{
-                    displayFormat: "dd MMM yyyy",
-                    type: "datetime",
-                    readOnly: true
-                  }}
-                />
-                <SimpleItem
-                  dataField="finishOn"
-                  editorType="dxDateBox"
-                  label={{ text: "Tanggal Selesai" }}
+                  label={{ text: "Terakhir Transaksi" }}
                   editorOptions={{
                     displayFormat: "dd MMM yyyy",
                     type: "datetime",

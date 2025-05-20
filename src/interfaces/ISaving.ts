@@ -34,8 +34,9 @@ export const initSavingContractDetail = {
   accrualInterest: 0,
   appId: "",
   appSeqId: "",
-  isWithdrawOnDue: null,
-  isRenewOnDue: null
+  isWithdrawOnDue: false,
+  isRenewOnDue: false,
+  statusIsActive: false
 };
 
 export const defaultSavingCustomerDetail: TResSavingCustomerDetail = {

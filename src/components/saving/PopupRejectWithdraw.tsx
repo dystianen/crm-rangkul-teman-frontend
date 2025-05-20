@@ -1,14 +1,15 @@
 import Form, { ButtonItem, SimpleItem } from "devextreme-react/form";
 import { Popup } from "devextreme-react/popup";
 import { Toast } from "devextreme-react/toast";
+import DataSource from "devextreme/data/data_source";
 import { FC, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { selectBoxOptions } from "src/api/contact";
 import { rejectReasonWithdrawStore, rejectSavingWithdraw } from "src/api/saving";
-import MultiSelect from "src/components/multiselect";
 import { notifyError, notifySuccess } from "src/utils/devExtremeUtils";
 
 type TRequest = {
-  rejectList: string[];
+  rejectReason: string;
   description: string;
 };
 
@@ -16,7 +17,7 @@ export const PopupRejectWithdraw: FC<any> = (props) => {
   const navigate = useNavigate();
   const formRef = useRef<Form>(null);
   const [request, setRequest] = useState<TRequest>({
-    rejectList: [],
+    rejectReason: "",
     description: ""
   });
   const { popupVisible, hide, withdrawId } = props;
@@ -25,6 +26,11 @@ export const PopupRejectWithdraw: FC<any> = (props) => {
     type: "info",
     message: ""
   });
+
+  const rejectReasonOptions = selectBoxOptions(
+    new DataSource(rejectReasonWithdrawStore),
+    "Select product saving term"
+  );
 
   const onFormSubmit = (e: any) => {
     const form = formRef.current!.instance;
@@ -90,17 +96,10 @@ export const PopupRejectWithdraw: FC<any> = (props) => {
             onFieldDataChanged={onFieldDataChanged}
           >
             <SimpleItem
-              dataField="rejectList"
+              dataField="rejectReason"
+              editorType="dxSelectBox"
               label={{ text: "Alasan Penolakan" }}
-              render={({ component, dataField }) => (
-                <MultiSelect
-                  value={request.rejectList}
-                  dataSource={rejectReasonWithdrawStore}
-                  component={component}
-                  fieldName={dataField}
-                  placeholder={"Select Reason"}
-                />
-              )}
+              editorOptions={rejectReasonOptions}
             />
 
             <SimpleItem
@@ -113,7 +112,7 @@ export const PopupRejectWithdraw: FC<any> = (props) => {
               horizontalAlignment="left"
               buttonOptions={{
                 width: "100%",
-                text: "Simpan",
+                text: "Submit",
                 type: "danger",
                 onClick: onFormSubmit
               }}

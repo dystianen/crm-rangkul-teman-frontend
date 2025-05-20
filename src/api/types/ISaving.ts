@@ -44,8 +44,9 @@ export type TResSavingContractDetail = {
   appId: string;
   appSeqId: string;
   contactId?: string;
-  isRenewOnDue: boolean | null;
-  isWithdrawOnDue: boolean | null;
+  isRenewOnDue: boolean;
+  isWithdrawOnDue: boolean;
+  statusIsActive: boolean;
 };
 
 export type TResSavingCustomerDetail = {
