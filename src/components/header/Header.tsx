@@ -19,12 +19,7 @@ export default function Header({ menuToggleEnabled, title, toggleMenu }: HeaderP
         </Item>
         <Item location={"before"} cssClass={"header-title"} text={title} visible={!!title} />
         <Item location={"after"} locateInMenu={"auto"} menuItemTemplate={"userPanelTemplate"}>
-          <Button
-            className={"user-button authorization"}
-            width={210}
-            height={"100%"}
-            stylingMode={"text"}
-          >
+          <Button className={"user-button authorization"} height={"100%"} stylingMode={"text"}>
             <UserPanel menuMode={"context"} />
           </Button>
         </Item>
