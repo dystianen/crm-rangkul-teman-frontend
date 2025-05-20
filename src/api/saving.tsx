@@ -1,4 +1,4 @@
-import {customStore, customStoreSaving} from "../model/customStore";
+import { customStore, customStoreSaving } from "../model/customStore";
 import { dataRawCustomStore } from "../model/datagrid";
 import { ajaxGet, ajaxPost } from "./http.api";
 import { API_PATH } from "./path_url";

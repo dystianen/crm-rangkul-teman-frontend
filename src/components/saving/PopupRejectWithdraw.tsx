@@ -12,7 +12,7 @@ type TRequest = {
   description: string;
 };
 
-export const RejectWithdrawPopup: FC<any> = (props) => {
+export const PopupRejectWithdraw: FC<any> = (props) => {
   const navigate = useNavigate();
   const formRef = useRef<Form>(null);
   const [request, setRequest] = useState<TRequest>({

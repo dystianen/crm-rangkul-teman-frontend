@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { listSavingCustomerStore } from "src/api/saving";
 import { OnClickLink } from "src/components/alink";
 import { filterOperation } from "src/constants/FilterOperation";
-import {calculateFilterExpressionCustom} from "../../../utils/devExtremeUtils";
+import { calculateFilterExpressionCustom } from "../../../utils/devExtremeUtils";
 
 export default function SavingCustomer() {
   const navigate = useNavigate();
@@ -31,7 +31,7 @@ export default function SavingCustomer() {
             <Scrolling showScrollbar={"always"} />
             <FilterRow visible={true} />
             <Column
-                width={80}
+              width={80}
               alignment={"center"}
               dataField={"seqId"}
               caption={"#Nomor Anggota"}
@@ -48,7 +48,7 @@ export default function SavingCustomer() {
               filterOperations={filterOperation.numeric}
             />
             <Column
-              dataField={"contactFullName"}
+              dataField={"name"}
               caption={"Nama Anggota"}
               filterOperations={filterOperation.string}
             />
@@ -58,7 +58,7 @@ export default function SavingCustomer() {
               filterOperations={filterOperation.string}
             />
             <Column
-              dataField={"contactIdCardNumber"}
+              dataField={"ktp"}
               caption={"Nomor KTP"}
               filterOperations={filterOperation.string}
             />
@@ -70,7 +70,7 @@ export default function SavingCustomer() {
               format="dd MMM yyyy HH:mm:ss"
               calculateFilterExpression={calculateFilterExpressionCustom}
               filterOperations={filterOperation.date}
-          />
+            />
             <Column
               dataField={"balanceSaving"}
               caption={"Saldo Simpanan"}

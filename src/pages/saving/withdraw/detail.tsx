@@ -13,7 +13,7 @@ import {
 import { TResSavingWithdrawDetail } from "src/api/types/ISaving";
 import { OnClickLink } from "src/components/alink";
 import PopupConfirm from "src/components/popup/popup-confirm";
-import { RejectWithdrawPopup } from "src/components/saving/RejectWithdrawPopup";
+import { PopupRejectWithdraw } from "src/components/saving/PopupRejectWithdraw";
 import { defaultSavingWithdrawDetail } from "src/interfaces/ISaving";
 import { notifyError, notifySuccess } from "src/utils/devExtremeUtils";
 
@@ -212,7 +212,7 @@ const SavingWithdrawDetail = () => {
           message="Apakah anda yakin ingin menyetujui penarikan simpanan ini?"
         />
 
-        <RejectWithdrawPopup
+        <PopupRejectWithdraw
           withdrawId={ID}
           popupVisible={visiblePopupReject}
           hide={() => setVisiblePopupReject(false)}
