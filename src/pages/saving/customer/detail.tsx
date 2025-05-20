@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { getDetailSavingCustomer, getSavingCustomerActivity } from "src/api/saving";
 import { TResSavingCustomerDetail } from "src/api/types/ISaving";
+import { PopupWithdraw } from "src/components/saving/PopupWithdraw";
 import TableCashflow from "src/components/saving/TableCashflow";
 import { defaultSavingCustomerDetail } from "src/interfaces/ISaving";
 
@@ -17,6 +18,7 @@ const SavingCustomerDetail = () => {
   const ID = String(id);
   const [formData, setFormData] = useState<TResSavingCustomerDetail>(defaultSavingCustomerDetail);
   const [activity, setActivity] = useState<Array<any>>([]);
+  const [visiblePopupWithdraw, setVisiblePopupWithdraw] = useState(false);
 
   useEffect(() => {
     getDetailSavingCustomer(ID).then((res) => {
@@ -44,7 +46,7 @@ const SavingCustomerDetail = () => {
           items={activity}
           onItemClick={(e) => {
             if (e.itemData === "Penarikan Simpanan") {
-              console.log("handle penarikan");
+              setVisiblePopupWithdraw(true);
             }
           }}
           width={230}
@@ -142,6 +144,12 @@ const SavingCustomerDetail = () => {
 
         <TableCashflow />
       </div>
+
+      <PopupWithdraw
+        popupVisible={visiblePopupWithdraw}
+        detail={formData}
+        hide={() => setVisiblePopupWithdraw(false)}
+      />
     </>
   );
 };

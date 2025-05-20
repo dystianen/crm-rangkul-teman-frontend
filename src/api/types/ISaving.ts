@@ -50,27 +50,18 @@ export type TResSavingContractDetail = {
 };
 
 export type TResSavingCustomerDetail = {
-  createdOn: string;
-  modifiedOn: string;
-  createdBy: string;
-  modifiedBy: string;
-  seqId: number;
   id: string;
-  appId: string;
-  startOn: string;
-  finishOn: string;
-  closedOn: string;
-  amount: number;
-  accrualInterest: number;
-  statusId: string;
-  appSeqId: string;
-  contactId: string;
-  contactSeqId: string;
-  contactIdCardNumber: string;
+  seqId: number;
+  name: string;
   contactPhone: string;
-  savingAmountBalance: number;
-  depositAmountBalance: number;
-  totalBalance: number;
+  contactEmail: string;
+  ktp: string;
+  balanceSaving: number;
+  balanceDeposit: number;
+  balanceTotal: number;
+  lastTransactionOn: string;
+  bankId: string;
+  bankAccountNumber: string;
 };
 
 export type TResSavingWithdrawDetail = {
@@ -97,4 +88,17 @@ export type TResSavingWithdrawDetail = {
   contactIdNumber: string;
   createdByName: string;
   modifiedByName: string;
+};
+
+export type TReqCreateSavingWithdraw = {
+  ktp?: string;
+  amount: number;
+  bankId: string;
+  bankAccNumber: string;
+};
+
+export type TReqCheckBankAccountByContact = {
+  contactId: string;
+  bankId: string;
+  bankAccountNumber: string;
 };
