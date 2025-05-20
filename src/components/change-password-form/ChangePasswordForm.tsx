@@ -16,7 +16,7 @@ import queryString from "query-string";
 
 export default function ChangePasswordForm() {
     const location = useLocation();
-    const {recoveryCode} = queryString.parse(location.search);
+    const {recoveryCode}:any = queryString.parse(location.search);
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
     const formData = useRef({oldPassword: '', newPassword: ''});

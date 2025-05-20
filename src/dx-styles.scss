@@ -291,3 +291,10 @@ body {
 .dx-viewport:not(.dx-theme-generic) .dx-tabs-horizontal {
   border-block-end: 1px solid rgb(225, 225, 225, 0.4);
 }
+
+.dx-texteditor .dx-texteditor-buttons-container:last-child > .dx-button:last-child, .dx-texteditor .dx-texteditor-buttons-container:last-child > .dx-clear-button-area:last-child {
+  margin-inline-end: 0px!important;
+}
+.dx-texteditor.dx-editor-filled .dx-lookup-field, .dx-texteditor.dx-editor-filled .dx-placeholder::before, .dx-texteditor.dx-editor-filled .dx-texteditor-input, .dx-texteditor.dx-editor-outlined .dx-lookup-field, .dx-texteditor.dx-editor-outlined .dx-placeholder::before, .dx-texteditor.dx-editor-outlined .dx-texteditor-input{
+  padding: 5px 7px!important;
+}

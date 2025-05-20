@@ -96,6 +96,7 @@ export const backofficeAccess = {
   backoffice_restructure_read:"c7f0e9ce-21aa-4b3d-adb9-476b6ae81c67",
   backoffice_restructure_approve:"ac1f09b9-94cf-44b4-ae69-95ed1e6ed801",
   backoffice_restructure_reject:"dfc1382f-6dd3-4fa2-9f18-82f9b8383c94",
+  backoffice_application_flow_show_comment:"f9f2afa4-06cc-4e9d-ab8f-44ade7aad52b",
 }
 
 export const restructure_category = {

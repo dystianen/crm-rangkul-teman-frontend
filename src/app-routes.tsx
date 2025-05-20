@@ -31,7 +31,8 @@ import {
   Step2Page,
   TransactionDetailPage,
   TransactionPage,
-  UploadSignedPage, UserListPage, CreateUserPage, DetailUserPage, UpdateUserPage
+  UploadSignedPage, UserListPage, CreateUserPage, DetailUserPage, UpdateUserPage,
+  RoleListPage, CreateRolePage, UpdateRolePage
 } from "./pages";
 import ContactActivities from "./pages/contact-activities";
 import CreateEditContactLeads from "./pages/contact/CreateEditContactLeads";
@@ -270,7 +271,25 @@ const routes = [
     path: "/backoffice/user/detail",
     title: "Detil Pengguna",
     element: DetailUserPage
-  }
+  },
+  {
+    ID: 36,
+    path: "/backoffice/role",
+    title: "Peran Pengguna",
+    element: RoleListPage
+  },
+  {
+    ID: 37,
+    path: "/backoffice/role/create",
+    title: "Buat Peran Pengguna",
+    element: CreateRolePage
+  },
+  {
+    ID: 38,
+    path: "/backoffice/role/update",
+    title: "Ubah Peran Pengguna",
+    element: UpdateRolePage
+  },
 ];
 
 //@ts-ignore
