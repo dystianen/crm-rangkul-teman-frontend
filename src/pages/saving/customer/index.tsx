@@ -31,7 +31,7 @@ export default function SavingCustomer() {
             <FilterRow visible={true} />
             <Column
               alignment={"center"}
-              dataField={"seqId"}
+              dataField={"contactSeqId"}
               caption={"#Nomor Anggota"}
               cellTemplate={function (container: any, options: any) {
                 const dom = ReactDOM.createRoot(container);
@@ -39,20 +39,30 @@ export default function SavingCustomer() {
                   <OnClickLink
                     onClick={() => navigate(`/saving/customer/detail?id=${options.data.id}`)}
                   >
-                    {options.data.seqId}
+                    {options.data.contactSeqId}
                   </OnClickLink>
                 );
               }}
               filterOperations={filterOperation.numeric}
             />
             <Column
-              dataField={"contactIdCardNumber"}
-              caption={"Nomor KTP"}
+              dataField={"contactName"}
+              caption={"Nama Anggota"}
               filterOperations={filterOperation.string}
             />
             <Column
               dataField={"contactPhone"}
               caption={"Nomor HP"}
+              filterOperations={filterOperation.string}
+            />
+            <Column
+              dataField={"contactEmail"}
+              caption={"Email"}
+              filterOperations={filterOperation.string}
+            />
+            <Column
+              dataField={"contactIdCardNumber"}
+              caption={"Nomor KTP"}
               filterOperations={filterOperation.string}
             />
             <Column

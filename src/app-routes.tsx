@@ -12,7 +12,10 @@ import {
   ContactPage,
   ContractDetailPage,
   ContractPage,
+  CreateRolePage,
+  CreateUserPage,
   DetailPage,
+  DetailUserPage,
   DisburseDetailPage,
   DisbursePage,
   HomePage,
@@ -27,12 +30,15 @@ import {
   RestructureCreatePage,
   RestructureDetailPage,
   RestructureListPage,
+  RoleListPage,
   Step1Page,
   Step2Page,
   TransactionDetailPage,
   TransactionPage,
-  UploadSignedPage, UserListPage, CreateUserPage, DetailUserPage, UpdateUserPage,
-  RoleListPage, CreateRolePage, UpdateRolePage
+  UpdateRolePage,
+  UpdateUserPage,
+  UploadSignedPage,
+  UserListPage
 } from "./pages";
 import ContactActivities from "./pages/contact-activities";
 import CreateEditContactLeads from "./pages/contact/CreateEditContactLeads";
@@ -43,6 +49,8 @@ import SavingContractDetail from "./pages/saving/contract/detail";
 import SavingCustomer from "./pages/saving/customer";
 import SavingCustomerDetail from "./pages/saving/customer/detail";
 import SavingPayment from "./pages/saving/payment";
+import SavingWithdraw from "./pages/saving/withdraw";
+import SavingWithdrawDetail from "./pages/saving/withdraw/detail";
 
 const routes = [
   {
@@ -323,22 +331,34 @@ const routes = [
   },
   {
     ID: 43,
+    path: "/saving/withdraw",
+    title: "Saving Withdraw",
+    element: SavingWithdraw
+  },
+  {
+    ID: 43,
+    path: "/saving/withdraw/detail",
+    title: "Saving Withdraw Detail",
+    element: SavingWithdrawDetail
+  },
+  {
+    ID: 44,
     path: "/backoffice/role",
     title: "Peran Pengguna",
     element: RoleListPage
   },
   {
-    ID: 44,
+    ID: 45,
     path: "/backoffice/role/create",
     title: "Buat Peran Pengguna",
     element: CreateRolePage
   },
   {
-    ID: 45,
+    ID: 46,
     path: "/backoffice/role/update",
     title: "Ubah Peran Pengguna",
     element: UpdateRolePage
-  },
+  }
 ];
 
 //@ts-ignore

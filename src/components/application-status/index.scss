@@ -9,12 +9,17 @@
 }
 
 .status-approved,
-.status-paid {
+.status-paid,
+.status-success,
+.status-inflow,
+.status-settled {
   background: #10d710;
   color: #ffffff;
 }
 
-.status-rejected {
+.status-rejected,
+.status-insufficientbalance,
+.status-outflow {
   background: #d71010;
   color: #ffffff;
 }
@@ -24,7 +29,8 @@
   color: #ffffff;
 }
 .status-onverifcation,
-.status-waitingforpayment {
+.status-waitingforpayment,
+.status-waitingforapproval {
   background: #d7a910;
   color: #ffffff;
 }
