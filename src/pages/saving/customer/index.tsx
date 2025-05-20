@@ -46,18 +46,13 @@ export default function SavingCustomer() {
               filterOperations={filterOperation.numeric}
             />
             <Column
-              dataField={"contactName"}
+              dataField={"contactFullName"}
               caption={"Nama Anggota"}
               filterOperations={filterOperation.string}
             />
             <Column
               dataField={"contactPhone"}
               caption={"Nomor HP"}
-              filterOperations={filterOperation.string}
-            />
-            <Column
-              dataField={"contactEmail"}
-              caption={"Email"}
               filterOperations={filterOperation.string}
             />
             <Column

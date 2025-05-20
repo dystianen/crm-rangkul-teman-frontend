@@ -2,7 +2,7 @@ import { DataGrid } from "devextreme-react";
 import { Column, FilterRow, Pager, Paging, Scrolling } from "devextreme-react/data-grid";
 import "devextreme/data/odata/store";
 import queryString from "query-string";
-import { useRef } from "react";
+import { useMemo, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import { listSavingContractCashflowStore } from "src/api/saving";
 import { filterOperation } from "src/constants/FilterOperation";
@@ -15,12 +15,14 @@ const TableCashflow = () => {
   const { id } = queryString.parse(location.search);
   const ID = String(id);
 
+  const dataSource = useMemo(() => listSavingContractCashflowStore(ID), [ID]);
+
   return (
     <div className={"form__tabs dx-card responsive-paddings"}>
       <h5 style={{ marginTop: 0, marginBottom: "10px" }}>Cashflow</h5>
       <DataGrid
         ref={dataGrid}
-        dataSource={listSavingContractCashflowStore(ID)}
+        dataSource={dataSource}
         focusedRowEnabled={true}
         remoteOperations={true}
         columnAutoWidth={true}
@@ -31,7 +33,12 @@ const TableCashflow = () => {
       >
         <Scrolling showScrollbar={"always"} />
         <FilterRow visible={true} />
-        <Column dataField={"seqId"} caption={"ID"} filterOperations={filterOperation.string} />
+        <Column
+          dataField={"seqId"}
+          sortOrder="asc"
+          caption={"ID"}
+          filterOperations={filterOperation.string}
+        />
         <Column
           dataField={"modifiedOn"}
           caption={"Tanggal"}
@@ -41,7 +48,7 @@ const TableCashflow = () => {
           filterOperations={filterOperation.date}
         />
         <Column
-          dataField={"typeId"}
+          dataField={"typeName"}
           caption={"Tipe"}
           filterOperations={filterOperation.string}
           cellRender={ApplicationStatus}
@@ -59,7 +66,7 @@ const TableCashflow = () => {
             const isOutflow = row.data.typeId === "OUTFLOW";
             const amount = row.data.amount;
 
-            const formatted = amount.toLocaleString("id-ID", {
+            const formatted = amount?.toLocaleString("id-ID", {
               style: "currency",
               currency: "IDR"
             });

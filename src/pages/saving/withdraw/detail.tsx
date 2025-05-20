@@ -3,16 +3,18 @@ import Form, { GroupItem, SimpleItem } from "devextreme-react/form";
 import * as Title from "devextreme-react/toolbar";
 import "devextreme/data/odata/store";
 import queryString from "query-string";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
   approveSavingWithdraw,
   getDetailSavingWithdraw,
   getSavingWithdrawActivity
 } from "src/api/saving";
-import { TResSavingContractDetail } from "src/api/types/ISaving";
+import { TResSavingWithdrawDetail } from "src/api/types/ISaving";
+import { OnClickLink } from "src/components/alink";
 import PopupConfirm from "src/components/popup/popup-confirm";
-import { initSavingContractDetail } from "src/interfaces/ISaving";
+import { RejectWithdrawPopup } from "src/components/saving/RejectWithdrawPopup";
+import { defaultSavingWithdrawDetail } from "src/interfaces/ISaving";
 import { notifyError, notifySuccess } from "src/utils/devExtremeUtils";
 
 const SavingWithdrawDetail = () => {
@@ -20,9 +22,10 @@ const SavingWithdrawDetail = () => {
   const location = useLocation();
   const { id } = queryString.parse(location.search);
   const ID = String(id);
-  const [formData, setFormData] = useState<TResSavingContractDetail>(initSavingContractDetail);
+  const [formData, setFormData] = useState<TResSavingWithdrawDetail>(defaultSavingWithdrawDetail);
   const [activity, setActivity] = useState<Array<any>>([]);
-  const [visible, setVisible] = useState(false);
+  const [visiblePopupConfirm, setVisiblePopupConfirm] = useState(false);
+  const [visiblePopupReject, setVisiblePopupReject] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const handleFetchDetail = () => {
@@ -43,7 +46,7 @@ const SavingWithdrawDetail = () => {
     setLoading(true);
     approveSavingWithdraw(ID)
       .then(() => {
-        setVisible(false);
+        setVisiblePopupConfirm(false);
         handleFetchDetail();
         notifySuccess("Penarikan simpanan berhasil disetujui");
       })
@@ -55,16 +58,12 @@ const SavingWithdrawDetail = () => {
       });
   };
 
-  const handleCancel = useCallback(() => {
-    setVisible(false);
-  }, []);
-
   return (
     <>
       <div className="title-detail">
         <h2 className={"content-block"}>Detail Penarikan Simpanan</h2>
         <DropDownButton
-          visible={activity.length > 0}
+          visible={formData.statusId === "WAITING_FOR_APPROVAL"}
           useSelectMode={false}
           stylingMode="contained"
           text="Activity"
@@ -74,7 +73,9 @@ const SavingWithdrawDetail = () => {
           items={activity}
           onItemClick={(e) => {
             if (e.itemData === "Approve") {
-              setVisible(true);
+              setVisiblePopupConfirm(true);
+            } else if (e.itemData === "Reject") {
+              setVisiblePopupReject(true);
             }
           }}
           width={230}
@@ -89,7 +90,7 @@ const SavingWithdrawDetail = () => {
               icon: "back",
               text: "Kembali",
               onClick: () => {
-                navigate(-1);
+                navigate("/saving/withdraw");
               }
             }}
           />
@@ -97,10 +98,51 @@ const SavingWithdrawDetail = () => {
 
         <div className={"form__tabs"}>
           <Form colCount={1} id="form" formData={formData}>
-            <GroupItem
-              caption={"Informasi Penarikan"}
-              cssClass="dx-card responsive-paddings next-card"
-            >
+            <GroupItem caption={"Detail Anggota"} cssClass="dx-card responsive-paddings next-card">
+              <GroupItem colCount={2}>
+                <SimpleItem
+                  label={{ text: "#ID Anggota" }}
+                  editorType="dxTextBox"
+                  dataField="contactSeqId"
+                  render={(data: any) => {
+                    return (
+                      <div style={{ marginTop: "10px" }}>
+                        <OnClickLink
+                          onClick={() => navigate(`/contact/detail?id=${formData.contactId}`)}
+                        >
+                          {data.editorOptions.value || "-"}
+                        </OnClickLink>
+                      </div>
+                    );
+                  }}
+                />
+                <SimpleItem
+                  dataField="contactName"
+                  label={{ text: "Nama Anggota" }}
+                  editorOptions={{
+                    readOnly: true
+                  }}
+                />
+                <SimpleItem
+                  dataField="contactPhone"
+                  label={{ text: "Nomor HP" }}
+                  editorOptions={{
+                    readOnly: true,
+                    mask: "+00 (X00) 000-0000",
+                    maskRules: { X: /[02-9]/ }
+                  }}
+                />
+                <SimpleItem
+                  dataField="contactIdNumber"
+                  label={{ text: "Nomor KTP" }}
+                  editorOptions={{
+                    readOnly: true
+                  }}
+                />
+              </GroupItem>
+            </GroupItem>
+
+            <GroupItem caption={"Detail Simpanan"} cssClass="dx-card responsive-paddings next-card">
               <GroupItem colCount={2}>
                 <SimpleItem
                   dataField="seqId"
@@ -120,7 +162,7 @@ const SavingWithdrawDetail = () => {
                 />
                 <SimpleItem
                   dataField="amount"
-                  label={{ text: "Jumlah Simpanan Pokok" }}
+                  label={{ text: "Jumlah Penarikan" }}
                   editorOptions={{
                     format: "Rp #,##0.00",
                     readOnly: true
@@ -139,54 +181,13 @@ const SavingWithdrawDetail = () => {
             </GroupItem>
 
             <GroupItem
-              caption={"Informasi Kontak"}
+              caption={"Penarikan Simpanan"}
               cssClass="dx-card responsive-paddings next-card"
             >
               <GroupItem colCount={2}>
                 <SimpleItem
-                  label={{ text: "#No" }}
-                  editorType="dxTextBox"
-                  dataField="contactSeqId"
-                />
-                <SimpleItem
-                  dataField="contactName"
-                  label={{ text: "Nama Anggota" }}
-                  editorOptions={{
-                    readOnly: true
-                  }}
-                />
-                <SimpleItem
-                  dataField="contactPhone"
-                  label={{ text: "No. HP" }}
-                  editorOptions={{
-                    readOnly: true,
-                    mask: "+00 (X00) 000-0000",
-                    maskRules: { X: /[02-9]/ }
-                  }}
-                />
-                <SimpleItem
-                  dataField="contactEmail"
-                  editorType="dxTextBox"
-                  label={{ text: "Email" }}
-                  editorOptions={{
-                    readOnly: true
-                  }}
-                />
-                <SimpleItem
-                  dataField="contactIdNumber"
-                  label={{ text: "No. KTP" }}
-                  editorOptions={{
-                    readOnly: true
-                  }}
-                />
-              </GroupItem>
-            </GroupItem>
-
-            <GroupItem caption={"Informasi Bank"} cssClass="dx-card responsive-paddings next-card">
-              <GroupItem colCount={2}>
-                <SimpleItem
                   dataField="bankAccName"
-                  label={{ text: "Bank" }}
+                  label={{ text: "Bank Penarikan" }}
                   editorOptions={{
                     readOnly: true
                   }}
@@ -204,11 +205,17 @@ const SavingWithdrawDetail = () => {
         </div>
 
         <PopupConfirm
-          visible={visible}
-          handleCancel={handleCancel}
+          visible={visiblePopupConfirm}
+          handleCancel={() => setVisiblePopupConfirm(false)}
           handleConfirm={handleWithdraw}
           loading={loading}
           message="Apakah anda yakin ingin menyetujui penarikan simpanan ini?"
+        />
+
+        <RejectWithdrawPopup
+          withdrawId={ID}
+          popupVisible={visiblePopupReject}
+          hide={() => setVisiblePopupReject(false)}
         />
       </div>
     </>
