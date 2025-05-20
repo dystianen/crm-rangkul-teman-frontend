@@ -75,6 +75,16 @@ export default function SavingContract() {
               filterOperations={filterOperation.string}
             />
             <Column
+              dataField={"contactPhoneNumber"}
+              caption={"Nomor HP"}
+              filterOperations={filterOperation.string}
+            />
+            <Column
+              dataField={"contactIdCardNumber"}
+              caption={"Nomor KTP"}
+              filterOperations={filterOperation.string}
+            />
+            <Column
               dataField={"amount"}
               caption={"Jumlah Simpanan Pokok"}
               filterOperations={filterOperation.numeric}

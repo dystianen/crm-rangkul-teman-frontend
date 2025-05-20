@@ -1,16 +1,16 @@
-import { DropDownButton } from "devextreme-react";
-import Form, { GroupItem, SimpleItem } from "devextreme-react/form";
+import { DropDownButton, LoadIndicator, RadioGroup } from "devextreme-react";
+import Form, { ButtonItem, ButtonOptions, GroupItem, SimpleItem } from "devextreme-react/form";
 import * as Title from "devextreme-react/toolbar";
 import "devextreme/data/odata/store";
 import queryString from "query-string";
-import { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
   getDetailSavingContract,
   getSavingContractActivity,
   postWithdrawDeposit
 } from "src/api/saving";
-import { TResSavingContractDetail } from "src/api/types/ISaving";
+import { TReqResSavingSubmit, TResSavingContractDetail } from "src/api/types/ISaving";
 import { OnClickLink } from "src/components/alink";
 import PopupConfirm from "src/components/popup/popup-confirm";
 import TableCashflow from "src/components/saving/TableCashflow";
@@ -26,6 +26,7 @@ const SavingContractDetail = () => {
   const [activity, setActivity] = useState<Array<any>>([]);
   const [visible, setVisible] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [isLoadingSubmit, setLoadingSubmit] = useState(false);
 
   useEffect(() => {
     getDetailSavingContract(ID).then((res) => {
@@ -55,6 +56,64 @@ const SavingContractDetail = () => {
   const handleCancel = useCallback(() => {
     setVisible(false);
   }, []);
+
+  const handleRadioChange = (field: keyof TReqResSavingSubmit, value: boolean) => {
+    setFormData((prev) => {
+      if (field === "isWithdrawOnDue" && value === true) {
+        return {
+          ...prev,
+          isWithdrawOnDue: true,
+          isRenewOnDue: false
+        };
+      }
+
+      if (field === "isRenewOnDue" && value === true) {
+        return {
+          ...prev,
+          isWithdrawOnDue: false,
+          isRenewOnDue: true
+        };
+      }
+
+      return {
+        ...prev,
+        [field]: value
+      };
+    });
+  };
+
+  const RadioGroupCell = React.memo(
+    ({
+      dataField,
+      value,
+      onChange
+    }: {
+      dataField: keyof TReqResSavingSubmit;
+      value: boolean | null;
+      onChange: (field: keyof TReqResSavingSubmit, value: boolean) => void;
+    }) => (
+      <RadioGroup
+        items={[
+          { label: "Ya", value: true },
+          { label: "Tidak", value: false }
+        ]}
+        value={value}
+        layout="horizontal"
+        displayExpr="label"
+        valueExpr="value"
+        onValueChanged={(e) => onChange(dataField, e.value)}
+      />
+    )
+  );
+
+  const handleSubmit = () => {
+    console.log("submit");
+    setLoadingSubmit(true);
+    const payload = {
+      isRenewOnDue: formData.isRenewOnDue,
+      isWithdrawOnDue: formData.isWithdrawOnDue
+    };
+  };
 
   return (
     <>
@@ -86,7 +145,7 @@ const SavingContractDetail = () => {
               icon: "back",
               text: "Kembali",
               onClick: () => {
-                navigate(-1);
+                navigate("/saving/contract");
               }
             }}
           />
@@ -94,10 +153,36 @@ const SavingContractDetail = () => {
 
         <div className={"form__tabs"}>
           <Form colCount={1} id="form" formData={formData}>
-            <GroupItem
-              caption={"Detail Perjanjian Simpanan"}
-              cssClass="dx-card responsive-paddings next-card"
-            >
+            <GroupItem caption={"Detail Anggota"} cssClass="dx-card responsive-paddings">
+              <GroupItem colCount={2}>
+                <SimpleItem
+                  dataField="contactName"
+                  label={{ text: "Nama Anggota" }}
+                  editorOptions={{
+                    readOnly: true
+                  }}
+                />
+                <SimpleItem
+                  dataField="contactPhoneNumber"
+                  label={{ text: "Nomor HP" }}
+                  editorOptions={{
+                    readOnly: true,
+                    mask: "+00 (X00) 000-0000",
+                    maskRules: { X: /[02-9]/ }
+                  }}
+                />
+                <SimpleItem
+                  dataField="contactIdCardNumber"
+                  editorType="dxTextBox"
+                  label={{ text: "Nomor KTP" }}
+                  editorOptions={{
+                    readOnly: true
+                  }}
+                />
+              </GroupItem>
+            </GroupItem>
+
+            <GroupItem caption={"Detail Simpanan"} cssClass="dx-card responsive-paddings next-card">
               <GroupItem colCount={2}>
                 <SimpleItem
                   dataField="startOn"
@@ -165,46 +250,49 @@ const SavingContractDetail = () => {
             </GroupItem>
 
             <GroupItem
-              caption={"Informasi Kontak"}
+              caption={"Kontrak Preferensi"}
               cssClass="dx-card responsive-paddings next-card"
             >
-              <GroupItem colCount={2}>
+              <GroupItem colCount={1}>
                 <SimpleItem
-                  label={{ text: "#No" }}
-                  editorType="dxTextBox"
-                  dataField="contactSeqId"
+                  dataField="isRenewOnDue"
+                  editorType="dxSelectBox"
+                  label={{ text: "Perbarui saat jatuh tempo" }}
+                  render={() => (
+                    <RadioGroupCell
+                      dataField="isRenewOnDue"
+                      value={formData.isRenewOnDue}
+                      onChange={handleRadioChange}
+                    />
+                  )}
                 />
                 <SimpleItem
-                  dataField="contactName"
-                  label={{ text: "Nama Anggota" }}
-                  editorOptions={{
-                    readOnly: true
-                  }}
+                  dataField="isWithdrawOnDue"
+                  editorType="dxSelectBox"
+                  label={{ text: "Penarikan saat jatuh tempo" }}
+                  render={() => (
+                    <RadioGroupCell
+                      dataField="isWithdrawOnDue"
+                      value={formData.isWithdrawOnDue}
+                      onChange={handleRadioChange}
+                    />
+                  )}
                 />
-                <SimpleItem
-                  dataField="contactPhone"
-                  label={{ text: "No. HP" }}
-                  editorOptions={{
-                    readOnly: true,
-                    mask: "+00 (X00) 000-0000",
-                    maskRules: { X: /[02-9]/ }
-                  }}
-                />
-                <SimpleItem
-                  dataField="contactEmail"
-                  label={{ text: "Email" }}
-                  editorOptions={{
-                    readOnly: true
-                  }}
-                />
-                <SimpleItem
-                  dataField="contactIdCardNumber"
-                  editorType="dxTextBox"
-                  label={{ text: "Nomor KTP" }}
-                  editorOptions={{
-                    readOnly: true
-                  }}
-                />
+              </GroupItem>
+              <GroupItem>
+                <ButtonItem horizontalAlignment="left">
+                  <ButtonOptions
+                    type="default"
+                    width={"auto"}
+                    disabled={isLoadingSubmit}
+                    onClick={handleSubmit}
+                  >
+                    <div className="button-options">
+                      <LoadIndicator width="20px" height="20px" visible={isLoadingSubmit} />
+                      <span className="dx-button-text">Simpan</span>
+                    </div>
+                  </ButtonOptions>
+                </ButtonItem>
               </GroupItem>
             </GroupItem>
           </Form>
