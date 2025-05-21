@@ -114,3 +114,8 @@ export type TReqCheckBankAccountByContact = {
   bankId: string;
   bankAccountNumber: string;
 };
+
+export type TReqPartialUpdateSavingContract = {
+  isWithdrawOnDue: boolean;
+  isRenewOnDue: boolean;
+};
