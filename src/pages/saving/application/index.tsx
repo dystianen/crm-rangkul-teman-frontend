@@ -173,6 +173,11 @@ export default function SavingApplication() {
               format="Rp #,##0.00"
             />
             <Column
+              dataField={"term"}
+              caption={"Jangka Waktu"}
+              filterOperations={filterOperation.string}
+            />
+            <Column
               dataField={"contactVa"}
               caption={"Nomor Virtual Account"}
               filterOperations={filterOperation.string}
@@ -186,6 +191,22 @@ export default function SavingApplication() {
               dataField={"destBankAccountNumber"}
               caption={"No. Rekening Pencairan"}
               filterOperations={filterOperation.string}
+            />
+            <Column
+              alignment={"center"}
+              dataField={"contactSeqId"}
+              caption={"#No.Kontak"}
+              cellTemplate={function (container: any, options: any) {
+                const dom = ReactDOM.createRoot(container);
+                dom.render(
+                  <OnClickLink
+                    onClick={() => navigate(`/contact/detail?id=${options.data.contactId}`)}
+                  >
+                    {options.data.contactSeqId}
+                  </OnClickLink>
+                );
+              }}
+              filterOperations={filterOperation.numeric}
             />
             <Column
               dataField={"idCardNumber"}
