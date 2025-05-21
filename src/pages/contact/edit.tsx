@@ -32,6 +32,7 @@ import {
     districtStore,
     educationStore,
     genderStore,
+    getContactBankInfo,
     getFile,
     maritalStatusStore, processCancel,
     processWithoutEkyc,
@@ -49,16 +50,26 @@ import Loader from "src/components/loader";
 import {ContactRelativeDto, ContactRequest, initContactValue} from "src/interfaces/contactDto";
 import resizeImage from "src/utils/resizeImage.util";
 import {formatDate} from "../../utils/dateUtils";
-import { notifyError } from "src/utils/devExtremeUtils";
+import { notifyError, notifySuccess, notifyWarning } from "src/utils/devExtremeUtils";
 import "./contact.scss";
 import {StringLengthRule} from "devextreme-react/validator";
 import {AppLoanOnboardingRequest, initLoanOnboardingValue} from "../../interfaces/appLoanOnboarding";
-import {getActiveBranchByUserStore, getActiveProductByBranch} from "../../api/apploan";
+import {getActiveBranchByUserStore, getActiveProductByBranch, getListBank} from "../../api/apploan";
 import imageCompress from "src/utils/imageCompress.util";
 import trimBody from "../../utils/trim-body";
 import {useAuth} from "../../contexts/auth";
 import ContactActivityV2 from "../../components/contact/contact-activyv2";
 import { allowOnlyNumbers, allowOnlyText } from "src/utils/helpers";
+import SockJS from "sockjs-client";
+import { Client } from "@stomp/stompjs";
+import { checkBankAccountByContact } from "src/api/saving";
+import { TResBankInfo } from "src/api/types/IContact";
+
+type TBankInfo = {
+    bankId: string;
+    bankAccountNumber: string;
+    npwp: string;
+}
 
 export default function EditPage() {
     const {user} = useAuth();
@@ -85,6 +96,14 @@ export default function EditPage() {
     const [isShowLoadingOCR, setShowLoadingOCR] = useState(false);
     const [isButtonCancel, setButtonCancel] = useState(false);
     const [isLoadingPage, setLoadingPage] = useState(false);
+    const [isDableBankIdBankAccNumber, setDisableBankIdBankAccNumber] = useState(false);
+    const [waitingToReconnect, setWaitingToReconnect] = useState<boolean>(false);
+    const [bankInfo, setBankInfo] = useState<TResBankInfo>({
+        bankId: "",
+        accountNumber: "",
+        npwpNumber: "",
+    })
+    const isReadonlyBankInfo = bankInfo.isVerified === true;
 
     const getBranchByUser = selectBoxBranchOptions(
         new DataSource(getActiveBranchByUserStore as any),
@@ -104,6 +123,7 @@ export default function EditPage() {
     );
     const ownerStatusOptions = selectBoxOptions(new DataSource(addressOwnershipStore), "");
     const countryOptions = selectBoxOptions(new DataSource(countryStore), "");
+    const listBank = selectBoxOptions(new DataSource(getListBank), "Pilih bank");
 
     const [proviceOptions, setProvinceOptions] = useState({});
     const [cityOptions, setCityOptions] = useState({});
@@ -145,6 +165,15 @@ export default function EditPage() {
             });
         e.preventDefault();
     };
+
+    const handleFetchBankInfo = () => {
+        const contactId = String(id);
+        getContactBankInfo(contactId)
+            .then((res) =>  {
+                setBankInfo(res)
+                console.log({res})
+            })
+    }
 
     useEffect(() => {
         const contactId = String(id);
@@ -221,6 +250,8 @@ export default function EditPage() {
                 setContactRelatives(res?.contactRelatives);
             }
         });
+
+        handleFetchBankInfo();
 
         const handleFetchEkycInfo = () => {
             contactEkycInfo(contactId).then(res => {
@@ -345,7 +376,6 @@ export default function EditPage() {
         return validateEmail(request);
     };
 
-
     const onFieldAppDataChanged = (evt: any) => {
         if (evt.dataField === "branchId" && evt.value != null) {
             setComboProductOptions(selectBoxOptions(
@@ -450,7 +480,6 @@ export default function EditPage() {
         }
     };
 
-
     const submitCancel = () => {
         const contactId = String(id);
 
@@ -465,6 +494,112 @@ export default function EditPage() {
         text: "Kembali",
         onClick: handleBack
     };
+
+    const stompClientRef = useRef<any>(null);
+
+    useEffect(() => {
+        const socket = new SockJS(`${process.env.REACT_APP_BACKEND}api/bankAccountLive`);
+
+        const stompClient = new Client({
+            webSocketFactory: () => socket,
+            reconnectDelay: 5000,
+            debug: (str) => {
+                console.log(str);
+            },
+            onDisconnect: () => {
+                if (waitingToReconnect) {
+                    return;
+                }
+                setWaitingToReconnect(true);
+            },
+            onConnect: () => {
+                console.log("Connected to WebSocket");
+                stompClient.subscribe(`/api/resultAccountBankByContact`, (response) => {
+                    console.log("Received message:", response.body);
+                    const res = JSON.parse(response.body);
+                    if (res.contactId === id) {
+                        if (res.isWaiting) {
+                            setDisableBankIdBankAccNumber(true);
+                        } else {
+                            setDisableBankIdBankAccNumber(false);
+
+                            if (res.success) {
+                                if (res?.error) {
+                                    notifyWarning(res.message);
+                                } else {
+                                    notifySuccess(res.message);
+                                }
+                                handleFetchBankInfo();
+                            } else {
+                                notifyError(res.message);
+                            }
+                        }
+                    }
+                });
+            },
+            onStompError: (frame) => {
+                console.error("Broker reported error: " + frame.headers["message"]);
+                console.error("Additional details: " + frame.body);
+            }
+        });
+
+        stompClient.activate();
+        stompClientRef.current = stompClient;
+
+        return () => {
+            // Dereference, so it will set up next time
+            console.log("Cleanup");
+            if (stompClientRef.current) {
+                stompClientRef.current.deactivate();
+                stompClientRef.current = null;
+            }
+        };
+    }, [id, waitingToReconnect]);
+
+    const sendBankCheck = () => {
+        const ID = String(id);
+        const payload = {
+            contactId: ID,
+            bankId: bankInfo.bankId,
+            bankAccountNumber: bankInfo.accountNumber,
+            npwpNumber: bankInfo.npwpNumber
+        };
+
+        setDisableBankIdBankAccNumber(true);
+        checkBankAccountByContact(payload).then((res) => {
+            setDisableBankIdBankAccNumber(res.isWaiting);
+        });
+    };
+
+    const handleCheckBankAccount = (e: any) => {
+        if (typeof bankInfo.bankId === "undefined") {
+            notifyWarning("belum memilih bank!!");
+            e.event.preventDefault();
+            return;
+        }
+        if (typeof bankInfo.accountNumber === "undefined") {
+            notifyWarning("belum mengisi nomor rekening!!");
+            e.event.preventDefault();
+            return;
+        }
+        if (bankInfo.bankId == null || bankInfo.accountNumber == null) {
+            notifyWarning("pastikan sudah memilih bank dan mengisi nomor rekening!!");
+            e.event.preventDefault();
+            return;
+        }
+
+        sendBankCheck();
+    };
+
+    const onFieldDataBankChanged = (e: any) => {
+        const {dataField, value} = e;
+
+        setBankInfo(prev => ({
+            ...prev,
+            [dataField]: value
+        }))
+    }
+    
 
     return (
         <>
@@ -770,6 +905,65 @@ export default function EditPage() {
                                 />
                             </GroupItem>
                         </GroupItem>
+
+                        <GroupItem colSpan={2} cssClass={"dx-card responsive-paddings next-card"}>
+                            <Form 
+                                formData={bankInfo}
+                                showColonAfterLabel={true}
+                                showValidationSummary={true}
+                                validationGroup="bankData"
+                                onFieldDataChanged={onFieldDataBankChanged}
+                            >
+                                <GroupItem caption="Bank Information" name="AdditionalInformation" colCount={1}>
+                                    <SimpleItem
+                                        dataField="bankId"
+                                        editorType="dxSelectBox"
+                                        editorOptions={{
+                                            ...listBank,
+                                            disabled: isDableBankIdBankAccNumber,
+                                            readOnly: isReadonlyBankInfo
+                                        }}
+                                        label={{ text: "Bank" }}
+                                    />
+                                    <SimpleItem
+                                        dataField="accountNumber"
+                                        label={{ text: "Bank Account Number" }}
+                                        editorOptions={{
+                                            disabled: isDableBankIdBankAccNumber,
+                                            readOnly: isReadonlyBankInfo,
+                                            onKeyDown: (e: any) => allowOnlyNumbers(e.event)
+                                        }}
+                                    />
+                                    <SimpleItem
+                                        dataField="npwpNumber"
+                                        label={{ text: "NPWP" }}
+                                        editorOptions={{
+                                            min: 15,
+                                            maxLength: 15,
+                                            disabled: isDableBankIdBankAccNumber,
+                                            readOnly: isReadonlyBankInfo,
+                                            onKeyDown: (e: any) => allowOnlyNumbers(e.event)
+                                        }}
+                                    />
+                                </GroupItem>
+                                <GroupItem>
+                                    <ButtonItem horizontalAlignment="left">
+                                    <ButtonOptions
+                                        type="default"
+                                        width={"auto"}
+                                        disabled={isReadonlyBankInfo || isDableBankIdBankAccNumber}
+                                        onClick={handleCheckBankAccount}
+                                    >
+                                        <div className="button-options">
+                                            <LoadIndicator width="20px" height="20px" visible={isDableBankIdBankAccNumber} />
+                                            <span className="dx-button-text">Verify</span>
+                                        </div>
+                                    </ButtonOptions>
+                                    </ButtonItem>
+                                </GroupItem>
+                            </Form>
+                        </GroupItem>
+
                         <GroupItem colSpan={2} cssClass={"dx-card responsive-paddings next-card"}>
                             <GroupItem caption="Additional Information" name="AdditionalInformation" colCount={2}>
                                 <SimpleItem dataField="typeOfGood" label={{text: "Jenis Barang"}}>

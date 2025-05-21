@@ -116,6 +116,7 @@ export type TReqCheckBankAccountByContact = {
   contactId: string;
   bankId: string;
   bankAccountNumber: string;
+  npwpNumber?: string;
 };
 
 export type TReqPartialUpdateSavingContract = {
