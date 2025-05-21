@@ -15,6 +15,7 @@ import {
   submitSavingApplication
 } from "src/api/saving";
 import { TResSavingApplication } from "src/api/types/ISaving";
+import LoadingPage from "src/components/load-panel";
 import { backofficeAccess } from "src/constants/variableConstata";
 import { initSavingForm } from "src/interfaces/ISaving";
 import { notifyError, notifySuccess, notifyWarning } from "src/utils/devExtremeUtils";
@@ -31,15 +32,21 @@ const FormSavingApplication = () => {
   const [isDableBankIdBankAccNumber, setDisableBankIdBankAccNumber] = useState(false);
   const [isDisableButtonSubmit, setDisableButtonSubmit] = useState<boolean>(true);
   const [waitingToReconnect, setWaitingToReconnect] = useState<boolean>(false);
+  const [loadingPage, setLoadingPage] = useState(false);
   const isReadonly = !formData.isEditable;
 
   useEffect(() => {
-    getDetailSavingApplication(ID).then((res) => {
-      setFormData(res);
-      if (res.bankAccountIsVerified) {
-        setDisableButtonSubmit(false);
-      }
-    });
+    setLoadingPage(true);
+    getDetailSavingApplication(ID)
+      .then((res) => {
+        setFormData(res);
+        if (res.bankAccountIsVerified) {
+          setDisableButtonSubmit(false);
+        }
+      })
+      .finally(() => {
+        setLoadingPage(false);
+      });
   }, [ID]);
 
   const listBank = selectBoxOptions(new DataSource(getListBank), "Pilih bank");
@@ -199,6 +206,8 @@ const FormSavingApplication = () => {
 
   return (
     <>
+      <LoadingPage visible={loadingPage} />
+
       <div className="title-detail">
         <h2 className={"content-block"}>Pengajuan Simpanan</h2>
       </div>
@@ -260,6 +269,41 @@ const FormSavingApplication = () => {
                 colCount={1}
                 cssClass="dx-card responsive-paddings next-card"
               >
+                <SimpleItem
+                  dataField="seqId"
+                  label={{ text: "#Nomor Pengajuan" }}
+                  visible={isReadonly}
+                  editorOptions={{
+                    readOnly: true
+                  }}
+                />
+                <SimpleItem
+                  dataField="status"
+                  label={{ text: "Status Pengajuan" }}
+                  visible={isReadonly}
+                  editorOptions={{
+                    readOnly: true
+                  }}
+                />
+                <SimpleItem
+                  dataField="createdOn"
+                  editorType="dxDateBox"
+                  label={{ text: "Tanggal Pengajuan" }}
+                  visible={isReadonly}
+                  editorOptions={{
+                    displayFormat: "dd MMM yyyy",
+                    type: "datetime",
+                    readOnly: true
+                  }}
+                />
+                <SimpleItem
+                  dataField="contactVa"
+                  label={{ text: "Nomor Virtual Account" }}
+                  visible={isReadonly}
+                  editorOptions={{
+                    readOnly: true
+                  }}
+                />
                 <SimpleItem
                   dataField="amount"
                   label={{ text: "Jumlah Simpanan" }}

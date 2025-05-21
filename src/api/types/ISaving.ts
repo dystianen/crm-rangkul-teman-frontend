@@ -21,6 +21,9 @@ export type TReqSavingApplication = {
 
 export type TResSavingApplication = {
   id: string;
+  seqId: string;
+  createdOn: string;
+  contactVa: string;
   contactName: string;
   contactPhone: string;
   idCardNumber: string;

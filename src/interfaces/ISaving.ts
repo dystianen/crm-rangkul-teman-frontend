@@ -7,6 +7,9 @@ export const initSavingValues = {
 
 export const initSavingForm = {
   id: "",
+  seqId: "",
+  createdOn: "",
+  contactVa: "",
   amount: 0,
   termMonth: "",
   bankId: "",
