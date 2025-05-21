@@ -168,7 +168,8 @@ const FormSavingApplication = () => {
     setIsLoadingSubmit(true);
     const payload = {
       ...formData,
-      id: ID
+      id: ID,
+      isDeductSaving: true
     };
     submitSavingApplication(payload)
       .then(() => {
@@ -368,17 +369,6 @@ const FormSavingApplication = () => {
                 colCount={1}
                 cssClass="dx-card responsive-paddings next-card"
               >
-                <SimpleItem
-                  dataField="isDeductSaving"
-                  label={{ text: "Ambil dari simpanan" }}
-                  render={() => (
-                    <RadioGroupCell
-                      dataField="isDeductSaving"
-                      value={formData.isDeductSaving}
-                      onChange={handleRadioChange}
-                    />
-                  )}
-                />
                 <SimpleItem
                   dataField="isRenewOnDue"
                   editorType="dxSelectBox"
