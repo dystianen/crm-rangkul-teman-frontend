@@ -60,8 +60,9 @@ export type TResSavingCustomerDetail = {
   balanceDeposit: number;
   balanceTotal: number;
   lastTransactionOn: string;
-  bankId: string;
-  bankAccountNumber: string;
+  destBankAccountNumber: string;
+  destBankId: string;
+  destBankName: string;
 };
 
 export type TResSavingWithdrawDetail = {

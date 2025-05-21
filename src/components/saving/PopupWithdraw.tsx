@@ -5,25 +5,26 @@ import { Popup } from "devextreme-react/popup";
 import { Toast } from "devextreme-react/toast";
 import DataSource from "devextreme/data/data_source";
 import { FC, useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import SockJS from "sockjs-client";
 import { getListBank } from "src/api/apploan";
 import { selectBoxOptions } from "src/api/contact";
 import { checkBankAccountByContact, createSavingWithdraw } from "src/api/saving";
-import { TReqCreateSavingWithdraw, TResSavingCustomerDetail } from "src/api/types/ISaving";
+import { TResSavingCustomerDetail } from "src/api/types/ISaving";
 import { notifyError, notifySuccess, notifyWarning } from "src/utils/devExtremeUtils";
 import { allowOnlyNumbers } from "src/utils/helpers";
 
 export const PopupWithdraw: FC<any> = (props) => {
-  const navigate = useNavigate();
+  const { popupVisible, hide, detail, handleSuccess } = props;
   const formRef = useRef<Form>(null);
-  const [request, setRequest] = useState<TReqCreateSavingWithdraw>({
-    ktp: "",
+  const [request, setRequest] = useState<{
+    amount: number;
+    destBankId: string;
+    destBankAccountNumber: string;
+  }>({
     amount: 0,
-    bankId: "",
-    bankAccNumber: ""
+    destBankId: "",
+    destBankAccountNumber: ""
   });
-  const { popupVisible, hide, detail } = props;
   const isReadonlyBank = detail.bankId !== undefined && detail.bankAccountNumber !== undefined;
 
   const [toastConfig, setToastConfig] = useState<any>({
@@ -43,24 +44,29 @@ export const PopupWithdraw: FC<any> = (props) => {
   }, [popupVisible, detail]);
 
   const onFormSubmit = (e: any) => {
+    setDisableButtonSubmit(true);
     const form = formRef.current!.instance;
-    const { amount, bankId, bankAccNumber } = request;
+    const { amount, destBankId, destBankAccountNumber } = request;
     const payload = {
       ktp: detail.ktp,
       contactId: detail.id,
       amount,
-      bankId: formData.bankId ?? bankId,
-      bankAccNumber: formData.bankAccountNumber ?? bankAccNumber
+      bankId: formData.destBankId ?? destBankId,
+      bankAccNumber: formData.destBankAccountNumber ?? destBankAccountNumber
     };
 
     createSavingWithdraw(payload)
       .then(() => {
         hide();
         form.clear();
-        navigate(`/saving/customer`);
+
+        handleSuccess();
       })
       .catch((err) => {
         notifyError(err);
+      })
+      .finally(() => {
+        setDisableButtonSubmit(false);
       });
     e.event.stopPropagation();
   };
@@ -84,58 +90,54 @@ export const PopupWithdraw: FC<any> = (props) => {
   const stompClientRef = useRef<any>(null);
 
   useEffect(() => {
-    if (detail.id) {
-      const socket = new SockJS(
-        `${process.env.REACT_APP_BACKEND}api/checkAccountBankByContact/${detail.id}`
-      );
+    const socket = new SockJS(`${process.env.REACT_APP_BACKEND}api/bankAccountLive`);
 
-      const stompClient = new Client({
-        webSocketFactory: () => socket,
-        reconnectDelay: 5000,
-        debug: (str) => {
-          console.log(str);
-        },
-        onDisconnect: () => {
-          if (waitingToReconnect) {
-            return;
-          }
-          setWaitingToReconnect(true);
-        },
-        onConnect: () => {
-          console.log("Connected to WebSocket");
-          stompClient.subscribe(`/api/resultAccountBankByContact`, (response) => {
-            console.log("Received message:", response.body);
-            const res = JSON.parse(response.body);
-            if (res.contactId === detail.id) {
-              if (res.isWaiting) {
-                setDisableBankIdBankAccNumber(true);
-              } else {
-                setDisableBankIdBankAccNumber(false);
+    const stompClient = new Client({
+      webSocketFactory: () => socket,
+      reconnectDelay: 5000,
+      debug: (str) => {
+        console.log(str);
+      },
+      onDisconnect: () => {
+        if (waitingToReconnect) {
+          return;
+        }
+        setWaitingToReconnect(true);
+      },
+      onConnect: () => {
+        console.log("Connected to WebSocket");
+        stompClient.subscribe(`/api/resultAccountBankByContact`, (response) => {
+          console.log("Received message:", response.body);
+          const res = JSON.parse(response.body);
+          if (res.contactId === detail.id) {
+            if (res.isWaiting) {
+              setDisableBankIdBankAccNumber(true);
+            } else {
+              setDisableBankIdBankAccNumber(false);
 
-                if (res.success) {
-                  if (res?.error) {
-                    notifyWarning(res.message);
-                  } else {
-                    notifySuccess(res.message);
-                  }
-                  setDisableButtonSubmit(false);
+              if (res.success) {
+                if (res?.error) {
+                  notifyWarning(res.message);
                 } else {
-                  notifyError(res.message);
-                  setDisableButtonSubmit(true);
+                  notifySuccess(res.message);
                 }
+                setDisableButtonSubmit(false);
+              } else {
+                notifyError(res.message);
+                setDisableButtonSubmit(true);
               }
             }
-          });
-        },
-        onStompError: (frame) => {
-          console.error("Broker reported error: " + frame.headers["message"]);
-          console.error("Additional details: " + frame.body);
-        }
-      });
+          }
+        });
+      },
+      onStompError: (frame) => {
+        console.error("Broker reported error: " + frame.headers["message"]);
+        console.error("Additional details: " + frame.body);
+      }
+    });
 
-      stompClient.activate();
-      stompClientRef.current = stompClient;
-    }
+    stompClient.activate();
+    stompClientRef.current = stompClient;
 
     return () => {
       // Dereference, so it will set up next time
@@ -150,8 +152,8 @@ export const PopupWithdraw: FC<any> = (props) => {
   const sendBankCheck = () => {
     const payload = {
       contactId: detail.id,
-      bankId: request.bankId,
-      bankAccountNumber: request.bankAccNumber
+      bankId: request.destBankId,
+      bankAccountNumber: request.destBankAccountNumber
     };
 
     checkBankAccountByContact(payload).then((res) => {
@@ -160,17 +162,17 @@ export const PopupWithdraw: FC<any> = (props) => {
   };
 
   const handleCheckBankAccount = (e: any) => {
-    if (typeof formData.bankId === "undefined") {
+    if (typeof formData.destBankId === "undefined") {
       notifyWarning("belum memilih bank!!");
       e.event.preventDefault();
       return;
     }
-    if (typeof request.bankAccNumber === "undefined") {
+    if (typeof request.destBankAccountNumber === "undefined") {
       notifyWarning("belum mengisi nomor rekening!!");
       e.event.preventDefault();
       return;
     }
-    if (formData.bankId == null || request.bankAccNumber == null) {
+    if (formData.destBankId == null || request.destBankAccountNumber == null) {
       notifyWarning("pastikan sudah memilih bank dan mengisi nomor rekening!!");
       e.event.preventDefault();
       return;
@@ -239,7 +241,8 @@ export const PopupWithdraw: FC<any> = (props) => {
                   dataField="amount"
                   label={{ text: "Jumlah penarikan" }}
                   editorOptions={{
-                    format: "Rp #,##0.00"
+                    format: "Rp #,##0.00",
+                    max: formData.balanceSaving
                   }}
                   editorType="dxNumberBox"
                 />
@@ -256,7 +259,7 @@ export const PopupWithdraw: FC<any> = (props) => {
                 cssClass="dx-card responsive-paddings next-card"
               >
                 <SimpleItem
-                  dataField="bankId"
+                  dataField="destBankId"
                   editorType="dxSelectBox"
                   editorOptions={{
                     ...listBank,
@@ -268,7 +271,7 @@ export const PopupWithdraw: FC<any> = (props) => {
                 <GroupItem colCount={5} cssClass="m0">
                   <SimpleItem
                     colSpan={3}
-                    dataField="bankAccNumber"
+                    dataField="destBankAccountNumber"
                     label={{ text: "Nomor Rekening" }}
                     editorOptions={{
                       readOnly: isReadonlyBank,
@@ -316,7 +319,7 @@ export const PopupWithdraw: FC<any> = (props) => {
                 width: "100%",
                 text: "Simpan",
                 type: "default",
-                // disabled: isDisableButtonSubmit,
+                disabled: isDisableButtonSubmit,
                 onClick: onFormSubmit
               }}
             />

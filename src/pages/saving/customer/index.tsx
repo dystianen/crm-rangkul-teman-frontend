@@ -89,6 +89,18 @@ export default function SavingCustomer() {
               filterOperations={filterOperation.numeric}
               format="Rp #,##0.00"
             />
+            <Column
+              dataField={"vaName"}
+              caption={"Virtual Account"}
+              filterOperations={filterOperation.numeric}
+              format="Rp #,##0.00"
+            />
+            <Column
+              dataField={"destBankAccountName"}
+              caption={"Rekening Pencairan"}
+              filterOperations={filterOperation.numeric}
+              format="Rp #,##0.00"
+            />
 
             <Paging defaultPageSize={50} />
             <Pager showPageSizeSelector={true} showInfo={true} allowedPageSizes={[10, 50, 100]} />

@@ -133,7 +133,7 @@ export const rejectSavingWithdraw = async (payload: {
   return resp.data;
 };
 export const createSavingWithdraw = async (payload: TReqCreateSavingWithdraw): Promise<any> => {
-  const resp = await ajaxPost(`${API_PATH.SAVING_DEPOSIT}/withdraw/reject`, payload);
+  const resp = await ajaxPost(`${API_PATH.SAVING_DEPOSIT}/withdraw/create/saving`, payload);
   return resp.data;
 };
 
