@@ -273,7 +273,7 @@ const FormSavingApplication = () => {
                 <SimpleItem
                   dataField="seqId"
                   label={{ text: "#Nomor Pengajuan" }}
-                  visible={isReadonly}
+                  visible={!isDraft}
                   editorOptions={{
                     readOnly: true
                   }}
