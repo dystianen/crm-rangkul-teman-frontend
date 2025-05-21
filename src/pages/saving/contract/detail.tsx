@@ -8,6 +8,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import {
   getDetailSavingContract,
   getSavingContractActivity,
+  postSavingContractPartialUpdate,
   postWithdrawDeposit
 } from "src/api/saving";
 import { TReqResSavingSubmit, TResSavingContractDetail } from "src/api/types/ISaving";
@@ -15,7 +16,7 @@ import { OnClickLink } from "src/components/alink";
 import PopupConfirm from "src/components/popup/popup-confirm";
 import TableCashflow from "src/components/saving/TableCashflow";
 import { initSavingContractDetail } from "src/interfaces/ISaving";
-import { notifyError } from "src/utils/devExtremeUtils";
+import { notifyError, notifySuccess } from "src/utils/devExtremeUtils";
 
 const SavingContractDetail = () => {
   const navigate = useNavigate();
@@ -28,10 +29,14 @@ const SavingContractDetail = () => {
   const [loading, setLoading] = useState(false);
   const [isLoadingSubmit, setLoadingSubmit] = useState(false);
 
-  useEffect(() => {
+  const handleGetDetail = () => {
     getDetailSavingContract(ID).then((res) => {
       setFormData(res);
     });
+  };
+
+  useEffect(() => {
+    handleGetDetail();
 
     getSavingContractActivity(ID).then((res) => {
       setActivity(res);
@@ -102,17 +107,29 @@ const SavingContractDetail = () => {
         displayExpr="label"
         valueExpr="value"
         onValueChanged={(e) => onChange(dataField, e.value)}
+        readOnly={!formData.statusIsActive}
       />
     )
   );
 
   const handleSubmit = () => {
-    console.log("submit");
     setLoadingSubmit(true);
     const payload = {
       isRenewOnDue: formData.isRenewOnDue,
       isWithdrawOnDue: formData.isWithdrawOnDue
     };
+
+    postSavingContractPartialUpdate(ID, payload)
+      .then(() => {
+        notifySuccess("Berhasil memperbarui data");
+        handleGetDetail();
+      })
+      .catch((err) => {
+        notifyError(err);
+      })
+      .finally(() => {
+        setLoadingSubmit(false);
+      });
   };
 
   return (
@@ -279,7 +296,7 @@ const SavingContractDetail = () => {
                   )}
                 />
               </GroupItem>
-              <GroupItem>
+              <GroupItem visible={formData.statusIsActive}>
                 <ButtonItem horizontalAlignment="left">
                   <ButtonOptions
                     type="default"

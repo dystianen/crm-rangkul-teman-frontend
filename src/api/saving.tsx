@@ -1,8 +1,10 @@
-import {customStore, customStoreSaving} from "../model/customStore";
+import { customStore, customStoreSaving } from "../model/customStore";
 import { dataRawCustomStore } from "../model/datagrid";
-import { ajaxGet, ajaxPost } from "./http.api";
+import { ajaxGet, ajaxPatch, ajaxPost } from "./http.api";
 import { API_PATH } from "./path_url";
 import {
+  TReqCheckBankAccountByContact,
+  TReqCreateSavingWithdraw,
   TReqResSavingSubmit,
   TReqSavingAppCreate,
   TResSavingAppCreate,
@@ -74,6 +76,14 @@ export const getSavingContractActivity = async (contractId: string): Promise<any
   return resp.data;
 };
 
+export const postSavingContractPartialUpdate = async (
+  id: string,
+  payload: { isRenewOnDue: boolean; isWithdrawOnDue: boolean }
+): Promise<any> => {
+  const resp = await ajaxPatch(`${API_PATH.SAVING_DEPOSIT}/contract/partialupdate/${id}`, payload);
+  return resp.data;
+};
+
 export const getDetailSavingCustomer = async (
   savingId: string
 ): Promise<TResSavingCustomerDetail> => {
@@ -116,13 +126,24 @@ export const approveSavingWithdraw = async (withdrawId: string): Promise<any> =>
 
 export const rejectSavingWithdraw = async (payload: {
   withdrawId: string;
-  rejectList: string[];
+  rejectReason: string;
   description: string;
 }): Promise<any> => {
   const resp = await ajaxPost(`${API_PATH.SAVING_DEPOSIT}/withdraw/reject`, payload);
+  return resp.data;
+};
+export const createSavingWithdraw = async (payload: TReqCreateSavingWithdraw): Promise<any> => {
+  const resp = await ajaxPost(`${API_PATH.SAVING_DEPOSIT}/withdraw/create/saving`, payload);
   return resp.data;
 };
 
 export const rejectReasonWithdrawStore = dataRawCustomStore(
   `${API_PATH.SAVING_DEPOSIT}/withdraw/reject/reason?`
 );
+
+export const checkBankAccountByContact = async (
+  payload: TReqCheckBankAccountByContact
+): Promise<any> => {
+  const resp = await ajaxPost(`${API_PATH.BANK_CHECK}/byContact`, payload);
+  return resp.data;
+};
