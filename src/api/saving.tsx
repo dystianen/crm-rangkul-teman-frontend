@@ -5,9 +5,10 @@ import { API_PATH } from "./path_url";
 import {
   TReqCheckBankAccountByContact,
   TReqCreateSavingWithdraw,
-  TReqResSavingSubmit,
   TReqSavingAppCreate,
+  TReqSavingApplication,
   TResSavingAppCreate,
+  TResSavingApplication,
   TResSavingContractDetail,
   TResSavingCustomerDetail,
   TResSavingSubmit,
@@ -51,7 +52,7 @@ export const createSavingApplication = async (
 };
 
 export const submitSavingApplication = async (
-  payload: TReqResSavingSubmit
+  payload: TReqSavingApplication
 ): Promise<TResSavingSubmit> => {
   const resp = await ajaxPost(`${API_PATH.SAVING_DEPOSIT}/app/submit`, payload);
   return resp.data;
@@ -59,7 +60,7 @@ export const submitSavingApplication = async (
 
 export const getDetailSavingApplication = async (
   savingId: string
-): Promise<TReqResSavingSubmit> => {
+): Promise<TResSavingApplication> => {
   const resp = await ajaxGet(`${API_PATH.SAVING_DEPOSIT}/app/${savingId}`);
   return resp.data;
 };
