@@ -8,14 +8,16 @@ export const initSavingValues = {
 export const initSavingForm = {
   id: "",
   amount: 0,
-  termMonth: 0,
+  termMonth: "",
   bankId: "",
   bankAccountNumber: "",
   bankAccountIsVerified: false,
   bankAccountVerificationId: "",
-  isDeductSaving: null,
-  isWithdrawOnDue: null,
-  isRenewOnDue: null
+  contactName: "",
+  contactPhone: "",
+  idCardNumber: "",
+  status: "",
+  isEditable: false
 };
 
 export const initSavingContractDetail = {
@@ -40,27 +42,19 @@ export const initSavingContractDetail = {
 };
 
 export const defaultSavingCustomerDetail: TResSavingCustomerDetail = {
-  createdOn: "",
-  modifiedOn: "",
-  createdBy: "",
-  modifiedBy: "",
-  seqId: 0,
   id: "",
-  appId: "",
-  startOn: "",
-  finishOn: "",
-  closedOn: "",
-  amount: 0,
-  accrualInterest: 0,
-  statusId: "",
-  appSeqId: "",
-  contactId: "",
-  contactSeqId: "",
-  contactIdCardNumber: "",
+  seqId: 0,
+  name: "",
   contactPhone: "",
-  savingAmountBalance: 0,
-  depositAmountBalance: 0,
-  totalBalance: 0
+  contactEmail: "",
+  ktp: "",
+  balanceSaving: 0,
+  balanceDeposit: 0,
+  balanceTotal: 0,
+  lastTransactionOn: "",
+  destBankAccountNumber: "",
+  destBankId: "",
+  destBankName: ""
 };
 
 export const defaultSavingWithdrawDetail: TResSavingWithdrawDetail = {

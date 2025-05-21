@@ -9,18 +9,29 @@ export type TResSavingAppCreate = {
   productId: string;
 };
 
-export type TReqResSavingSubmit = {
+export type TReqSavingApplication = {
   id: string;
   amount: number;
-  termMonth: number;
+  termMonth: string;
   bankId: string;
   bankAccountNumber: string;
   bankAccountIsVerified: boolean;
   bankAccountVerificationId: string;
-  isDeductSaving: boolean | null;
-  isWithdrawOnDue: boolean | null;
-  isRenewOnDue: boolean | null;
-  isEditable?: boolean;
+};
+
+export type TResSavingApplication = {
+  id: string;
+  contactName: string;
+  contactPhone: string;
+  idCardNumber: string;
+  bankId: string;
+  bankAccountNumber: string;
+  bankAccountIsVerified: boolean;
+  bankAccountVerificationId: string;
+  status: string;
+  isEditable: boolean;
+  termMonth: string;
+  amount: number;
 };
 
 export type TResSavingSubmit = {
@@ -102,4 +113,9 @@ export type TReqCheckBankAccountByContact = {
   contactId: string;
   bankId: string;
   bankAccountNumber: string;
+};
+
+export type TReqPartialUpdateSavingContract = {
+  isWithdrawOnDue: boolean;
+  isRenewOnDue: boolean;
 };

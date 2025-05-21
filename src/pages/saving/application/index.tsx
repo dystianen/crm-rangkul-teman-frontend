@@ -105,7 +105,7 @@ export default function SavingApplication() {
 
   return (
     <React.Fragment>
-      <h2 className={"content-block"}>Simpanan Berjangka</h2>
+      <h2 className={"content-block"}>Pengajuan Simpanan</h2>
       <div className={"content-block"}>
         <div className={"dx-card"}>
           <DataGrid

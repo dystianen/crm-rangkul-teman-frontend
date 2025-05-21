@@ -11,7 +11,7 @@ import {
   postSavingContractPartialUpdate,
   postWithdrawDeposit
 } from "src/api/saving";
-import { TReqResSavingSubmit, TResSavingContractDetail } from "src/api/types/ISaving";
+import { TReqPartialUpdateSavingContract, TResSavingContractDetail } from "src/api/types/ISaving";
 import { OnClickLink } from "src/components/alink";
 import PopupConfirm from "src/components/popup/popup-confirm";
 import TableCashflow from "src/components/saving/TableCashflow";
@@ -62,7 +62,7 @@ const SavingContractDetail = () => {
     setVisible(false);
   }, []);
 
-  const handleRadioChange = (field: keyof TReqResSavingSubmit, value: boolean) => {
+  const handleRadioChange = (field: keyof TReqPartialUpdateSavingContract, value: boolean) => {
     setFormData((prev) => {
       if (field === "isWithdrawOnDue" && value === true) {
         return {
@@ -93,9 +93,9 @@ const SavingContractDetail = () => {
       value,
       onChange
     }: {
-      dataField: keyof TReqResSavingSubmit;
+      dataField: keyof TReqPartialUpdateSavingContract;
       value: boolean | null;
-      onChange: (field: keyof TReqResSavingSubmit, value: boolean) => void;
+      onChange: (field: keyof TReqPartialUpdateSavingContract, value: boolean) => void;
     }) => (
       <RadioGroup
         items={[

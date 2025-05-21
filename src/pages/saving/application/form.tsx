@@ -1,10 +1,10 @@
 import { Client } from "@stomp/stompjs";
-import { LoadIndicator, RadioGroup } from "devextreme-react";
+import { LoadIndicator } from "devextreme-react";
 import Form, { ButtonItem, ButtonOptions, GroupItem, SimpleItem } from "devextreme-react/form";
 import * as Title from "devextreme-react/toolbar";
 import DataSource from "devextreme/data/data_source";
 import queryString from "query-string";
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import SockJS from "sockjs-client";
 import { bankCheckValid, checkAccess, getListBank } from "src/api/apploan";
@@ -14,7 +14,7 @@ import {
   listProductApplicationTerm,
   submitSavingApplication
 } from "src/api/saving";
-import { TReqResSavingSubmit } from "src/api/types/ISaving";
+import { TResSavingApplication } from "src/api/types/ISaving";
 import { backofficeAccess } from "src/constants/variableConstata";
 import { initSavingForm } from "src/interfaces/ISaving";
 import { notifyError, notifySuccess, notifyWarning } from "src/utils/devExtremeUtils";
@@ -26,7 +26,7 @@ const FormSavingApplication = () => {
   const { id } = queryString.parse(location.search);
   const ID = String(id);
 
-  const [formData, setFormData] = useState<TReqResSavingSubmit>(initSavingForm);
+  const [formData, setFormData] = useState<TResSavingApplication>(initSavingForm);
   const [isLoadingSubmit, setIsLoadingSubmit] = useState(false);
   const [isDableBankIdBankAccNumber, setDisableBankIdBankAccNumber] = useState(false);
   const [isDisableButtonSubmit, setDisableButtonSubmit] = useState<boolean>(true);
@@ -75,7 +75,7 @@ const FormSavingApplication = () => {
         stompClient.subscribe("/api/bankAccountResult", (response) => {
           console.log("Received message:", response.body);
           const res = JSON.parse(response.body);
-          if (res.appId === id) {
+          if (res.appId === ID) {
             if (res.isWaiting) {
               setDisableBankIdBankAccNumber(true);
             } else {
@@ -117,7 +117,7 @@ const FormSavingApplication = () => {
       stompClientRef.current = null;
       stompClient.deactivate();
     };
-  }, [id, waitingToReconnect]);
+  }, [ID, waitingToReconnect]);
 
   const sendBankCheck = () => {
     const payload = {
@@ -166,10 +166,23 @@ const FormSavingApplication = () => {
 
   const handleSubmit = () => {
     setIsLoadingSubmit(true);
+    const {
+      amount,
+      termMonth,
+      bankId,
+      bankAccountNumber,
+      bankAccountIsVerified,
+      bankAccountVerificationId
+    } = formData;
+
     const payload = {
-      ...formData,
       id: ID,
-      isDeductSaving: true
+      amount,
+      termMonth,
+      bankId,
+      bankAccountNumber,
+      bankAccountIsVerified,
+      bankAccountVerificationId
     };
     submitSavingApplication(payload)
       .then(() => {
@@ -183,56 +196,6 @@ const FormSavingApplication = () => {
         setIsLoadingSubmit(false);
       });
   };
-
-  const handleRadioChange = (field: keyof TReqResSavingSubmit, value: boolean) => {
-    setFormData((prev) => {
-      if (field === "isWithdrawOnDue" && value === true) {
-        return {
-          ...prev,
-          isWithdrawOnDue: true,
-          isRenewOnDue: false
-        };
-      }
-
-      if (field === "isRenewOnDue" && value === true) {
-        return {
-          ...prev,
-          isWithdrawOnDue: false,
-          isRenewOnDue: true
-        };
-      }
-
-      return {
-        ...prev,
-        [field]: value
-      };
-    });
-  };
-
-  const RadioGroupCell = React.memo(
-    ({
-      dataField,
-      value,
-      onChange
-    }: {
-      dataField: keyof TReqResSavingSubmit;
-      value: boolean | null;
-      onChange: (field: keyof TReqResSavingSubmit, value: boolean) => void;
-    }) => (
-      <RadioGroup
-        items={[
-          { label: "Ya", value: true },
-          { label: "Tidak", value: false }
-        ]}
-        value={value}
-        layout="horizontal"
-        displayExpr="label"
-        valueExpr="value"
-        onValueChanged={(e) => onChange(dataField, e.value)}
-        readOnly={isReadonly}
-      />
-    )
-  );
 
   return (
     <>
@@ -362,37 +325,6 @@ const FormSavingApplication = () => {
                     </ButtonOptions>
                   </ButtonItem>
                 </GroupItem>
-              </GroupItem>
-
-              <GroupItem
-                caption="Preferensi"
-                colCount={1}
-                cssClass="dx-card responsive-paddings next-card"
-              >
-                <SimpleItem
-                  dataField="isRenewOnDue"
-                  editorType="dxSelectBox"
-                  label={{ text: "Perbarui saat jatuh tempo" }}
-                  render={() => (
-                    <RadioGroupCell
-                      dataField="isRenewOnDue"
-                      value={formData.isRenewOnDue}
-                      onChange={handleRadioChange}
-                    />
-                  )}
-                />
-                <SimpleItem
-                  dataField="isWithdrawOnDue"
-                  editorType="dxSelectBox"
-                  label={{ text: "Penarikan saat jatuh tempo" }}
-                  render={() => (
-                    <RadioGroupCell
-                      dataField="isWithdrawOnDue"
-                      value={formData.isWithdrawOnDue}
-                      onChange={handleRadioChange}
-                    />
-                  )}
-                />
               </GroupItem>
             </GroupItem>
             <GroupItem visible={!isReadonly} colCountByScreen={{ xs: 4, sm: 8, md: 10, lg: 8 }}>
