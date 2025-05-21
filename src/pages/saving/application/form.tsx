@@ -34,6 +34,7 @@ const FormSavingApplication = () => {
   const [waitingToReconnect, setWaitingToReconnect] = useState<boolean>(false);
   const [loadingPage, setLoadingPage] = useState(false);
   const isReadonly = !formData.isEditable;
+  const isDraft = formData.status === "Draft";
 
   useEffect(() => {
     setLoadingPage(true);
@@ -280,7 +281,7 @@ const FormSavingApplication = () => {
                 <SimpleItem
                   dataField="status"
                   label={{ text: "Status Pengajuan" }}
-                  visible={isReadonly}
+                  visible={!isDraft}
                   editorOptions={{
                     readOnly: true
                   }}
@@ -289,7 +290,7 @@ const FormSavingApplication = () => {
                   dataField="createdOn"
                   editorType="dxDateBox"
                   label={{ text: "Tanggal Pengajuan" }}
-                  visible={isReadonly}
+                  visible={!isDraft}
                   editorOptions={{
                     displayFormat: "dd MMM yyyy",
                     type: "datetime",
@@ -299,7 +300,7 @@ const FormSavingApplication = () => {
                 <SimpleItem
                   dataField="contactVa"
                   label={{ text: "Nomor Virtual Account" }}
-                  visible={isReadonly}
+                  visible={!isDraft}
                   editorOptions={{
                     readOnly: true
                   }}
