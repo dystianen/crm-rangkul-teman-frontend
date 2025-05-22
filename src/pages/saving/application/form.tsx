@@ -188,6 +188,16 @@ const FormSavingApplication = () => {
                   }}
                 />
                 <SimpleItem
+                  visible={formData.savingData.isAvailable}
+                  dataField="savingData.amount"
+                  label={{ text: "Simpanan Tersedia" }}
+                  editorOptions={{
+                    format: "Rp #,##0.00",
+                    readOnly: true
+                  }}
+                  editorType="dxNumberBox"
+                />
+                <SimpleItem
                   dataField="amount"
                   label={{ text: "Jumlah Simpanan" }}
                   editorOptions={{
