@@ -108,7 +108,7 @@ const SavingWithdrawDetail = () => {
                     return (
                       <div style={{ marginTop: "10px" }}>
                         <OnClickLink
-                          onClick={() => navigate(`/contact/detail?id=${formData.contactId}`)}
+                          onClick={() => navigate(`/contact/edit?id=${formData.contactId}`)}
                         >
                           {data.editorOptions.value || "-"}
                         </OnClickLink>

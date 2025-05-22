@@ -57,31 +57,24 @@ import {AppLoanOnboardingRequest, initLoanOnboardingValue} from "../../interface
 import {getActiveBranchByUserStore, getActiveProductByBranch, getListBank} from "../../api/apploan";
 import imageCompress from "src/utils/imageCompress.util";
 import trimBody from "../../utils/trim-body";
-import {useAuth} from "../../contexts/auth";
 import ContactActivityV2 from "../../components/contact/contact-activyv2";
 import { allowOnlyNumbers, allowOnlyText } from "src/utils/helpers";
 import SockJS from "sockjs-client";
 import { Client } from "@stomp/stompjs";
 import { checkBankAccountByContact } from "src/api/saving";
 import { TResBankInfo } from "src/api/types/IContact";
-
-type TBankInfo = {
-    bankId: string;
-    bankAccountNumber: string;
-    npwp: string;
-}
+import LoadingOverlay from "src/components/loading/LoadingOverlay";
 
 export default function EditPage() {
-    const {user} = useAuth();
     const formAppRef = useRef<Form>(null);
-    const [productOptions, setProductOptions] = useState<any>(undefined);
     const [productComboOptions, setComboProductOptions] = useState<any>({});
     const [isPopupCreateApp, setPopupCreateApp] = React.useState(false);
-    const [loanAppOnboarding, setLoanAppOnboarding] =
+    const [loanAppOnboarding] =
         useState<AppLoanOnboardingRequest>(initLoanOnboardingValue);
     const navigate = useNavigate();
     const location = useLocation();
     const {id, from} = queryString.parse(location.search);
+    const contactId = String(id);
     const [contact, setContact] = useState<ContactRequest>(initContactValue);
     const [ktpSrc, setKtpSrc] = useState("");
     const [selfie, setSelfie] = useState("");
@@ -98,12 +91,13 @@ export default function EditPage() {
     const [isLoadingPage, setLoadingPage] = useState(false);
     const [isDableBankIdBankAccNumber, setDisableBankIdBankAccNumber] = useState(false);
     const [waitingToReconnect, setWaitingToReconnect] = useState<boolean>(false);
+    const [loadingWebSocket, setLoadingWebSocket] = useState(true);
     const [bankInfo, setBankInfo] = useState<TResBankInfo>({
         bankId: "",
         accountNumber: "",
         npwpNumber: "",
     })
-    const isReadonlyBankInfo = bankInfo.isVerified === true;
+    const isReadonlyBankInfo = !bankInfo.isAllowChange;
 
     const getBranchByUser = selectBoxBranchOptions(
         new DataSource(getActiveBranchByUserStore as any),
@@ -166,14 +160,13 @@ export default function EditPage() {
         e.preventDefault();
     };
 
-    const handleFetchBankInfo = () => {
-        const contactId = String(id);
+    const handleFetchBankInfo =  useCallback(() => {
         getContactBankInfo(contactId)
             .then((res) =>  {
                 setBankInfo(res)
                 console.log({res})
             })
-    }
+    }, [contactId])
 
     useEffect(() => {
         const contactId = String(id);
@@ -384,9 +377,6 @@ export default function EditPage() {
             ));
         }
 
-        if (evt.dataField === "productId" && evt.value != null) {
-            setProductOptions(evt.value);
-        }
         loanAppOnboarding[evt.dataField] = evt.value;
     };
 
@@ -514,10 +504,11 @@ export default function EditPage() {
             },
             onConnect: () => {
                 console.log("Connected to WebSocket");
+                setLoadingWebSocket(false);
                 stompClient.subscribe(`/api/resultAccountBankByContact`, (response) => {
                     console.log("Received message:", response.body);
                     const res = JSON.parse(response.body);
-                    if (res.contactId === id) {
+                    if (res.contactId === contactId) {
                         if (res.isWaiting) {
                             setDisableBankIdBankAccNumber(true);
                         } else {
@@ -554,7 +545,7 @@ export default function EditPage() {
                 stompClientRef.current = null;
             }
         };
-    }, [id, waitingToReconnect]);
+    }, [contactId, handleFetchBankInfo, waitingToReconnect]);
 
     const sendBankCheck = () => {
         const ID = String(id);
@@ -906,7 +897,8 @@ export default function EditPage() {
                             </GroupItem>
                         </GroupItem>
 
-                        <GroupItem colSpan={2} cssClass={"dx-card responsive-paddings next-card"}>
+                        <GroupItem colSpan={2} cssClass={"dx-card responsive-paddings next-card relative"}>
+                            <LoadingOverlay visible={loadingWebSocket} text="Sedang menyambungkan ke sistem..." />
                             <Form 
                                 formData={bankInfo}
                                 showColonAfterLabel={true}
