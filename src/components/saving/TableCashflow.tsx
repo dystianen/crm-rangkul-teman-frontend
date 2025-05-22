@@ -4,7 +4,7 @@ import "devextreme/data/odata/store";
 import queryString from "query-string";
 import { useMemo, useRef } from "react";
 import { useLocation } from "react-router-dom";
-import { listSavingContractCashflowStore } from "src/api/saving";
+import { listSavingContractCashflowStore, listSavingMemberCashflowStore } from "src/api/saving";
 import { filterOperation } from "src/constants/FilterOperation";
 import { calculateFilterExpressionCustom } from "src/utils/devExtremeUtils";
 import { ApplicationStatus } from "../application-status";
@@ -12,10 +12,15 @@ import { ApplicationStatus } from "../application-status";
 const TableCashflow = () => {
   const dataGrid = useRef<DataGrid>(null);
   const location = useLocation();
+  const isContractCashflow = location.pathname.includes("contract");
   const { id } = queryString.parse(location.search);
   const ID = String(id);
 
-  const dataSource = useMemo(() => listSavingContractCashflowStore(ID), [ID]);
+  const dataSource = useMemo(
+    () =>
+      isContractCashflow ? listSavingContractCashflowStore(ID) : listSavingMemberCashflowStore(ID),
+    [ID, isContractCashflow]
+  );
 
   return (
     <div className={"form__tabs dx-card responsive-paddings"}>
