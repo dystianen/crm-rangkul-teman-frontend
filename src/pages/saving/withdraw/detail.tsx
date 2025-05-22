@@ -3,7 +3,7 @@ import Form, { GroupItem, SimpleItem } from "devextreme-react/form";
 import * as Title from "devextreme-react/toolbar";
 import "devextreme/data/odata/store";
 import queryString from "query-string";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
   approveSavingWithdraw,
@@ -28,7 +28,7 @@ const SavingWithdrawDetail = () => {
   const [visiblePopupReject, setVisiblePopupReject] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const handleFetchDetail = () => {
+  const handleFetchDetail = useCallback(() => {
     getDetailSavingWithdraw(ID).then((res) => {
       setFormData(res);
     });
@@ -36,11 +36,11 @@ const SavingWithdrawDetail = () => {
     getSavingWithdrawActivity(ID).then((res) => {
       setActivity(res);
     });
-  };
+  }, [ID]);
 
   useEffect(() => {
     handleFetchDetail();
-  }, [ID]);
+  }, [ID, handleFetchDetail]);
 
   const handleWithdraw = () => {
     setLoading(true);

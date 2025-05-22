@@ -29,11 +29,11 @@ const SavingContractDetail = () => {
   const [loading, setLoading] = useState(false);
   const [isLoadingSubmit, setLoadingSubmit] = useState(false);
 
-  const handleGetDetail = () => {
+  const handleGetDetail = useCallback(() => {
     getDetailSavingContract(ID).then((res) => {
       setFormData(res);
     });
-  };
+  }, [ID]);
 
   useEffect(() => {
     handleGetDetail();
@@ -41,7 +41,7 @@ const SavingContractDetail = () => {
     getSavingContractActivity(ID).then((res) => {
       setActivity(res);
     });
-  }, [ID]);
+  }, [ID, handleGetDetail]);
 
   const handleDisbursement = () => {
     setLoading(true);
