@@ -3,7 +3,7 @@ import Form, { GroupItem, SimpleItem } from "devextreme-react/form";
 import * as Title from "devextreme-react/toolbar";
 import "devextreme/data/odata/store";
 import queryString from "query-string";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { getDetailSavingCustomer, getSavingCustomerActivity } from "src/api/saving";
 import { TResSavingCustomerDetail } from "src/api/types/ISaving";
@@ -21,7 +21,7 @@ const SavingCustomerDetail = () => {
   const [activity, setActivity] = useState<Array<any>>([]);
   const [visiblePopupWithdraw, setVisiblePopupWithdraw] = useState(false);
 
-  const handleFetchDetail = () => {
+  const handleFetchDetail = useCallback(() => {
     getDetailSavingCustomer(ID).then((res) => {
       setFormData(res);
     });
@@ -29,11 +29,11 @@ const SavingCustomerDetail = () => {
     getSavingCustomerActivity(ID).then((res) => {
       setActivity(res);
     });
-  };
+  }, [ID]);
 
   useEffect(() => {
     handleFetchDetail();
-  }, [ID]);
+  }, [ID, handleFetchDetail]);
 
   const handleSuccessWithdraw = () => {
     notifySuccess("Penarikan simpanan berhasil");

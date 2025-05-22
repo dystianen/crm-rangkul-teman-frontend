@@ -13,10 +13,6 @@ export type TReqSavingApplication = {
   id: string;
   amount: number;
   termMonth: string;
-  bankId: string;
-  bankAccountNumber: string;
-  bankAccountIsVerified: boolean;
-  bankAccountVerificationId: string;
 };
 
 export type TResSavingApplication = {
@@ -24,6 +20,7 @@ export type TResSavingApplication = {
   seqId: string;
   createdOn: string;
   contactVa: string;
+  amount: number;
   contactName: string;
   contactPhone: string;
   idCardNumber: string;
@@ -34,7 +31,10 @@ export type TResSavingApplication = {
   status: string;
   isEditable: boolean;
   termMonth: string;
-  amount: number;
+  savingData: {
+    amount: number;
+    isAvailable: boolean;
+  };
 };
 
 export type TResSavingSubmit = {
@@ -108,8 +108,6 @@ export type TResSavingWithdrawDetail = {
 export type TReqCreateSavingWithdraw = {
   ktp?: string;
   amount: number;
-  bankId: string;
-  bankAccNumber: string;
 };
 
 export type TReqCheckBankAccountByContact = {

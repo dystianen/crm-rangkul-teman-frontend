@@ -1,13 +1,11 @@
-import { Client } from "@stomp/stompjs";
 import { LoadIndicator } from "devextreme-react";
 import Form, { ButtonItem, ButtonOptions, GroupItem, SimpleItem } from "devextreme-react/form";
 import * as Title from "devextreme-react/toolbar";
 import DataSource from "devextreme/data/data_source";
 import queryString from "query-string";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import SockJS from "sockjs-client";
-import { bankCheckValid, checkAccess, getListBank } from "src/api/apploan";
+import { checkAccess } from "src/api/apploan";
 import { selectBoxOptions } from "src/api/contact";
 import {
   getDetailSavingApplication,
@@ -18,8 +16,7 @@ import { TResSavingApplication } from "src/api/types/ISaving";
 import LoadingPage from "src/components/load-panel";
 import { backofficeAccess } from "src/constants/variableConstata";
 import { initSavingForm } from "src/interfaces/ISaving";
-import { notifyError, notifySuccess, notifyWarning } from "src/utils/devExtremeUtils";
-import { allowOnlyNumbers } from "src/utils/helpers";
+import { notifyError } from "src/utils/devExtremeUtils";
 
 const FormSavingApplication = () => {
   const navigate = useNavigate();
@@ -29,9 +26,6 @@ const FormSavingApplication = () => {
 
   const [formData, setFormData] = useState<TResSavingApplication>(initSavingForm);
   const [isLoadingSubmit, setIsLoadingSubmit] = useState(false);
-  const [isDableBankIdBankAccNumber, setDisableBankIdBankAccNumber] = useState(false);
-  const [isDisableButtonSubmit, setDisableButtonSubmit] = useState<boolean>(true);
-  const [waitingToReconnect, setWaitingToReconnect] = useState<boolean>(false);
   const [loadingPage, setLoadingPage] = useState(false);
   const isReadonly = !formData.isEditable;
   const isDraft = formData.status === "Draft";
@@ -41,123 +35,22 @@ const FormSavingApplication = () => {
     getDetailSavingApplication(ID)
       .then((res) => {
         setFormData(res);
-        if (res.bankAccountIsVerified) {
-          setDisableButtonSubmit(false);
-        }
       })
       .finally(() => {
         setLoadingPage(false);
       });
   }, [ID]);
 
-  const listBank = selectBoxOptions(new DataSource(getListBank), "Pilih bank");
   const savingTermOptions = selectBoxOptions(
     new DataSource(listProductApplicationTerm),
     "Select product saving term"
   );
-
-  const stompClientRef = useRef<any>(null);
 
   useEffect(() => {
     checkAccess(backofficeAccess.backoffice_application_saving).then((res) => {
       if (!res) navigate("/saving/application");
     });
   }, [navigate]);
-
-  useEffect(() => {
-    var socket = new SockJS(`${process.env.REACT_APP_BACKEND}api/bankAccountLive`);
-    const stompClient = new Client({
-      webSocketFactory: () => socket,
-      reconnectDelay: 5000,
-      debug: (str) => {
-        console.log(str);
-      },
-      onDisconnect: () => {
-        if (waitingToReconnect) {
-          return;
-        }
-        setWaitingToReconnect(true);
-      },
-      onConnect: () => {
-        console.log("Connected to WebSocket");
-        stompClient.subscribe("/api/bankAccountResult", (response) => {
-          console.log("Received message:", response.body);
-          const res = JSON.parse(response.body);
-          if (res.appId === ID) {
-            if (res.isWaiting) {
-              setDisableBankIdBankAccNumber(true);
-            } else {
-              setDisableBankIdBankAccNumber(false);
-
-              if (res.success) {
-                setFormData((prev) => ({
-                  ...prev,
-                  bankAccountIsVerified: res.success,
-                  bankAccountVerificationId: res.bankAccountHistoryId
-                }));
-
-                if (res?.error) {
-                  notifyWarning(res.message);
-                } else {
-                  notifySuccess(res.message);
-                }
-                setDisableButtonSubmit(false);
-              } else {
-                notifyError(res.message);
-                setDisableButtonSubmit(true);
-              }
-            }
-          }
-        });
-      },
-      onStompError: (frame) => {
-        console.error("Broker reported error: " + frame.headers["message"]);
-        console.error("Additional details: " + frame.body);
-      }
-    });
-
-    stompClient.activate();
-    stompClientRef.current = stompClient;
-
-    return () => {
-      // Dereference, so it will set up next time
-      console.log("Cleanup");
-      stompClientRef.current = null;
-      stompClient.deactivate();
-    };
-  }, [ID, waitingToReconnect]);
-
-  const sendBankCheck = () => {
-    const payload = {
-      appId: ID,
-      bankId: formData.bankId,
-      bankAccountNumber: formData.bankAccountNumber
-    };
-
-    bankCheckValid(payload).then((res) => {
-      setDisableBankIdBankAccNumber(res.isWaiting);
-    });
-  };
-
-  const handleCheckBankAccount = (e: any) => {
-    if (typeof formData.bankId === "undefined") {
-      notifyWarning("belum memilih bank!!");
-      e.event.preventDefault();
-      return;
-    }
-    if (typeof formData.bankAccountNumber === "undefined") {
-      notifyWarning("belum mengisi nomor rekening!!");
-      e.event.preventDefault();
-      return;
-    }
-    if (formData.bankId == null || formData.bankAccountNumber == null) {
-      notifyWarning("pastikan sudah memilih bank dan mengisi nomor rekening!!");
-      e.event.preventDefault();
-      return;
-    }
-
-    sendBankCheck();
-  };
 
   const handleBack = () => {
     navigate(-1);
@@ -174,23 +67,12 @@ const FormSavingApplication = () => {
 
   const handleSubmit = () => {
     setIsLoadingSubmit(true);
-    const {
-      amount,
-      termMonth,
-      bankId,
-      bankAccountNumber,
-      bankAccountIsVerified,
-      bankAccountVerificationId
-    } = formData;
+    const { amount, termMonth } = formData;
 
     const payload = {
       id: ID,
       amount,
-      termMonth,
-      bankId,
-      bankAccountNumber,
-      bankAccountIsVerified,
-      bankAccountVerificationId
+      termMonth
     };
     submitSavingApplication(payload)
       .then(() => {
@@ -306,6 +188,16 @@ const FormSavingApplication = () => {
                   }}
                 />
                 <SimpleItem
+                  visible={formData.savingData.isAvailable}
+                  dataField="savingData.amount"
+                  label={{ text: "Simpanan Tersedia" }}
+                  editorOptions={{
+                    format: "Rp #,##0.00",
+                    readOnly: true
+                  }}
+                  editorType="dxNumberBox"
+                />
+                <SimpleItem
                   dataField="amount"
                   label={{ text: "Jumlah Simpanan" }}
                   editorOptions={{
@@ -328,48 +220,19 @@ const FormSavingApplication = () => {
                 cssClass="dx-card responsive-paddings next-card"
               >
                 <SimpleItem
-                  dataField="bankId"
-                  editorType="dxSelectBox"
-                  editorOptions={{
-                    ...listBank,
-                    disabled: isDableBankIdBankAccNumber,
-                    readOnly: isReadonly
-                  }}
+                  dataField="bankName"
                   label={{ text: "Bank" }}
+                  editorOptions={{
+                    readOnly: true
+                  }}
                 />
-                <GroupItem colCount={5} cssClass="m0">
-                  <SimpleItem
-                    colSpan={isReadonly ? 5 : 4}
-                    dataField="bankAccountNumber"
-                    label={{ text: "Nomor Rekening" }}
-                    editorOptions={{
-                      disabled: isDableBankIdBankAccNumber,
-                      readOnly: isReadonly,
-                      onKeyDown: (e: any) => allowOnlyNumbers(e.event)
-                    }}
-                  />
-                  <ButtonItem
-                    horizontalAlignment={"center"}
-                    verticalAlignment={"center"}
-                    visible={!isReadonly}
-                  >
-                    <ButtonOptions
-                      type="default"
-                      width={"100%"}
-                      disabled={isDableBankIdBankAccNumber}
-                      onClick={handleCheckBankAccount}
-                    >
-                      <div className="button-options">
-                        <LoadIndicator
-                          width="20px"
-                          height="20px"
-                          visible={isDableBankIdBankAccNumber}
-                        />
-                        <span className="dx-button-text">Periksa</span>
-                      </div>
-                    </ButtonOptions>
-                  </ButtonItem>
-                </GroupItem>
+                <SimpleItem
+                  dataField="bankAccountNumber"
+                  label={{ text: "Nomor Rekening" }}
+                  editorOptions={{
+                    readOnly: true
+                  }}
+                />
               </GroupItem>
             </GroupItem>
             <GroupItem visible={!isReadonly} colCountByScreen={{ xs: 4, sm: 8, md: 10, lg: 8 }}>
@@ -383,7 +246,7 @@ const FormSavingApplication = () => {
                 <ButtonOptions
                   type="default"
                   width={"100%"}
-                  disabled={isDisableButtonSubmit}
+                  disabled={isLoadingSubmit}
                   onClick={handleSubmit}
                 >
                   <div className="button-options">
