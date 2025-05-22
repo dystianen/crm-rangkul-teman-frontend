@@ -34,7 +34,9 @@ export const PopupWithdraw: FC<any> = (props) => {
     const payload = {
       ktp: detail.ktp,
       contactId: detail.id,
-      amount
+      amount,
+      bankId: formData.destBankId,
+      bankAccountNumber: formData.destBankAccountNumber
     };
 
     createSavingWithdraw(payload)
