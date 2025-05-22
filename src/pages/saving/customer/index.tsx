@@ -67,6 +67,7 @@ export default function SavingCustomer() {
               dataField={"lastTransactionOn"}
               caption={"Terakhir Transaksi"}
               dataType="date"
+              sortOrder="desc"
               format="dd MMM yyyy HH:mm:ss"
               calculateFilterExpression={calculateFilterExpressionCustom}
               filterOperations={filterOperation.date}
