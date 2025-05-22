@@ -178,6 +178,13 @@ export default function SavingApplication() {
               filterOperations={filterOperation.string}
             />
             <Column
+              dataField={"aprPercent"}
+              caption={"APR"}
+              alignment={"left"}
+              filterOperations={filterOperation.string}
+              customizeText={(e) => (e.value ? `${e.value}%` : "-")}
+            />
+            <Column
               dataField={"contactVa"}
               caption={"Nomor Virtual Account"}
               filterOperations={filterOperation.string}

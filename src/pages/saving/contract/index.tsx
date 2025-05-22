@@ -97,6 +97,13 @@ export default function SavingContract() {
               format="Rp #,##0.00"
             />
             <Column
+              dataField={"aprPercent"}
+              caption={"APR"}
+              alignment={"left"}
+              filterOperations={filterOperation.string}
+              customizeText={(e) => (e.value ? `${e.value}%` : "-")}
+            />
+            <Column
               alignment={"center"}
               dataField={"appSeqId"}
               caption={"#Nomor Pengajuan"}
