@@ -13,10 +13,6 @@ export type TReqSavingApplication = {
   id: string;
   amount: number;
   termMonth: string;
-  bankId: string;
-  bankAccountNumber: string;
-  bankAccountIsVerified: boolean;
-  bankAccountVerificationId: string;
 };
 
 export type TResSavingApplication = {
