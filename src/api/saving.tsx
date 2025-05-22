@@ -40,6 +40,11 @@ export const listSavingContractCashflowStore = (id: string) =>
     loadUrl: `${API_PATH.SAVING_DEPOSIT}/contract/${id}/cashflow`
   });
 
+export const listSavingMemberCashflowStore = (id: string) =>
+  customStore({
+    loadUrl: `${API_PATH.SAVING_DEPOSIT}/member/${id}/cashflow`
+  });
+
 export const listSavingCustomerStore = customStoreSaving({
   loadUrl: `${API_PATH.SAVING_DEPOSIT}/member`
 });
