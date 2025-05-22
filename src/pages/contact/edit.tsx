@@ -97,8 +97,7 @@ export default function EditPage() {
         accountNumber: "",
         npwpNumber: "",
     })
-    const isReadonlyBankInfo = !(bankInfo.isAllowChange || (!bankInfo.isAllowChange && bankInfo.isVerified === null));
-
+    const isReadonlyBankInfo = !bankInfo.isAllowChange;
 
     const getBranchByUser = selectBoxBranchOptions(
         new DataSource(getActiveBranchByUserStore as any),
