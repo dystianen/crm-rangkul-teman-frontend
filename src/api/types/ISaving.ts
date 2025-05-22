@@ -108,8 +108,6 @@ export type TResSavingWithdrawDetail = {
 export type TReqCreateSavingWithdraw = {
   ktp?: string;
   amount: number;
-  bankId: string;
-  bankAccNumber: string;
 };
 
 export type TReqCheckBankAccountByContact = {
