@@ -20,6 +20,7 @@ export type TResSavingApplication = {
   seqId: string;
   createdOn: string;
   contactVa: string;
+  amount: number;
   contactName: string;
   contactPhone: string;
   idCardNumber: string;
@@ -30,7 +31,10 @@ export type TResSavingApplication = {
   status: string;
   isEditable: boolean;
   termMonth: string;
-  amount: number;
+  savingData: {
+    amount: number;
+    isAvailable: boolean;
+  };
 };
 
 export type TResSavingSubmit = {

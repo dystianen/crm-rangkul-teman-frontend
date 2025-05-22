@@ -20,7 +20,11 @@ export const initSavingForm = {
   contactPhone: "",
   idCardNumber: "",
   status: "",
-  isEditable: false
+  isEditable: false,
+  savingData: {
+    amount: 0,
+    isAvailable: false
+  }
 };
 
 export const initSavingContractDetail = {
