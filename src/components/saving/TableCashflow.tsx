@@ -72,6 +72,12 @@ const TableCashflow = () => {
           filterOperations={filterOperation.string}
         />
         <Column
+          visible={!isContractCashflow}
+          dataField={"product"}
+          caption={"Produk"}
+          filterOperations={filterOperation.string}
+        />
+        <Column
           dataField="amount"
           caption="Jumlah Simpanan Pokok"
           filterOperations={filterOperation.numeric}
