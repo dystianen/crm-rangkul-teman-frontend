@@ -16,11 +16,19 @@ const TableCashflow = () => {
   const { id } = queryString.parse(location.search);
   const ID = String(id);
 
-  const dataSource = useMemo(
-    () =>
-      isContractCashflow ? listSavingContractCashflowStore(ID) : listSavingMemberCashflowStore(ID),
-    [ID, isContractCashflow]
-  );
+  const renderData = useMemo(() => {
+    return isContractCashflow
+      ? {
+          dataSource: listSavingContractCashflowStore(ID),
+          type: "typeName"
+        }
+      : {
+          dataSource: listSavingMemberCashflowStore(ID),
+          type: "type"
+        };
+  }, [ID, isContractCashflow]);
+
+  const { dataSource, type: typeField } = renderData;
 
   return (
     <div className={"form__tabs dx-card responsive-paddings"}>
@@ -53,7 +61,7 @@ const TableCashflow = () => {
           filterOperations={filterOperation.date}
         />
         <Column
-          dataField={"typeName"}
+          dataField={typeField}
           caption={"Tipe"}
           filterOperations={filterOperation.string}
           cellRender={ApplicationStatus}
