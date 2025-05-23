@@ -9,6 +9,7 @@ import { API_PATH } from "./path_url";
 import {
   TRequestRejection,
   TResCheckAccessStep2,
+  TResCommodityDetail,
   TResponsePreverification
 } from "./types/ILoanApp";
 
@@ -276,5 +277,18 @@ export const fetchStep2Activity = async (appId: string): Promise<any> => {
 
 export const submitPreverificationReject = async (payload: TRequestRejection): Promise<any> => {
   const resp = await ajaxPost(`${API_PATH.APPROVAL}/preverification/reject`, payload);
+  return resp.data;
+};
+
+// Commodity
+export const getListCommodity = dataRawCustomStore(`${API_PATH.CONTACT}/commodity/type/list?`);
+
+export const getDetailCommodity = async (id: string): Promise<TResCommodityDetail> => {
+  const resp = await ajaxGet(`${API_PATH.CONTACT}/commodity/${id}`);
+  return resp.data;
+};
+
+export const createCommodity = async (id: string, payload: { typeId: string }): Promise<any> => {
+  const resp = await ajaxPost(`${API_PATH.CONTACT}/commodity/${id}`, payload);
   return resp.data;
 };
