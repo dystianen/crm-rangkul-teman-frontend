@@ -1,4 +1,4 @@
-import Form, { ButtonItem, SimpleItem } from "devextreme-react/form";
+import Form, { ButtonItem, RequiredRule, SimpleItem } from "devextreme-react/form";
 import { Popup } from "devextreme-react/popup";
 import { Toast } from "devextreme-react/toast";
 import DataSource from "devextreme/data/data_source";
@@ -38,6 +38,7 @@ export const PopupRejectWithdraw: FC<any> = (props) => {
       ...request,
       withdrawId
     };
+
     rejectSavingWithdraw(payload)
       .then(() => {
         hide();
@@ -48,7 +49,8 @@ export const PopupRejectWithdraw: FC<any> = (props) => {
       .catch((err) => {
         notifyError(err);
       });
-    e.event.stopPropagation();
+
+    e.preventDefault();
   };
 
   const onFieldDataChanged = (evt: any) => {
@@ -85,13 +87,13 @@ export const PopupRejectWithdraw: FC<any> = (props) => {
         showCloseButton={true}
         title="Tolak Penarikan"
       >
-        <form action="#">
+        <form onSubmit={onFormSubmit}>
           <Form
             ref={formRef}
             colCount={1}
             id="form"
             showColonAfterLabel={true}
-            showValidationSummary={false}
+            showValidationSummary={true}
             validationGroup="rejectApp"
             onFieldDataChanged={onFieldDataChanged}
           >
@@ -100,21 +102,26 @@ export const PopupRejectWithdraw: FC<any> = (props) => {
               editorType="dxSelectBox"
               label={{ text: "Alasan Penolakan" }}
               editorOptions={rejectReasonOptions}
-            />
+            >
+              <RequiredRule message="Alaasan penolakan wajib diisi" />
+            </SimpleItem>
 
             <SimpleItem
               dataField="description"
               editorType="dxTextArea"
               label={{ text: "Deskripsi" }}
               editorOptions={{ height: 120 }}
-            />
+            >
+              <RequiredRule message="Deskripsi wajib diisi" />
+            </SimpleItem>
+
             <ButtonItem
               horizontalAlignment="left"
               buttonOptions={{
                 width: "100%",
                 text: "Submit",
                 type: "danger",
-                onClick: onFormSubmit
+                useSubmitBehavior: true
               }}
             />
           </Form>
