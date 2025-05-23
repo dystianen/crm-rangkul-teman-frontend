@@ -17,6 +17,7 @@ import Form, {
   RequiredRule,
   SimpleItem
 } from "devextreme-react/form";
+import DataSource from "devextreme/data/data_source";
 import notify from "devextreme/ui/notify";
 import queryString from "query-string";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -27,11 +28,15 @@ import { useLocation } from "react-router-dom";
 import {
   checkAccessStep2,
   createAppLoanOnboardingStep2,
+  createCommodity,
   detailAppLoan,
   fetchCheckPartial,
   fetchStep2Activity,
+  getDetailCommodity,
+  getListCommodity,
   getSignedDoc
 } from "src/api/apploan";
+import { selectBoxOptions } from "src/api/contact";
 import BusinessAddress from "src/components/loan-app/BusinessAddress";
 import DocumentCard from "src/components/loan-app/DocumentCard";
 import FamilyCard from "src/components/loan-app/FamilyCard";
@@ -59,6 +64,14 @@ export type VisibleSection = {
   mandatory: boolean;
 }[];
 
+type TLoanApp = {
+  monthlyIncome: number;
+  handwrittenSalesBook: boolean;
+  debitTransaction: number;
+  creditTransaction: number;
+  commodityId: string;
+};
+
 export default function Step2Page() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -68,11 +81,12 @@ export default function Step2Page() {
   const [fileType, setFileType] = useState<string>("");
   const [dataGrid, setDataGrid] = useState<any[]>([]);
   const formRef = useRef<Form>(null);
-  const [onStep2Loan, setOnStep2Loan] = useState<any>({
+  const [onStep2Loan, setOnStep2Loan] = useState<TLoanApp>({
     monthlyIncome: 0,
     handwrittenSalesBook: false,
     debitTransaction: 0,
-    creditTransaction: 0
+    creditTransaction: 0,
+    commodityId: ""
   });
   const [loadingPage, setLoadingPage] = useState(false);
   const [isShowRemainingPopup, setShowRemainingPopup] = useState(false);
@@ -83,40 +97,46 @@ export default function Step2Page() {
   const [popupMessage, setPopupMessage] = useState("");
   const [visibleSection, setVisibleSection] = useState<VisibleSection>([]);
 
-  const detailLoanApp = (appId: any) => {
+  const listCommodity = selectBoxOptions(new DataSource(getListCommodity), "Pilih commodity");
+
+  const detailLoanApp = useCallback(async (appId: any) => {
     setLoadingPage(true);
-    detailAppLoan(appId).then((res) => {
-      const data = res as any;
-      const gridStore: any[] = data?.customData || [];
-      setDataGrid(gridStore);
-      if (data?.incomeProof) {
-        setFileType(data.incomeProof.fileType);
-        setIncomeProof(getFileBase64(data.incomeProof.fileType, data.incomeProof.fileContent));
-      }
 
-      if (typeof data.monthlyIncome !== "undefined") {
-        setOnStep2Loan({
-          monthlyIncome: data?.monthlyIncome,
-          handwrittenSalesBook: data?.handwrittenSalesBook ? data?.handwrittenSalesBook : false,
-          debitTransaction: data?.debitTransaction,
-          creditTransaction: data?.creditTransaction
-        });
-      }
+    const [loanRes, commodityRes, checkPartialRes] = await Promise.all([
+      detailAppLoan(appId),
+      getDetailCommodity(appId),
+      fetchCheckPartial(appId)
+    ]);
 
-      setVisibleSection(res.items);
-      setLoadingPage(false);
-    });
+    const data = loanRes as any;
+    const gridStore: any[] = data?.customData || [];
+    setDataGrid(gridStore);
 
-    fetchCheckPartial(ID).then((res) => {
-      setMissingFields(res.messages);
-      setShowRemainingPopup(res.opened);
-    });
-  };
+    if (data?.incomeProof) {
+      setFileType(data.incomeProof.fileType);
+      setIncomeProof(getFileBase64(data.incomeProof.fileType, data.incomeProof.fileContent));
+    }
+
+    if (typeof data.monthlyIncome !== "undefined") {
+      setOnStep2Loan({
+        monthlyIncome: data.monthlyIncome,
+        handwrittenSalesBook: data.handwrittenSalesBook ?? false,
+        debitTransaction: data.debitTransaction,
+        creditTransaction: data.creditTransaction,
+        commodityId: commodityRes.type.id ?? ""
+      });
+    }
+
+    setVisibleSection(data.items);
+    setMissingFields(checkPartialRes.messages);
+    setShowRemainingPopup(checkPartialRes.opened);
+    setLoadingPage(false);
+  }, []);
 
   useEffect(() => {
     detailLoanApp(ID);
     fetchStep2Activity(ID).then(setActivity);
-  }, [ID]);
+  }, [ID, detailLoanApp]);
 
   useEffect(() => {
     checkAccessStep2(ID).then((res) => {
@@ -151,8 +171,18 @@ export default function Step2Page() {
       });
   };
 
+  const handleSubmitCommodity = () => {
+    const typeId = onStep2Loan.commodityId;
+    const payload = {
+      typeId
+    };
+
+    createCommodity(ID, payload);
+  };
+
   const handleSubmit = () => {
     setLoadingPage(true);
+    handleSubmitCommodity();
     const form = formRef.current!.instance;
     const customData =
       dataGrid.length > 0
@@ -403,6 +433,22 @@ export default function Step2Page() {
               <Pager showPageSizeSelector={true} showInfo={true} allowedPageSizes={[10, 50, 100]} />
             </DataGrid>
           </GroupItem>
+
+          <GroupItem
+            caption="Additional Information"
+            cssClass={"dx-card responsive-paddings next-card"}
+            colCount={2}
+          >
+            <SimpleItem
+              dataField="commodityId"
+              editorType="dxSelectBox"
+              editorOptions={listCommodity}
+              label={{ text: "Commodity" }}
+            >
+              <RequiredRule message="Commodity wajib diisi" />
+            </SimpleItem>
+          </GroupItem>
+
           <GroupItem colSpan={2} cssClass={"dx-card responsive-paddings next-card"}>
             <GroupItem cssClass={"custom-tabs-step2"}>
               <ApprovalHistory id={ID} />

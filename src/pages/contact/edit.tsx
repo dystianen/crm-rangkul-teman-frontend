@@ -578,6 +578,11 @@ export default function EditPage() {
             e.event.preventDefault();
             return;
         }
+        if (bankInfo.npwpNumber !== null && bankInfo.npwpNumber.length < 15) {
+            notifyWarning("Nomor NPWP harus terdiri dari 15 digit.");
+            e.event.preventDefault();
+            return;
+        }
 
         sendBankCheck();
     };

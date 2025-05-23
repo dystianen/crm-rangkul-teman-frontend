@@ -53,13 +53,13 @@ export default function SavingCustomer() {
               filterOperations={filterOperation.string}
             />
             <Column
-              dataField={"contactPhone"}
-              caption={"Nomor HP"}
+              dataField={"ktp"}
+              caption={"Nomor KTP"}
               filterOperations={filterOperation.string}
             />
             <Column
-              dataField={"ktp"}
-              caption={"Nomor KTP"}
+              dataField={"contactPhone"}
+              caption={"Nomor HP"}
               filterOperations={filterOperation.string}
             />
             <Column
