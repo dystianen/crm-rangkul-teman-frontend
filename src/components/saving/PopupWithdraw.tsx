@@ -28,9 +28,15 @@ export const PopupWithdraw: FC<any> = (props) => {
   }, [detail, popupVisible]);
 
   const onFormSubmit = (e: any) => {
-    setDisableButtonSubmit(true);
     const form = formRef.current!.instance;
     const { amount } = request;
+
+    if (amount > formData.balanceSaving) {
+      notifyError("Jumlah penarikan melebihi jumlah simpanan yang tersedia.");
+      return;
+    }
+
+    setDisableButtonSubmit(true);
     const payload = {
       ktp: detail.ktp,
       contactId: detail.id,
@@ -131,8 +137,7 @@ export const PopupWithdraw: FC<any> = (props) => {
                   dataField="amount"
                   label={{ text: "Jumlah penarikan" }}
                   editorOptions={{
-                    format: "Rp #,##0.00",
-                    max: formData.balanceSaving
+                    format: "Rp #,##0.00"
                   }}
                   editorType="dxNumberBox"
                 />
