@@ -230,7 +230,13 @@ export default function PreviewPage() {
                 cssClass={"dx-card responsive-paddings next-card"}
                 colCount={2}
               >
-                <SimpleItem dataField="commodityId" label={{ text: "Commodity" }} />
+                <SimpleItem
+                  dataField="commodityId"
+                  label={{ text: "Commodity" }}
+                  editorOptions={{
+                    readOnly: true
+                  }}
+                />
               </GroupItem>
 
               <GroupItem colSpan={2} cssClass={"dx-card responsive-paddings next-card"}>
