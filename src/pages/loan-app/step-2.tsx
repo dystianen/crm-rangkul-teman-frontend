@@ -123,7 +123,7 @@ export default function Step2Page() {
         handwrittenSalesBook: data.handwrittenSalesBook ?? false,
         debitTransaction: data.debitTransaction,
         creditTransaction: data.creditTransaction,
-        commodityId: commodityRes.type.id ?? ""
+        commodityId: commodityRes?.type?.id ?? ""
       });
     }
 

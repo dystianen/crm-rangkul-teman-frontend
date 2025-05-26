@@ -1,12 +1,13 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { SingleCard } from './layouts';
 import { LoginForm, ResetPasswordForm, ChangePasswordForm, CreateAccountForm } from './components';
+import {ReinvestInterestForm} from "./components/reinvest-interest/ReinvestInterestForm";
 
 export default function UnauthenticatedContent() {
   return (
     <Routes>
       <Route
-        path='/login' 
+        path='/login'
         element={
           <SingleCard title="Sign In">
             <LoginForm />
@@ -21,7 +22,7 @@ export default function UnauthenticatedContent() {
           </SingleCard>
         }
       />
-      <Route 
+      <Route
         path='/reset-password'
         element={
           <SingleCard
@@ -39,6 +40,14 @@ export default function UnauthenticatedContent() {
             <ChangePasswordForm />
           </SingleCard>
         }
+      />
+      <Route
+          path='/reinvest'
+          element={
+            <SingleCard title="Reinvest Deposit">
+              <ReinvestInterestForm />
+            </SingleCard>
+          }
       />
       <Route path='*' element={<Navigate to={'/login'} />}></Route>
     </Routes>
