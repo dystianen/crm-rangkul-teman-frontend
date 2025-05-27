@@ -30,3 +30,13 @@ export const retryApprovalHistory = async (type: string, appId: string): Promise
   const resp = await ajaxPost(`${API_PATH.APPROVAL}/${type}`, { appId });
   return resp.data;
 };
+
+export const activityApproval1 = async (appId: string): Promise<any> => {
+  const resp = await ajaxGet(`${API_PATH.APPROVAL}/manual/approve/1/activity/${appId}`);
+  return resp.data;
+};
+
+export const backToVerify = async (appId: string): Promise<any> => {
+  const resp = await ajaxPost(`${API_PATH.APPROVAL}/manual/to/verify/1`, { appId });
+  return resp.data;
+};
