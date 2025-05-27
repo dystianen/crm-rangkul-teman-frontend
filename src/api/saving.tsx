@@ -27,6 +27,11 @@ export const listProductApplicationTerm = dataRawCustomStore(
   `${API_PATH.SAVING_DEPOSIT}/product/deposit/term?`
 );
 
+
+export const listPublicProductApplicationTerm = dataRawCustomStore(
+    `${API_PATH.SAVING_DEPOSIT}/public/product/deposit/term?`
+);
+
 export const listSavingPaymentStore = customStore({
   loadUrl: `${API_PATH.SAVING_DEPOSIT}/payment`
 });
