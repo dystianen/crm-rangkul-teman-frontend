@@ -7,13 +7,17 @@ import { FC, memo, useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { selectBoxOptions } from "src/api/contact";
 import { listProductApplicationTerm } from "src/api/saving";
-import { notifyError } from "src/utils/devExtremeUtils";
+import {notifyError, notifySuccess} from "src/utils/devExtremeUtils";
+import {getRenew, submitRenew, updateRenew} from "../../api/reinvest.api";
 
 interface FormValues {
-  balanceSaving?: number;
-  termMonth?: string;
-  status?: string;
-  isTotalSaving?: boolean;
+  id?: string;
+  amount?: number;
+  apr?: number;
+  termMonth?: number;
+  isWithInterest?: boolean;
+  renewFromAppId?: string;
+  renewFromContractId?: string;
 }
 
 interface RadioGroupCellProps {
@@ -44,14 +48,20 @@ export const ReinvestInterestForm: FC = () => {
 
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState<FormValues>({
-    isTotalSaving: false
+    isWithInterest: false
   });
 
   useEffect(() => {
     if (token == null) {
       notifyError("Not valid token");
       navigate("/login");
+      return;
     }
+
+    getRenew(token as string).then(rs=>{
+      setFormData(rs);
+    });
+
   }, []);
 
   const savingTermOptions = selectBoxOptions(
@@ -63,6 +73,9 @@ export const ReinvestInterestForm: FC = () => {
     e.preventDefault();
     console.log("Form Submitted", formData);
     // Handle API call here
+    submitRenew(token as string, formData)
+        .then(rs=> notifySuccess("Terima kasih telah mempercayakan simpanan Anda di KSP Rangkul Teman Jakarta"))
+        .catch(err=> notifyError(err.message));
     setLoading(true);
   };
 
@@ -71,6 +84,10 @@ export const ReinvestInterestForm: FC = () => {
       ...prev,
       [field]: value
     }));
+
+    updateRenew(token as string, formData)
+        .then(rs=>setFormData(rs));
+
   };
 
   return (
@@ -88,7 +105,7 @@ export const ReinvestInterestForm: FC = () => {
       >
         <GroupItem colCount={1}>
           <SimpleItem
-            dataField="balanceSaving"
+            dataField="amount"
             label={{ text: "Jumlah Simpanan" }}
             editorType="dxNumberBox"
             editorOptions={{
@@ -103,17 +120,17 @@ export const ReinvestInterestForm: FC = () => {
             editorOptions={{ ...savingTermOptions }}
           />
           <SimpleItem
-            dataField="status"
+            dataField="apr"
             label={{ text: "Bunga" }}
             editorOptions={{ readOnly: true }}
           />
           <SimpleItem
-            dataField="isTotalSaving"
+            dataField="isWithInterest"
             label={{ text: "Jumlah Simpanan + Bunga" }}
             render={() => (
               <RadioGroupCell
-                dataField="isTotalSaving"
-                value={formData.isTotalSaving ?? false}
+                dataField="isWithInterest"
+                value={formData.isWithInterest ?? false}
                 onChange={updateFormData}
               />
             )}
