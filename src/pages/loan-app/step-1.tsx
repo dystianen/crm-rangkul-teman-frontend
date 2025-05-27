@@ -170,7 +170,6 @@ export default function Step1Page() {
 
   const onFieldDataChanged = (evt: any) => {
     const { dataField, value } = evt;
-    // @ts-expect-error
     onboardingLoan[dataField] = value;
   };
 
