@@ -6,12 +6,12 @@ export const getRenew = async (token: string): Promise<any> => {
     return resp.data;
 };
 
-export const updateRenew = async (token: string, data: any): Promise<any> => {
-    const resp = await ajaxPatch(`${API_PATH.SAVING_DEPOSIT}/public/app/renew/${token}`, data);
+export const updateRenew = async (data: any): Promise<any> => {
+    const resp = await ajaxPatch(`${API_PATH.SAVING_DEPOSIT}/public/app/renew`, data);
     return resp.data;
 };
 
-export const submitRenew = async (token: string, data: any): Promise<any> => {
-    const resp = await ajaxPost(`${API_PATH.SAVING_DEPOSIT}/public/app/renew/${token}`, data);
+export const submitRenew = async (data: any): Promise<any> => {
+    const resp = await ajaxPost(`${API_PATH.SAVING_DEPOSIT}/public/app/renew`, data);
     return resp.data;
 };
