@@ -302,3 +302,7 @@ body {
 .dx-texteditor.dx-editor-filled .dx-lookup-field, .dx-texteditor.dx-editor-filled .dx-placeholder::before, .dx-texteditor.dx-editor-filled .dx-texteditor-input, .dx-texteditor.dx-editor-outlined .dx-lookup-field, .dx-texteditor.dx-editor-outlined .dx-placeholder::before, .dx-texteditor.dx-editor-outlined .dx-texteditor-input{
   padding: 5px 7px!important;
 }
+
+.dx-dropdowneditor-overlay .dx-list-item:not(:last-child) .dx-list-item-content {
+  border-bottom: 1px solid lightgray !important;
+}
