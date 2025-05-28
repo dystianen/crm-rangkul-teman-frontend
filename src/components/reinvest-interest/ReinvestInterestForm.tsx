@@ -1,12 +1,10 @@
-import { LoadIndicator, RadioGroup } from "devextreme-react";
 import Form, { ButtonItem, ButtonOptions, GroupItem, SimpleItem } from "devextreme-react/form";
 import DataSource from "devextreme/data/data_source";
-import { FieldDataChangedEvent } from "devextreme/ui/form";
 import queryString from "query-string";
-import { FC, memo, useEffect, useRef, useState } from "react";
+import { FC, useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { selectBoxOptions } from "src/api/contact";
-import {listProductApplicationTerm, listPublicProductApplicationTerm} from "src/api/saving";
+import {listPublicProductApplicationTerm} from "src/api/saving";
 import {notifyError, notifySuccess} from "src/utils/devExtremeUtils";
 import {getRenew, submitRenew, updateRenew} from "../../api/reinvest.api";
 
@@ -17,30 +15,10 @@ interface FormValues {
   accrualInterest: number;
   apr?: number;
   termMonth?: number;
-  isWithInterest?: boolean;
+  isWithInterest: boolean;
   renewFromAppId?: string;
   renewFromContractId?: string;
 }
-
-interface RadioGroupCellProps {
-  dataField: keyof FormValues;
-  value: boolean | null;
-  onChange: (field: keyof FormValues, value: boolean) => void;
-}
-
-const RadioGroupCell: FC<RadioGroupCellProps> = memo(({ dataField, value, onChange }) => (
-  <RadioGroup
-    items={[
-      { label: "Ya", value: true },
-      { label: "Tidak", value: false }
-    ]}
-    value={value}
-    layout="horizontal"
-    displayExpr="label"
-    valueExpr="value"
-    onValueChanged={(e) => onChange(dataField, e.value)}
-  />
-));
 
 export const ReinvestInterestForm: FC = () => {
   const formRef = useRef<Form>(null);
@@ -60,54 +38,37 @@ export const ReinvestInterestForm: FC = () => {
       return;
     }
 
-    getRenew(token as string).then(rs=>{
-      setFormData({...rs, totalAmount: rs.amount});
-    });
+    getRenew(token as string).then(setFormData);
 
   }, []);
 
-  const savingTermOptions = selectBoxOptions(
-    new DataSource(listPublicProductApplicationTerm),
-    "Select product saving term"
-  );
+  const savingTermOptions = {...selectBoxOptions(
+        new DataSource(listPublicProductApplicationTerm),
+        "Select product saving term"
+    ), showClearButton: false, onValueChanged: (evt: any)=>{
+      if(evt.previousValue){
+        updateRenew({
+          ...formData,
+          termMonth: evt.value,
+        }).then(setFormData);
+      }
+    }};
 
-  const handleSubmit = (e: any) => {
-    e.preventDefault();
-    console.log("Form Submitted", formData);
-    // Handle API call here
-    submitRenew(token as string, {...formData, amount: formData.totalAmount})
-        .then(rs=> notifySuccess("Terima kasih telah mempercayakan simpanan Anda di KSP Rangkul Teman Jakarta"))
-        .catch(err=> notifyError(err.message));
-    setLoading(true);
-  };
+  const onChangeInterest = (evt: any)=>{
+    updateRenew({
+      ...formData,
+      isWithInterest: evt.value,
+    }).then(setFormData);
+  }
 
-  const updateFormData = (field: keyof FormValues, value: any) => {
-    if("isWithInterest"==field){
-      setFormData((prev) => ({
-        ...prev,
-        [field]: value,
-        totalAmount: (value==true) ? (prev.amount + prev.accrualInterest): prev.amount
-      }));
-    } else {
-      setFormData((prev) => ({
-        ...prev,
-        [field]: value,
-      }));
-    }
-  };
-
-  return (
-    <form onSubmit={handleSubmit}>
+  return (<>
       <Form
         ref={formRef}
         formData={formData}
         colCount={1}
         showColonAfterLabel
         showValidationSummary={false}
-        validationGroup="rejectApp"
-        onFieldDataChanged={(e: FieldDataChangedEvent) => {
-          updateFormData(e.dataField as keyof FormValues, e.value);
-        }}
+        validationGroup="reinvestValidationForm"
       >
         <GroupItem colCount={1}>
           <SimpleItem
@@ -133,24 +94,19 @@ export const ReinvestInterestForm: FC = () => {
           <SimpleItem
             dataField="isWithInterest"
             label={{ text: "Jumlah Simpanan + Bunga" }}
-            render={() => (
-              <RadioGroupCell
-                dataField="isWithInterest"
-                value={formData.isWithInterest ?? false}
-                onChange={updateFormData}
-              />
-            )}
+            editorType={"dxRadioGroup"}
+            editorOptions={{
+              items: [
+                { label: "Ya", value: true },
+                { label: "Tidak", value: false }
+              ],
+              layout:"horizontal",
+              displayExpr:"label",
+              valueExpr:"value",
+              onValueChanged: onChangeInterest
+            }}
           />
         </GroupItem>
-        <ButtonItem horizontalAlignment="left">
-          <ButtonOptions type="default" width="100%" disabled={loading} useSubmitBehavior>
-            <div className="button-options">
-              <LoadIndicator width="20px" height="20px" visible={loading} />
-              <span className="dx-button-text">Submit</span>
-            </div>
-          </ButtonOptions>
-        </ButtonItem>
       </Form>
-    </form>
-  );
+</>);
 };
