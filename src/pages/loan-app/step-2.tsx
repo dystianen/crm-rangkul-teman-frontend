@@ -17,7 +17,6 @@ import Form, {
   RequiredRule,
   SimpleItem
 } from "devextreme-react/form";
-import DataSource from "devextreme/data/data_source";
 import notify from "devextreme/ui/notify";
 import queryString from "query-string";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -28,15 +27,11 @@ import { useLocation } from "react-router-dom";
 import {
   checkAccessStep2,
   createAppLoanOnboardingStep2,
-  createCommodity,
   detailAppLoan,
   fetchCheckPartial,
   fetchStep2Activity,
-  getDetailCommodity,
-  getListCommodity,
   getSignedDoc
 } from "src/api/apploan";
-import { selectBoxOptions } from "src/api/contact";
 import BusinessAddress from "src/components/loan-app/BusinessAddress";
 import DocumentCard from "src/components/loan-app/DocumentCard";
 import FamilyCard from "src/components/loan-app/FamilyCard";
@@ -69,7 +64,6 @@ type TLoanApp = {
   handwrittenSalesBook: boolean;
   debitTransaction: number;
   creditTransaction: number;
-  commodityId: string;
 };
 
 export default function Step2Page() {
@@ -85,8 +79,7 @@ export default function Step2Page() {
     monthlyIncome: 0,
     handwrittenSalesBook: false,
     debitTransaction: 0,
-    creditTransaction: 0,
-    commodityId: ""
+    creditTransaction: 0
   });
   const [loadingPage, setLoadingPage] = useState(false);
   const [isShowRemainingPopup, setShowRemainingPopup] = useState(false);
@@ -97,14 +90,11 @@ export default function Step2Page() {
   const [popupMessage, setPopupMessage] = useState("");
   const [visibleSection, setVisibleSection] = useState<VisibleSection>([]);
 
-  const listCommodity = selectBoxOptions(new DataSource(getListCommodity), "Pilih commodity");
-
   const detailLoanApp = useCallback(async (appId: any) => {
     setLoadingPage(true);
 
-    const [loanRes, commodityRes, checkPartialRes] = await Promise.all([
+    const [loanRes, checkPartialRes] = await Promise.all([
       detailAppLoan(appId),
-      getDetailCommodity(appId),
       fetchCheckPartial(appId)
     ]);
 
@@ -122,8 +112,7 @@ export default function Step2Page() {
         monthlyIncome: data.monthlyIncome,
         handwrittenSalesBook: data.handwrittenSalesBook ?? false,
         debitTransaction: data.debitTransaction,
-        creditTransaction: data.creditTransaction,
-        commodityId: commodityRes?.type?.id ?? ""
+        creditTransaction: data.creditTransaction
       });
     }
 
@@ -171,18 +160,8 @@ export default function Step2Page() {
       });
   };
 
-  const handleSubmitCommodity = () => {
-    const typeId = onStep2Loan.commodityId;
-    const payload = {
-      typeId
-    };
-
-    createCommodity(ID, payload);
-  };
-
   const handleSubmit = () => {
     setLoadingPage(true);
-    handleSubmitCommodity();
     const form = formRef.current!.instance;
     const customData =
       dataGrid.length > 0
@@ -209,7 +188,6 @@ export default function Step2Page() {
         form.clear();
         notifySuccess(res.message);
         setLoadingPage(false);
-        detailLoanApp(ID);
         if (res.isCompletedStep) {
           navigate(`/loan-app/create/preview?id=${id}`);
         }
@@ -271,6 +249,7 @@ export default function Step2Page() {
   };
 
   const onFieldDataChanged = (evt: any) => {
+    // @ts-expect-error
     onStep2Loan[evt.dataField] = evt.value;
   };
 
@@ -432,21 +411,6 @@ export default function Step2Page() {
               <Paging defaultPageSize={50} />
               <Pager showPageSizeSelector={true} showInfo={true} allowedPageSizes={[10, 50, 100]} />
             </DataGrid>
-          </GroupItem>
-
-          <GroupItem
-            caption="Additional Information"
-            cssClass={"dx-card responsive-paddings next-card"}
-            colCount={2}
-          >
-            <SimpleItem
-              dataField="commodityId"
-              editorType="dxSelectBox"
-              editorOptions={listCommodity}
-              label={{ text: "Commodity" }}
-            >
-              <RequiredRule message="Commodity wajib diisi" />
-            </SimpleItem>
           </GroupItem>
 
           <GroupItem colSpan={2} cssClass={"dx-card responsive-paddings next-card"}>
