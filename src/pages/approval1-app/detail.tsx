@@ -83,7 +83,7 @@ export default function DetailPage() {
             if (text === "Approve") {
               setPopupApproveVisible(true);
             }
-            if (text === "Back to Verify") {
+            if (text === "Back To Verify") {
               setPopupBacktoVerify(true);
             }
           }}
