@@ -6,13 +6,15 @@ import queryString from "query-string";
 import { FC, memo, useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { selectBoxOptions } from "src/api/contact";
-import { listProductApplicationTerm } from "src/api/saving";
+import {listProductApplicationTerm, listPublicProductApplicationTerm} from "src/api/saving";
 import {notifyError, notifySuccess} from "src/utils/devExtremeUtils";
 import {getRenew, submitRenew, updateRenew} from "../../api/reinvest.api";
 
 interface FormValues {
   id?: string;
-  amount?: number;
+  totalAmount: number;
+  amount: number;
+  accrualInterest: number;
   apr?: number;
   termMonth?: number;
   isWithInterest?: boolean;
@@ -48,7 +50,7 @@ export const ReinvestInterestForm: FC = () => {
 
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState<FormValues>({
-    isWithInterest: false
+    isWithInterest: false, amount: 0, accrualInterest: 0, totalAmount: 0
   });
 
   useEffect(() => {
@@ -59,13 +61,13 @@ export const ReinvestInterestForm: FC = () => {
     }
 
     getRenew(token as string).then(rs=>{
-      setFormData(rs);
+      setFormData({...rs, totalAmount: rs.amount});
     });
 
   }, []);
 
   const savingTermOptions = selectBoxOptions(
-    new DataSource(listProductApplicationTerm),
+    new DataSource(listPublicProductApplicationTerm),
     "Select product saving term"
   );
 
@@ -73,21 +75,25 @@ export const ReinvestInterestForm: FC = () => {
     e.preventDefault();
     console.log("Form Submitted", formData);
     // Handle API call here
-    submitRenew(token as string, formData)
+    submitRenew(token as string, {...formData, amount: formData.totalAmount})
         .then(rs=> notifySuccess("Terima kasih telah mempercayakan simpanan Anda di KSP Rangkul Teman Jakarta"))
         .catch(err=> notifyError(err.message));
     setLoading(true);
   };
 
   const updateFormData = (field: keyof FormValues, value: any) => {
-    setFormData((prev) => ({
-      ...prev,
-      [field]: value
-    }));
-
-    updateRenew(token as string, formData)
-        .then(rs=>setFormData(rs));
-
+    if("isWithInterest"==field){
+      setFormData((prev) => ({
+        ...prev,
+        [field]: value,
+        totalAmount: (value==true) ? (prev.amount + prev.accrualInterest): prev.amount
+      }));
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        [field]: value,
+      }));
+    }
   };
 
   return (
@@ -105,7 +111,7 @@ export const ReinvestInterestForm: FC = () => {
       >
         <GroupItem colCount={1}>
           <SimpleItem
-            dataField="amount"
+            dataField="totalAmount"
             label={{ text: "Jumlah Simpanan" }}
             editorType="dxNumberBox"
             editorOptions={{
