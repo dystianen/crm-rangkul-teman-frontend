@@ -26,7 +26,10 @@
   background: #d7a910;
   color: #ffffff;
 }
-.status-incomplete{
+
+.status-preverification,
+.status-incomplete,
+.status-draft {
   background: #707070;
   color: #ffffff;
 }
