@@ -25,6 +25,6 @@ export const API_PATH = {
   ROLE: "/api/bo/role",
   ACCESS: "/api/bo/access",
 
-  PRODUCT = "/api/product/loan/manage",
+  PRODUCT: "/api/product/loan/manage",
   
 };
