@@ -36,6 +36,7 @@ import {
 } from "./pages";
 import ContactActivities from "./pages/contact-activities";
 import CreateEditContactLeads from "./pages/contact/CreateEditContactLeads";
+import {LoanProductPage, LoanProductUpdatePage} from "./pages/loan/product";
 
 const routes = [
   {
@@ -289,6 +290,18 @@ const routes = [
     path: "/backoffice/role/update",
     title: "Ubah Peran Pengguna",
     element: UpdateRolePage
+  },
+  {
+    ID: 50,
+    path: "/loan/product",
+    title: "Produk Pinjaman",
+    element: LoanProductPage
+  },
+  {
+    ID: 51,
+    path: "/loan/product/update",
+    title: "Ubah Produk Pinjaman",
+    element: LoanProductUpdatePage
   },
 ];
 

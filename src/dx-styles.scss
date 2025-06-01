@@ -1,14 +1,12 @@
 @import "./themes/generated/variables.base.scss";
 
-body{
-  overflow: hidden!important;
-}
 
 .app {
   background-color: darken($base-bg, 5);
   display: flex;
   height: 100%;
   width: 100%;
+  overflow: hidden;
 
   .content {
     line-height: 1.5;

@@ -23,4 +23,5 @@ export enum API_PATH {
   DATA_MASTER = '/api/data',
   ROLE = "/api/bo/role",
   ACCESS = "/api/bo/access",
+  PRODUCT = "/api/product/loan/manage",
 }
