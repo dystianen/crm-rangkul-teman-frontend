@@ -79,6 +79,11 @@ export const UserListPage: FC = () => {
           />
           
           <Column
+              dataField={"createdByName"}
+              caption={"Dibuat oleh"}
+              filterOperations={filterOperation.string}
+          />
+          <Column
               width={100}
               dataField={"createdOn"}
               caption={"Tanggal Dibuat"}

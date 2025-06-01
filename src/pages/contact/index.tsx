@@ -68,7 +68,7 @@ export default function Index() {
     contactData[evt.dataField] = evt.value;
   };
 
-  const dataGrid = useRef<DataGridInstance | null>(null);
+  const dataGrid:any = useRef<DataGridInstance | null>(null);
   const onClickDownload = () => {
     const instance = dataGrid.current?.instance;
 
@@ -82,7 +82,7 @@ export default function Index() {
     const captions: string[] = [];
 
     const visibleColumns = instance.getVisibleColumns();
-    visibleColumns.forEach((col) => {
+    visibleColumns.forEach((col:any) => {
       if (col.dataField) {
         columns.push(col.dataField);
       }
@@ -121,7 +121,6 @@ export default function Index() {
         <h2>Kontak</h2>
         <div className={"dx-card"}>
           <DataGrid
-            // @ts-expect-error
             ref={dataGrid}
             dataSource={contactListStore}
             focusedRowEnabled={true}
