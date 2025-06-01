@@ -92,7 +92,7 @@ export const customStore = (request: RequestUrl) =>
                 ...setFilterPss(),
                 start: startVal,
                 length: lengthVal,
-                sort: sort,
+                sort: sort ? sort: [],
                 searchQuery: JSON.stringify(loadOptions.filter),
             };
             
@@ -149,7 +149,7 @@ export const customStoreSortFirst = (request: RequestUrl, columnSort: string) =>
                 ...setFilterPss(),
                 start: startVal,
                 length: lengthVal,
-                sort: sort,
+                sort: sort ? sort: [],
                 searchQuery: JSON.stringify(loadOptions.filter),
             };
             const resp = await ajaxGet(

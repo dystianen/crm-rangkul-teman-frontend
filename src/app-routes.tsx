@@ -51,6 +51,7 @@ import SavingCustomerDetail from "./pages/saving/customer/detail";
 import SavingPayment from "./pages/saving/payment";
 import SavingWithdraw from "./pages/saving/withdraw";
 import SavingWithdrawDetail from "./pages/saving/withdraw/detail";
+import {LoanProductPage, LoanProductUpdatePage} from "./pages/loan/product";
 
 const routes = [
   {
@@ -358,7 +359,19 @@ const routes = [
     path: "/backoffice/role/update",
     title: "Ubah Peran Pengguna",
     element: UpdateRolePage
-  }
+  },
+  {
+    ID: 50,
+    path: "/loan/product",
+    title: "Produk Pinjaman",
+    element: LoanProductPage
+  },
+  {
+    ID: 51,
+    path: "/loan/product/update",
+    title: "Ubah Produk Pinjaman",
+    element: LoanProductUpdatePage
+  },
 ];
 
 //@ts-ignore
