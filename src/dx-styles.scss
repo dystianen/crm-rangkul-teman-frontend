@@ -1,5 +1,9 @@
 @import "./themes/generated/variables.base.scss";
 
+body{
+  overflow: hidden!important;
+}
+
 .app {
   background-color: darken($base-bg, 5);
   display: flex;
