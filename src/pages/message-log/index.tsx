@@ -63,7 +63,7 @@ export const MessageLogPage: FC = () => {
                     focusedRowEnabled={true}
                     remoteOperations={true}
                     columnAutoWidth={true}
-                    wordWrapEnabled={false}
+                    wordWrapEnabled={true}
                     showBorders={true}
                     dateSerializationFormat={"yyyy-MM-ddTHH:mm:ss.SSSxxx"}
                     repaintChangesOnly={true}
@@ -82,6 +82,7 @@ export const MessageLogPage: FC = () => {
                         filterOperations={filterOperation.numeric}
                     />
                     <Column
+                        width={100}
                         dataField={"createdOn"}
                         caption={"Tanggal Dibuat"}
                         dataType={"date"}
@@ -90,6 +91,7 @@ export const MessageLogPage: FC = () => {
                         filterOperations={filterOperation.date}
                     />
                     <Column
+                        width={100}
                         dataField={"modifiedOn"}
                         caption={"Tanggal Diubah"}
                         dataType={"date"}
@@ -98,23 +100,29 @@ export const MessageLogPage: FC = () => {
                         filterOperations={filterOperation.date}
                     />
                     <Column
+                        width={300}
                         dataField={"tag"}
                         caption={"Tag"}
                         filterOperations={filterOperation.string}
                     />
                     <Column
+                        width={150}
                         dataField={"destination"}
                         caption={"Kirim ke"}
                         filterOperations={filterOperation.string}
                     />
                     <Column
+                        width={150}
                       dataField={"vendorStatusGroupName"}
                       caption={"Status"}
                       filterOperations={filterOperation.string}
                     />
                     <Column
+                        width={450}
+                        encodeHtml={false}
                         dataField={"content"}
                         caption={"Pesan"}
+                        cssClass="pre-line"
                         filterOperations={filterOperation.string}
                     />
                     <Paging defaultPageSize={50}/>
