@@ -36,7 +36,17 @@ export default function DetailPage() {
         alertWarning("Active approval is not found!").then(() => navigate("/approval1"));
       });
 
-    activityApproval1(appId).then(setActivity);
+    activityApproval1(appId).then((data) => {
+      // Tambahkan separator setelah "Back To Verify"
+      const newData: any = [];
+      data.forEach((item: any) => {
+        newData.push(item);
+        if (item === "Back To Verify") {
+          newData.push({ type: "divider" });
+        }
+      });
+      setActivity(newData);
+    });
   }, [appId, navigate]);
 
   const handleSubmitRejection = async (payload: TRequestRejection) => {
@@ -75,6 +85,19 @@ export default function DetailPage() {
             width: 230
           }}
           items={activity}
+          itemRender={(item) => {
+            if (item.type === "divider") {
+              return (
+                <div
+                  style={{
+                    borderBottom: "1.5px solid lightgray",
+                    margin: "8px 0 0"
+                  }}
+                />
+              );
+            }
+            return <span>{item}</span>;
+          }}
           onItemClick={(e) => {
             const text = e.itemData;
             if (text === "Reject") {
