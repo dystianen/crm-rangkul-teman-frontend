@@ -100,25 +100,25 @@ export const MessageLogPage: FC = () => {
                         filterOperations={filterOperation.date}
                     />
                     <Column
-                        width={"15%"}
+                        width={"20%"}
                         dataField={"tag"}
                         caption={"Tag"}
                         filterOperations={filterOperation.string}
                     />
                     <Column
-                        width={"15%"}
+                        width={"10%"}
                         dataField={"destination"}
                         caption={"Kirim ke"}
                         filterOperations={filterOperation.string}
                     />
                     <Column
-                        width={"15%"}
+                        width={"10%"}
                       dataField={"vendorStatusGroupName"}
                       caption={"Status"}
                       filterOperations={filterOperation.string}
                     />
                     <Column
-                        width={"30%"}
+                        width={"35%"}
                         encodeHtml={false}
                         dataField={"content"}
                         caption={"Pesan"}
