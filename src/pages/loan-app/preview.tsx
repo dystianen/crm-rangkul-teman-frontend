@@ -109,6 +109,16 @@ export default function PreviewPage() {
             editorOptions={{ format: "Rp #,##0", readOnly: true }}
           />
           <SimpleItem
+            dataField="outcomeProved"
+            label={{ text: "Pengeluaran (Dibuktikan)" }}
+            editorOptions={{ format: "Rp #,##0", readOnly: true }}
+          />
+          <SimpleItem
+            dataField="incomeProved"
+            label={{ text: "Pemasukan (Dibuktikan)" }}
+            editorOptions={{ format: "Rp #,##0", readOnly: true }}
+          />
+          <SimpleItem
             dataField="handwrittenSalesBook"
             label={{ text: "Handwritten Sales book" }}
             editorOptions={{ readOnly: true }}
