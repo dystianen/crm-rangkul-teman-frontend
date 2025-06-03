@@ -40,8 +40,8 @@ import PreviewFile from "src/components/loan-app/PreviewFile";
 import SellingQuestions from "src/components/loan-app/SellingQuestions";
 import StreetShop from "src/components/loan-app/StreetShop";
 import PopupMessage from "src/components/popup-message";
+import { notifySuccess } from "src/utils/devExtremeUtils";
 import { getFileBase64 } from "../../api/helper";
-import { notifySuccess } from "../../utils/devExtremeUtils";
 import { ApprovalHistory } from "../approval1-app/ApprovalHistory";
 import "./loan-app.scss";
 import { RejectPopup } from "./RejectPopup";
@@ -64,6 +64,8 @@ type TLoanApp = {
   handwrittenSalesBook: boolean;
   debitTransaction: number;
   creditTransaction: number;
+  incomeProved: number;
+  outcomeProved: number;
 };
 
 export default function Step2Page() {
@@ -79,7 +81,9 @@ export default function Step2Page() {
     monthlyIncome: 0,
     handwrittenSalesBook: false,
     debitTransaction: 0,
-    creditTransaction: 0
+    creditTransaction: 0,
+    incomeProved: 0,
+    outcomeProved: 0
   });
   const [loadingPage, setLoadingPage] = useState(false);
   const [isShowRemainingPopup, setShowRemainingPopup] = useState(false);
@@ -112,7 +116,9 @@ export default function Step2Page() {
         monthlyIncome: data.monthlyIncome,
         handwrittenSalesBook: data.handwrittenSalesBook ?? false,
         debitTransaction: data.debitTransaction,
-        creditTransaction: data.creditTransaction
+        creditTransaction: data.creditTransaction,
+        incomeProved: data.incomeProved,
+        outcomeProved: data.outcomeProved
       });
     }
 
@@ -172,6 +178,7 @@ export default function Step2Page() {
             };
           })
         : [];
+
     createAppLoanOnboardingStep2(String(id), {
       customData: customData,
       incomeProof: incomeProof ? incomeProof.split(",")[1] : null,
@@ -180,7 +187,9 @@ export default function Step2Page() {
         ? onStep2Loan?.handwrittenSalesBook
         : false,
       debitTransaction: onStep2Loan?.debitTransaction,
-      creditTransaction: onStep2Loan?.creditTransaction
+      creditTransaction: onStep2Loan?.creditTransaction,
+      incomeProved: onStep2Loan?.incomeProved,
+      outcomeProved: onStep2Loan?.outcomeProved
     }).then(
       (res) => {
         setIncomeProof("");
@@ -290,6 +299,22 @@ export default function Step2Page() {
           <SimpleItem
             dataField="creditTransaction"
             label={{ text: "Income" }}
+            editorType="dxNumberBox"
+            editorOptions={{ format: "Rp #,##0.00" }}
+          >
+            <PatternRule message="hanya boleh angka" pattern={/^[0-9]+$/} />
+          </SimpleItem>
+          <SimpleItem
+            dataField="outcomeProved"
+            label={{ text: "Pengeluaran (Dibuktikan)" }}
+            editorType="dxNumberBox"
+            editorOptions={{ format: "Rp #,##0.00" }}
+          >
+            <PatternRule message="hanya boleh angka" pattern={/^[0-9]+$/} />
+          </SimpleItem>
+          <SimpleItem
+            dataField="incomeProved"
+            label={{ text: "Pemasukan (Dibuktikan)" }}
             editorType="dxNumberBox"
             editorOptions={{ format: "Rp #,##0.00" }}
           >
