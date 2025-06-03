@@ -78,11 +78,11 @@ export const MessageLogPage: FC = () => {
                         alignment={"center"}
                         dataField={"seqId"}
                         caption={"#NO"}
-                        width={90}
+                        width={"5%"}
                         filterOperations={filterOperation.numeric}
                     />
                     <Column
-                        width={100}
+                        width={"10%"}
                         dataField={"createdOn"}
                         caption={"Tanggal Dibuat"}
                         dataType={"date"}
@@ -91,7 +91,7 @@ export const MessageLogPage: FC = () => {
                         filterOperations={filterOperation.date}
                     />
                     <Column
-                        width={100}
+                        width={"10%"}
                         dataField={"modifiedOn"}
                         caption={"Tanggal Diubah"}
                         dataType={"date"}
@@ -100,25 +100,25 @@ export const MessageLogPage: FC = () => {
                         filterOperations={filterOperation.date}
                     />
                     <Column
-                        width={300}
+                        width={"15%"}
                         dataField={"tag"}
                         caption={"Tag"}
                         filterOperations={filterOperation.string}
                     />
                     <Column
-                        width={150}
+                        width={"15%"}
                         dataField={"destination"}
                         caption={"Kirim ke"}
                         filterOperations={filterOperation.string}
                     />
                     <Column
-                        width={150}
+                        width={"15%"}
                       dataField={"vendorStatusGroupName"}
                       caption={"Status"}
                       filterOperations={filterOperation.string}
                     />
                     <Column
-                        width={450}
+                        width={"30%"}
                         encodeHtml={false}
                         dataField={"content"}
                         caption={"Pesan"}
