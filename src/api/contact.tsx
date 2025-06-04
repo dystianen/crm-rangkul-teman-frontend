@@ -8,9 +8,10 @@ import type {
 } from "../interfaces/contactDto";
 import { FilterPss, setFilterPss } from "../interfaces/IFilterPss";
 import { customStore } from "../model/customStore";
-import {dataCustomStore, dataRawCustomStore} from "../model/datagrid";
+import { dataRawCustomStore} from "../model/datagrid";
 import { ajaxGet, ajaxPatch, ajaxPost } from "./http.api";
 import { API_PATH } from "./path_url";
+import { TResBankInfo } from "./types/IContact";
 
 export const contactListStore = customStore({ loadUrl: "/api/contact" });
 
@@ -258,3 +259,9 @@ export const subDistrictStore = (districtId: string) =>
 export const salesOfferingStore = dataRawCustomStore(`${API_PATH.CONTACT}/data/salesOffering?`);
 export const purposeVisitStore = dataRawCustomStore(`${API_PATH.CONTACT}/data/purposeVisit?`);
 export const purposeCallStore = dataRawCustomStore(`${API_PATH.CONTACT}/data/purposeCall?`);
+
+
+export const getContactBankInfo = async (contactId: string): Promise<TResBankInfo> => {
+  const resp = await ajaxGet(`${API_PATH.CONTACT}/bankInfo/${contactId}`);
+  return resp.data;
+};

@@ -21,8 +21,11 @@ import SockJS from "sockjs-client";
 import {
   bankCheckValid,
   createAppLoanOnboardingStep1,
+  createCommodity,
   detailAppLoan,
+  getDetailCommodity,
   getListBank,
+  getListCommodity,
   getLoanPurpose,
   getUnsignedDoc,
   loanTermStore,
@@ -33,7 +36,6 @@ import Loader from "src/components/loader";
 import PopupMessage from "src/components/popup-message";
 import {
   AppLoanOnboardingStep1Request,
-  AppLoanRequest,
   initLoanOnboardingStep1Value
 } from "src/interfaces/appLoanOnboarding";
 import { store } from "src/store/store";
@@ -82,25 +84,32 @@ export default function Step1Page() {
     sendBankCheck();
   };
 
-  useEffect(() => {
-    detailAppLoan(idData).then((res) => {
-      const data = res as AppLoanRequest;
-      const map = {
-        amount: data.loanAmount,
-        termId: data.loanTermId,
-        bankId: data.bankId,
-        bankAccNumber: data.bankAccNumber,
-        purposeId: data.loanPurposeId,
-        monthlyIncome: data.monthlyIncome
-      };
-      setOnboardingLoan(map);
-      if (typeof res?.bankCheck !== "undefined") {
-        setDisableButtonNext(!res.bankCheck);
-      } else {
-        setDisableButtonNext(true);
-      }
-    });
+  const handleGetDetail = useCallback(async () => {
+    const [loanRes, commodityRes] = await Promise.all([
+      detailAppLoan(idData),
+      getDetailCommodity(idData)
+    ]);
+
+    const map = {
+      amount: loanRes.loanAmount,
+      termId: loanRes.loanTermId,
+      bankId: loanRes.bankId,
+      bankAccNumber: loanRes.bankAccNumber,
+      purposeId: loanRes.loanPurposeId,
+      monthlyIncome: loanRes.monthlyIncome,
+      commodityId: commodityRes?.type?.id ?? ""
+    };
+    setOnboardingLoan(map);
+    if (typeof loanRes?.bankCheck !== "undefined") {
+      setDisableButtonNext(!loanRes.bankCheck);
+    } else {
+      setDisableButtonNext(true);
+    }
   }, [idData]);
+
+  useEffect(() => {
+    handleGetDetail();
+  }, [handleGetDetail]);
 
   useEffect(() => {
     setOnboardingLoan({
@@ -109,13 +118,15 @@ export default function Step1Page() {
       bankId: loanapp.loanappStep1.bankId,
       bankAccNumber: loanapp.loanappStep1.bankAccNumber,
       purposeId: loanapp.loanappStep1.purposeId,
-      monthlyIncome: loanapp.loanappStep1.monthlyIncome
+      monthlyIncome: loanapp.loanappStep1.monthlyIncome,
+      commodityId: ""
     });
   }, [loanapp]);
 
   const loanTerm = selectBoxOptions(new DataSource(loanTermStore(idData)), "Pilih term");
   const listBank = selectBoxOptions(new DataSource(getListBank), "Pilih bank");
   const listLoanPurpose = selectBoxOptions(new DataSource(getLoanPurpose), "Pilih tujuan pinjaman");
+  const listCommodity = selectBoxOptions(new DataSource(getListCommodity), "Pilih commodity");
 
   const downloadUnsigned = () => {
     setLoadingDownloadBtn(true);
@@ -141,11 +152,21 @@ export default function Step1Page() {
     });
   };
 
+  const handleSubmitCommodity = () => {
+    const typeId = onboardingLoan.commodityId;
+    const payload = {
+      typeId
+    };
+
+    createCommodity(idData, payload);
+  };
+
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     setSubmitForm(true);
     const form = formRef.current!.instance;
     const { isValid } = form.validate();
     if (isValid) {
+      handleSubmitCommodity();
       createAppLoanOnboardingStep1(id as string, onboardingLoan)
         .then(
           (res) => {
@@ -373,8 +394,17 @@ export default function Step1Page() {
                 >
                   <RequiredRule message="Tujuan pinjaman wajib diisi" />
                 </SimpleItem>
+                <SimpleItem
+                  dataField="commodityId"
+                  editorType="dxSelectBox"
+                  editorOptions={listCommodity}
+                  label={{ text: "Commodity" }}
+                >
+                  <RequiredRule message="Commodity wajib diisi" />
+                </SimpleItem>
               </GroupItem>
             </GroupItem>
+
             <GroupItem colSpan={2} cssClass={"dx-card responsive-paddings next-card"}>
               <GroupItem cssClass={"custom-tabs-step2"}>
                 <ApprovalHistory id={id} />

@@ -12,7 +12,10 @@ import {
   ContactPage,
   ContractDetailPage,
   ContractPage,
+  CreateRolePage,
+  CreateUserPage,
   DetailPage,
+  DetailUserPage,
   DisburseDetailPage,
   DisbursePage,
   HomePage,
@@ -27,15 +30,28 @@ import {
   RestructureCreatePage,
   RestructureDetailPage,
   RestructureListPage,
+  RoleListPage,
   Step1Page,
   Step2Page,
   TransactionDetailPage,
   TransactionPage,
-  UploadSignedPage, UserListPage, CreateUserPage, DetailUserPage, UpdateUserPage,
-  RoleListPage, CreateRolePage, UpdateRolePage
+  UpdateRolePage,
+  UpdateUserPage,
+  UploadSignedPage,
+  UserListPage
 } from "./pages";
 import ContactActivities from "./pages/contact-activities";
 import CreateEditContactLeads from "./pages/contact/CreateEditContactLeads";
+import SavingApplication from "./pages/saving/application";
+import FormSavingApplication from "./pages/saving/application/form";
+import SavingContract from "./pages/saving/contract";
+import SavingContractDetail from "./pages/saving/contract/detail";
+import SavingCustomer from "./pages/saving/customer";
+import SavingCustomerDetail from "./pages/saving/customer/detail";
+import SavingPayment from "./pages/saving/payment";
+import SavingWithdraw from "./pages/saving/withdraw";
+import SavingWithdrawDetail from "./pages/saving/withdraw/detail";
+import {LoanProductPage, LoanProductUpdatePage} from "./pages/loan/product";
 
 const routes = [
   {
@@ -274,21 +290,87 @@ const routes = [
   },
   {
     ID: 36,
+    path: "/saving/application",
+    title: "Saving Application",
+    element: SavingApplication
+  },
+  {
+    ID: 37,
+    path: "/saving/application/form",
+    title: "Saving Application",
+    element: FormSavingApplication
+  },
+  {
+    ID: 38,
+    path: "/saving/payment",
+    title: "Saving Payment",
+    element: SavingPayment
+  },
+  {
+    ID: 39,
+    path: "/saving/contract",
+    title: "Saving Contract",
+    element: SavingContract
+  },
+  {
+    ID: 40,
+    path: "/saving/contract/detail",
+    title: "Saving Contract Detail",
+    element: SavingContractDetail
+  },
+  {
+    ID: 41,
+    path: "/saving/customer",
+    title: "Saving Customer",
+    element: SavingCustomer
+  },
+  {
+    ID: 42,
+    path: "/saving/customer/detail",
+    title: "Saving Customer Detail",
+    element: SavingCustomerDetail
+  },
+  {
+    ID: 43,
+    path: "/saving/withdraw",
+    title: "Saving Withdraw",
+    element: SavingWithdraw
+  },
+  {
+    ID: 43,
+    path: "/saving/withdraw/detail",
+    title: "Saving Withdraw Detail",
+    element: SavingWithdrawDetail
+  },
+  {
+    ID: 44,
     path: "/backoffice/role",
     title: "Peran Pengguna",
     element: RoleListPage
   },
   {
-    ID: 37,
+    ID: 45,
     path: "/backoffice/role/create",
     title: "Buat Peran Pengguna",
     element: CreateRolePage
   },
   {
-    ID: 38,
+    ID: 46,
     path: "/backoffice/role/update",
     title: "Ubah Peran Pengguna",
     element: UpdateRolePage
+  },
+  {
+    ID: 50,
+    path: "/loan/product",
+    title: "Produk Pinjaman",
+    element: LoanProductPage
+  },
+  {
+    ID: 51,
+    path: "/loan/product/update",
+    title: "Ubah Produk Pinjaman",
+    element: LoanProductUpdatePage
   },
 ];
 

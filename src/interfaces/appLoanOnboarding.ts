@@ -38,6 +38,7 @@ export interface AppLoanOnboardingStep1Request {
     bankAccNumber: string;
     purposeId: string;
     monthlyIncome?: number;
+    commodityId: string;
 }
 
 export interface AppLoanCustomeDataRequest {
@@ -121,6 +122,7 @@ export const initLoanOnboardingStep1Value: AppLoanOnboardingStep1Request = {
     bankAccNumber: "",
     purposeId: "",
     monthlyIncome: 0,
+    commodityId: ""
 };
 
 export const initLoanCustomeDataValue: AppLoanCustomeDataRequest = {

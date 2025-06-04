@@ -5,10 +5,10 @@ import "devextreme-react/file-uploader";
 import Form, { GroupItem, SimpleItem } from "devextreme-react/form";
 import notify from "devextreme/ui/notify";
 import queryString from "query-string";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { useLocation } from "react-router-dom";
-import { checkAccess, detailAppLoan, submitAppLoan } from "src/api/apploan";
+import { checkAccess, detailAppLoan, getDetailCommodity, submitAppLoan } from "src/api/apploan";
 import BusinessAddress from "src/components/loan-app/BusinessAddress";
 import DocumentCard from "src/components/loan-app/DocumentCard";
 import FamilyCard from "src/components/loan-app/FamilyCard";
@@ -40,15 +40,36 @@ export default function PreviewPage() {
     });
   }, []);
 
-  useEffect(() => {
-    detailAppLoan(id as string).then((res) => {
-      let found = appStatusIncomplete.some((x) => x === res.statusId);
-      if (!found) {
-        navigate(`/loan-app`);
+  const getDetailLoan = useCallback(
+    async (appId: string) => {
+      try {
+        const [loanRes, commodityRes] = await Promise.all([
+          detailAppLoan(appId),
+          getDetailCommodity(appId)
+        ]);
+
+        const isIncomplete = appStatusIncomplete.includes(loanRes.statusId);
+
+        if (!isIncomplete) {
+          navigate("/loan-app");
+          return;
+        }
+
+        setLoanApp({
+          ...loanRes,
+          commodityId: commodityRes?.type?.name ?? ""
+        });
+      } catch (error) {
+        console.error("Failed to fetch loan or commodity details:", error);
+        navigate("/loan-app");
       }
-      setLoanApp(res);
-    });
-  }, [id]);
+    },
+    [navigate]
+  );
+
+  useEffect(() => {
+    if (ID) getDetailLoan(ID);
+  }, [ID, getDetailLoan]);
 
   const handleSubmit = (e: any) => {
     setSubmitForm(true);
@@ -85,6 +106,16 @@ export default function PreviewPage() {
           <SimpleItem
             dataField="creditTransaction"
             label={{ text: "Income" }}
+            editorOptions={{ format: "Rp #,##0", readOnly: true }}
+          />
+          <SimpleItem
+            dataField="outcomeProved"
+            label={{ text: "Pengeluaran (Dibuktikan)" }}
+            editorOptions={{ format: "Rp #,##0", readOnly: true }}
+          />
+          <SimpleItem
+            dataField="incomeProved"
+            label={{ text: "Pemasukan (Dibuktikan)" }}
             editorOptions={{ format: "Rp #,##0", readOnly: true }}
           />
           <SimpleItem
@@ -202,6 +233,20 @@ export default function PreviewPage() {
                     />
                   </DataGrid>
                 </GroupItem>
+              </GroupItem>
+
+              <GroupItem
+                caption="Additional Information"
+                cssClass={"dx-card responsive-paddings next-card"}
+                colCount={2}
+              >
+                <SimpleItem
+                  dataField="commodityId"
+                  label={{ text: "Commodity" }}
+                  editorOptions={{
+                    readOnly: true
+                  }}
+                />
               </GroupItem>
 
               <GroupItem colSpan={2} cssClass={"dx-card responsive-paddings next-card"}>

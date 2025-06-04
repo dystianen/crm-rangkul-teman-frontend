@@ -1,34 +1,34 @@
 export interface ContactRequest {
-  idNumber: string;
+  idNumber?: string;
   contactId?: string;
   nameBorrower?: string;
-  birthPlace: string;
-  birthDate: string;
-  idGender: string;
-  idReligion: string;
-  idEducation: string;
-  idMarital: string;
-  motherMaidenName: string;
-  lengthOfJob: number | null;
+  birthPlace?: string;
+  birthDate?: string;
+  idGender?: string;
+  idReligion?: string;
+  idEducation?: string;
+  idMarital?: string;
+  motherMaidenName?: string;
+  lengthOfJob?: number | null;
 
-  idCountry: string;
-  idCity: string;
-  idProvince: string;
-  districtId: string;
-  subdistrictId: string;
-  address: string;
-  postalCode: string;
-  neighborhoodUnit: string;
-  communityUnit: string;
-  livingAddressStatus: string;
+  idCountry?: string;
+  idCity?: string;
+  idProvince?: string;
+  districtId?: string;
+  subdistrictId?: string;
+  address?: string;
+  postalCode?: string;
+  neighborhoodUnit?: string;
+  communityUnit?: string;
+  livingAddressStatus?: string;
 
-  mobilePhone: string;
-  email: string;
+  mobilePhone?: string;
+  email?: string;
 
-  ktpImage: string;
-  typeOfGood: string;
-  salesChannelId: string;
-  marketAddress: string;
+  ktpImage?: string;
+  typeOfGood?: string;
+  salesChannelId?: string;
+  marketAddress?: string;
 }
 
 export const initContactValue: ContactRequest & TResInfoEkyc = {

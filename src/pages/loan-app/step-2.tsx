@@ -40,8 +40,8 @@ import PreviewFile from "src/components/loan-app/PreviewFile";
 import SellingQuestions from "src/components/loan-app/SellingQuestions";
 import StreetShop from "src/components/loan-app/StreetShop";
 import PopupMessage from "src/components/popup-message";
+import { notifySuccess } from "src/utils/devExtremeUtils";
 import { getFileBase64 } from "../../api/helper";
-import { notifySuccess } from "../../utils/devExtremeUtils";
 import { ApprovalHistory } from "../approval1-app/ApprovalHistory";
 import "./loan-app.scss";
 import { RejectPopup } from "./RejectPopup";
@@ -59,6 +59,15 @@ export type VisibleSection = {
   mandatory: boolean;
 }[];
 
+type TLoanApp = {
+  monthlyIncome: number;
+  handwrittenSalesBook: boolean;
+  debitTransaction: number;
+  creditTransaction: number;
+  incomeProved: number;
+  outcomeProved: number;
+};
+
 export default function Step2Page() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -68,11 +77,13 @@ export default function Step2Page() {
   const [fileType, setFileType] = useState<string>("");
   const [dataGrid, setDataGrid] = useState<any[]>([]);
   const formRef = useRef<Form>(null);
-  const [onStep2Loan, setOnStep2Loan] = useState<any>({
+  const [onStep2Loan, setOnStep2Loan] = useState<TLoanApp>({
     monthlyIncome: 0,
     handwrittenSalesBook: false,
     debitTransaction: 0,
-    creditTransaction: 0
+    creditTransaction: 0,
+    incomeProved: 0,
+    outcomeProved: 0
   });
   const [loadingPage, setLoadingPage] = useState(false);
   const [isShowRemainingPopup, setShowRemainingPopup] = useState(false);
@@ -83,40 +94,44 @@ export default function Step2Page() {
   const [popupMessage, setPopupMessage] = useState("");
   const [visibleSection, setVisibleSection] = useState<VisibleSection>([]);
 
-  const detailLoanApp = (appId: any) => {
+  const detailLoanApp = useCallback(async (appId: any) => {
     setLoadingPage(true);
-    detailAppLoan(appId).then((res) => {
-      const data = res as any;
-      const gridStore: any[] = data?.customData || [];
-      setDataGrid(gridStore);
-      if (data?.incomeProof) {
-        setFileType(data.incomeProof.fileType);
-        setIncomeProof(getFileBase64(data.incomeProof.fileType, data.incomeProof.fileContent));
-      }
 
-      if (typeof data.monthlyIncome !== "undefined") {
-        setOnStep2Loan({
-          monthlyIncome: data?.monthlyIncome,
-          handwrittenSalesBook: data?.handwrittenSalesBook ? data?.handwrittenSalesBook : false,
-          debitTransaction: data?.debitTransaction,
-          creditTransaction: data?.creditTransaction
-        });
-      }
+    const [loanRes, checkPartialRes] = await Promise.all([
+      detailAppLoan(appId),
+      fetchCheckPartial(appId)
+    ]);
 
-      setVisibleSection(res.items);
-      setLoadingPage(false);
-    });
+    const data = loanRes as any;
+    const gridStore: any[] = data?.customData || [];
+    setDataGrid(gridStore);
 
-    fetchCheckPartial(ID).then((res) => {
-      setMissingFields(res.messages);
-      setShowRemainingPopup(res.opened);
-    });
-  };
+    if (data?.incomeProof) {
+      setFileType(data.incomeProof.fileType);
+      setIncomeProof(getFileBase64(data.incomeProof.fileType, data.incomeProof.fileContent));
+    }
+
+    if (typeof data.monthlyIncome !== "undefined") {
+      setOnStep2Loan({
+        monthlyIncome: data.monthlyIncome,
+        handwrittenSalesBook: data.handwrittenSalesBook ?? false,
+        debitTransaction: data.debitTransaction,
+        creditTransaction: data.creditTransaction,
+        incomeProved: data.incomeProved,
+        outcomeProved: data.outcomeProved
+      });
+    }
+
+    setVisibleSection(data.items);
+    setMissingFields(checkPartialRes.messages);
+    setShowRemainingPopup(checkPartialRes.opened);
+    setLoadingPage(false);
+  }, []);
 
   useEffect(() => {
     detailLoanApp(ID);
     fetchStep2Activity(ID).then(setActivity);
-  }, [ID]);
+  }, [ID, detailLoanApp]);
 
   useEffect(() => {
     checkAccessStep2(ID).then((res) => {
@@ -163,6 +178,7 @@ export default function Step2Page() {
             };
           })
         : [];
+
     createAppLoanOnboardingStep2(String(id), {
       customData: customData,
       incomeProof: incomeProof ? incomeProof.split(",")[1] : null,
@@ -171,7 +187,9 @@ export default function Step2Page() {
         ? onStep2Loan?.handwrittenSalesBook
         : false,
       debitTransaction: onStep2Loan?.debitTransaction,
-      creditTransaction: onStep2Loan?.creditTransaction
+      creditTransaction: onStep2Loan?.creditTransaction,
+      incomeProved: onStep2Loan?.incomeProved,
+      outcomeProved: onStep2Loan?.outcomeProved
     }).then(
       (res) => {
         setIncomeProof("");
@@ -179,7 +197,6 @@ export default function Step2Page() {
         form.clear();
         notifySuccess(res.message);
         setLoadingPage(false);
-        detailLoanApp(ID);
         if (res.isCompletedStep) {
           navigate(`/loan-app/create/preview?id=${id}`);
         }
@@ -241,6 +258,7 @@ export default function Step2Page() {
   };
 
   const onFieldDataChanged = (evt: any) => {
+    // @ts-expect-error
     onStep2Loan[evt.dataField] = evt.value;
   };
 
@@ -281,6 +299,22 @@ export default function Step2Page() {
           <SimpleItem
             dataField="creditTransaction"
             label={{ text: "Income" }}
+            editorType="dxNumberBox"
+            editorOptions={{ format: "Rp #,##0.00" }}
+          >
+            <PatternRule message="hanya boleh angka" pattern={/^[0-9]+$/} />
+          </SimpleItem>
+          <SimpleItem
+            dataField="outcomeProved"
+            label={{ text: "Pengeluaran (Dibuktikan)" }}
+            editorType="dxNumberBox"
+            editorOptions={{ format: "Rp #,##0.00" }}
+          >
+            <PatternRule message="hanya boleh angka" pattern={/^[0-9]+$/} />
+          </SimpleItem>
+          <SimpleItem
+            dataField="incomeProved"
+            label={{ text: "Pemasukan (Dibuktikan)" }}
             editorType="dxNumberBox"
             editorOptions={{ format: "Rp #,##0.00" }}
           >
@@ -403,6 +437,7 @@ export default function Step2Page() {
               <Pager showPageSizeSelector={true} showInfo={true} allowedPageSizes={[10, 50, 100]} />
             </DataGrid>
           </GroupItem>
+
           <GroupItem colSpan={2} cssClass={"dx-card responsive-paddings next-card"}>
             <GroupItem cssClass={"custom-tabs-step2"}>
               <ApprovalHistory id={ID} />

@@ -56,7 +56,7 @@ function MultiSelect({
             onSelectionChanged={handleSelectionChanged}
             height={250}
           />
-          <Button text="Done" style={{ marginTop: 10, width: "100%" }} onClick={handleDone} />
+          <Button text="Done" style={{ top: 10, bottom: 10, width: "100%" }} onClick={handleDone} />
         </div>
       )}
     />

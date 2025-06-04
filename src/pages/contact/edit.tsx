@@ -32,6 +32,7 @@ import {
     districtStore,
     educationStore,
     genderStore,
+    getContactBankInfo,
     getFile,
     maritalStatusStore, processCancel,
     processWithoutEkyc,
@@ -49,28 +50,31 @@ import Loader from "src/components/loader";
 import {ContactRelativeDto, ContactRequest, initContactValue} from "src/interfaces/contactDto";
 import resizeImage from "src/utils/resizeImage.util";
 import {formatDate} from "../../utils/dateUtils";
-import { notifyError } from "src/utils/devExtremeUtils";
+import { notifyError, notifySuccess, notifyWarning } from "src/utils/devExtremeUtils";
 import "./contact.scss";
 import {StringLengthRule} from "devextreme-react/validator";
 import {AppLoanOnboardingRequest, initLoanOnboardingValue} from "../../interfaces/appLoanOnboarding";
-import {getActiveBranchByUserStore, getActiveProductByBranch} from "../../api/apploan";
+import {getActiveBranchByUserStore, getActiveProductByBranch, getListBank} from "../../api/apploan";
 import imageCompress from "src/utils/imageCompress.util";
 import trimBody from "../../utils/trim-body";
-import {useAuth} from "../../contexts/auth";
 import ContactActivityV2 from "../../components/contact/contact-activyv2";
 import { allowOnlyNumbers, allowOnlyText } from "src/utils/helpers";
+import SockJS from "sockjs-client";
+import { Client } from "@stomp/stompjs";
+import { checkBankAccountByContact } from "src/api/saving";
+import { TResBankInfo } from "src/api/types/IContact";
+import LoadingOverlay from "src/components/loading/LoadingOverlay";
 
 export default function EditPage() {
-    const {user} = useAuth();
     const formAppRef = useRef<Form>(null);
-    const [productOptions, setProductOptions] = useState<any>(undefined);
     const [productComboOptions, setComboProductOptions] = useState<any>({});
     const [isPopupCreateApp, setPopupCreateApp] = React.useState(false);
-    const [loanAppOnboarding, setLoanAppOnboarding] =
+    const [loanAppOnboarding] =
         useState<AppLoanOnboardingRequest>(initLoanOnboardingValue);
     const navigate = useNavigate();
     const location = useLocation();
     const {id, from} = queryString.parse(location.search);
+    const contactId = String(id);
     const [contact, setContact] = useState<ContactRequest>(initContactValue);
     const [ktpSrc, setKtpSrc] = useState("");
     const [selfie, setSelfie] = useState("");
@@ -85,6 +89,15 @@ export default function EditPage() {
     const [isShowLoadingOCR, setShowLoadingOCR] = useState(false);
     const [isButtonCancel, setButtonCancel] = useState(false);
     const [isLoadingPage, setLoadingPage] = useState(false);
+    const [isDableBankIdBankAccNumber, setDisableBankIdBankAccNumber] = useState(false);
+    const [waitingToReconnect, setWaitingToReconnect] = useState<boolean>(false);
+    const [loadingWebSocket, setLoadingWebSocket] = useState(true);
+    const [bankInfo, setBankInfo] = useState<TResBankInfo>({
+        bankId: "",
+        accountNumber: "",
+        npwpNumber: "",
+    })
+    const isReadonlyBankInfo = !bankInfo.isAllowChange;
 
     const getBranchByUser = selectBoxBranchOptions(
         new DataSource(getActiveBranchByUserStore as any),
@@ -104,6 +117,7 @@ export default function EditPage() {
     );
     const ownerStatusOptions = selectBoxOptions(new DataSource(addressOwnershipStore), "");
     const countryOptions = selectBoxOptions(new DataSource(countryStore), "");
+    const listBank = selectBoxOptions(new DataSource(getListBank), "Pilih bank");
 
     const [proviceOptions, setProvinceOptions] = useState({});
     const [cityOptions, setCityOptions] = useState({});
@@ -114,7 +128,7 @@ export default function EditPage() {
         let request = {
             ...contact,
             contactId: id,
-            birthDate: formatDate(contact.birthDate),
+            birthDate: formatDate(contact.birthDate!),
             ktpImage: ktpSrc,
             selfie,
             contactRelatives: contactRelatives
@@ -145,6 +159,14 @@ export default function EditPage() {
             });
         e.preventDefault();
     };
+
+    const handleFetchBankInfo =  useCallback(() => {
+        getContactBankInfo(contactId)
+            .then((res) =>  {
+                setBankInfo(res)
+                console.log({res})
+            })
+    }, [contactId])
 
     useEffect(() => {
         const contactId = String(id);
@@ -221,6 +243,8 @@ export default function EditPage() {
                 setContactRelatives(res?.contactRelatives);
             }
         });
+
+        handleFetchBankInfo();
 
         const handleFetchEkycInfo = () => {
             contactEkycInfo(contactId).then(res => {
@@ -345,7 +369,6 @@ export default function EditPage() {
         return validateEmail(request);
     };
 
-
     const onFieldAppDataChanged = (evt: any) => {
         if (evt.dataField === "branchId" && evt.value != null) {
             setComboProductOptions(selectBoxOptions(
@@ -354,9 +377,6 @@ export default function EditPage() {
             ));
         }
 
-        if (evt.dataField === "productId" && evt.value != null) {
-            setProductOptions(evt.value);
-        }
         loanAppOnboarding[evt.dataField] = evt.value;
     };
 
@@ -450,7 +470,6 @@ export default function EditPage() {
         }
     };
 
-
     const submitCancel = () => {
         const contactId = String(id);
 
@@ -465,6 +484,118 @@ export default function EditPage() {
         text: "Kembali",
         onClick: handleBack
     };
+
+    const stompClientRef = useRef<any>(null);
+
+    useEffect(() => {
+        const socket = new SockJS(`${process.env.REACT_APP_BACKEND}api/bankAccountLive`);
+
+        const stompClient = new Client({
+            webSocketFactory: () => socket,
+            reconnectDelay: 5000,
+            debug: (str) => {
+                console.log(str);
+            },
+            onDisconnect: () => {
+                if (waitingToReconnect) {
+                    return;
+                }
+                setWaitingToReconnect(true);
+            },
+            onConnect: () => {
+                console.log("Connected to WebSocket");
+                setLoadingWebSocket(false);
+                stompClient.subscribe(`/api/resultAccountBankByContact`, (response) => {
+                    console.log("Received message:", response.body);
+                    const res = JSON.parse(response.body);
+                    if (res.contactId === contactId) {
+                        if (res.isWaiting) {
+                            setDisableBankIdBankAccNumber(true);
+                        } else {
+                            setDisableBankIdBankAccNumber(false);
+
+                            if (res.success) {
+                                if (res?.error) {
+                                    notifyWarning(res.message);
+                                } else {
+                                    notifySuccess(res.message);
+                                }
+                                handleFetchBankInfo();
+                            } else {
+                                notifyError(res.message);
+                            }
+                        }
+                    }
+                });
+            },
+            onStompError: (frame) => {
+                console.error("Broker reported error: " + frame.headers["message"]);
+                console.error("Additional details: " + frame.body);
+            }
+        });
+
+        stompClient.activate();
+        stompClientRef.current = stompClient;
+
+        return () => {
+            // Dereference, so it will set up next time
+            console.log("Cleanup");
+            if (stompClientRef.current) {
+                stompClientRef.current.deactivate();
+                stompClientRef.current = null;
+            }
+        };
+    }, [contactId, handleFetchBankInfo, waitingToReconnect]);
+
+    const sendBankCheck = () => {
+        const ID = String(id);
+        const payload = {
+            contactId: ID,
+            bankId: bankInfo.bankId,
+            bankAccountNumber: bankInfo.accountNumber,
+            npwpNumber: bankInfo.npwpNumber
+        };
+
+        setDisableBankIdBankAccNumber(true);
+        checkBankAccountByContact(payload).then((res) => {
+            setDisableBankIdBankAccNumber(res.isWaiting);
+        });
+    };
+
+    const handleCheckBankAccount = (e: any) => {
+        if (typeof bankInfo.bankId === "undefined") {
+            notifyWarning("belum memilih bank!!");
+            e.event.preventDefault();
+            return;
+        }
+        if (typeof bankInfo.accountNumber === "undefined") {
+            notifyWarning("belum mengisi nomor rekening!!");
+            e.event.preventDefault();
+            return;
+        }
+        if (bankInfo.bankId == null || bankInfo.accountNumber == null) {
+            notifyWarning("pastikan sudah memilih bank dan mengisi nomor rekening!!");
+            e.event.preventDefault();
+            return;
+        }
+        if (bankInfo.npwpNumber !== null && bankInfo.npwpNumber.length < 15) {
+            notifyWarning("Nomor NPWP harus terdiri dari 15 digit.");
+            e.event.preventDefault();
+            return;
+        }
+
+        sendBankCheck();
+    };
+
+    const onFieldDataBankChanged = (e: any) => {
+        const {dataField, value} = e;
+
+        setBankInfo(prev => ({
+            ...prev,
+            [dataField]: value
+        }))
+    }
+    
 
     return (
         <>
@@ -511,9 +642,9 @@ export default function EditPage() {
                                     />
                                     <PatternRule message="Only number on KTP Number" pattern={/^[0-9]+$/}/>
                                 </SimpleItem>
-                                <SimpleItem 
-                                    dataField="nameBorrower" 
-                                    label={{text: "Name"}} 
+                                <SimpleItem
+                                    dataField="nameBorrower"
+                                    label={{text: "Name"}}
                                     editorOptions={{
                                         onKeyDown: (e: any) => allowOnlyText(e.event)
                                     }}
@@ -521,9 +652,9 @@ export default function EditPage() {
                                     <RequiredRule message="Name is required"/>
                                     <PatternRule message="Do not use digits in the Name" pattern={/^[^0-9]+$/}/>
                                 </SimpleItem>
-                                <SimpleItem 
-                                    dataField="birthPlace" 
-                                    label={{text: "Place of Birth"}} 
+                                <SimpleItem
+                                    dataField="birthPlace"
+                                    label={{text: "Place of Birth"}}
                                     editorOptions={{
                                         onKeyDown: (e: any) => allowOnlyText(e.event)
                                     }}
@@ -574,9 +705,9 @@ export default function EditPage() {
                                 >
                                     <RequiredRule message="Marital status is required"/>
                                 </SimpleItem>
-                                <SimpleItem 
-                                    dataField="motherMaidenName" 
-                                    label={{text: "Mother Maiden Name"}} 
+                                <SimpleItem
+                                    dataField="motherMaidenName"
+                                    label={{text: "Mother Maiden Name"}}
                                     editorOptions={{
                                         onKeyDown: (e: any) => allowOnlyText(e.event)
                                     }}
@@ -770,6 +901,66 @@ export default function EditPage() {
                                 />
                             </GroupItem>
                         </GroupItem>
+
+                        <GroupItem colSpan={2} cssClass={"dx-card responsive-paddings next-card relative"}>
+                            <LoadingOverlay visible={loadingWebSocket} text="Sedang menyambungkan ke sistem..." />
+                            <Form 
+                                formData={bankInfo}
+                                showColonAfterLabel={true}
+                                showValidationSummary={true}
+                                validationGroup="bankData"
+                                onFieldDataChanged={onFieldDataBankChanged}
+                            >
+                                <GroupItem caption="Bank Information" name="AdditionalInformation" colCount={1}>
+                                    <SimpleItem
+                                        dataField="bankId"
+                                        editorType="dxSelectBox"
+                                        editorOptions={{
+                                            ...listBank,
+                                            disabled: isDableBankIdBankAccNumber,
+                                            readOnly: isReadonlyBankInfo
+                                        }}
+                                        label={{ text: "Bank" }}
+                                    />
+                                    <SimpleItem
+                                        dataField="accountNumber"
+                                        label={{ text: "Bank Account Number" }}
+                                        editorOptions={{
+                                            disabled: isDableBankIdBankAccNumber,
+                                            readOnly: isReadonlyBankInfo,
+                                            onKeyDown: (e: any) => allowOnlyNumbers(e.event)
+                                        }}
+                                    />
+                                    <SimpleItem
+                                        dataField="npwpNumber"
+                                        label={{ text: "NPWP" }}
+                                        editorOptions={{
+                                            min: 15,
+                                            maxLength: 15,
+                                            disabled: isDableBankIdBankAccNumber,
+                                            readOnly: isReadonlyBankInfo,
+                                            onKeyDown: (e: any) => allowOnlyNumbers(e.event)
+                                        }}
+                                    />
+                                </GroupItem>
+                                <GroupItem>
+                                    <ButtonItem horizontalAlignment="left">
+                                    <ButtonOptions
+                                        type="default"
+                                        width={"auto"}
+                                        disabled={isReadonlyBankInfo || isDableBankIdBankAccNumber}
+                                        onClick={handleCheckBankAccount}
+                                    >
+                                        <div className="button-options">
+                                            <LoadIndicator width="20px" height="20px" visible={isDableBankIdBankAccNumber} />
+                                            <span className="dx-button-text">Verify</span>
+                                        </div>
+                                    </ButtonOptions>
+                                    </ButtonItem>
+                                </GroupItem>
+                            </Form>
+                        </GroupItem>
+
                         <GroupItem colSpan={2} cssClass={"dx-card responsive-paddings next-card"}>
                             <GroupItem caption="Additional Information" name="AdditionalInformation" colCount={2}>
                                 <SimpleItem dataField="typeOfGood" label={{text: "Jenis Barang"}}>
