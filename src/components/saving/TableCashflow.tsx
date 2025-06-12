@@ -31,7 +31,7 @@ const TableCashflow = () => {
   const { dataSource, type: typeField } = renderData;
 
   return (
-    <div className={"form__tabs dx-card responsive-paddings"}>
+    <>
       <h5 style={{ marginTop: 0, marginBottom: "10px" }}>Cashflow</h5>
       <DataGrid
         ref={dataGrid}
@@ -99,7 +99,7 @@ const TableCashflow = () => {
         <Paging defaultPageSize={50} />
         <Pager showPageSizeSelector={true} showInfo={true} allowedPageSizes={[10, 50, 100]} />
       </DataGrid>
-    </div>
+    </>
   );
 };
 

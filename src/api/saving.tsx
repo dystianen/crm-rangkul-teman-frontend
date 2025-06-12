@@ -27,9 +27,8 @@ export const listProductApplicationTerm = dataRawCustomStore(
   `${API_PATH.SAVING_DEPOSIT}/product/deposit/term?`
 );
 
-
 export const listPublicProductApplicationTerm = dataRawCustomStore(
-    `${API_PATH.SAVING_DEPOSIT}/public/product/deposit/term?`
+  `${API_PATH.SAVING_DEPOSIT}/public/product/deposit/term?`
 );
 
 export const listSavingPaymentStore = customStore({
@@ -158,3 +157,8 @@ export const checkBankAccountByContact = async (
   const resp = await ajaxPost(`${API_PATH.BANK_CHECK}/byContact`, payload);
   return resp.data;
 };
+
+export const listSavingContractDocumentStore = (id: string) =>
+  customStore({
+    loadUrl: `${API_PATH.SAVING_DEPOSIT}/contract/${id}/document`
+  });
