@@ -177,7 +177,9 @@ const SavingCustomerDetail = () => {
           </Form>
         </div>
 
-        <TableCashflow />
+        <div className="dx-card form__tabs responsive-paddings">
+          <TableCashflow />
+        </div>
       </div>
 
       <PopupWithdraw

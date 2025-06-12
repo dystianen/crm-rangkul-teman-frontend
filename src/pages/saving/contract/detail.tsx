@@ -1,5 +1,13 @@
 import { DropDownButton, LoadIndicator, RadioGroup } from "devextreme-react";
-import Form, { ButtonItem, ButtonOptions, GroupItem, SimpleItem } from "devextreme-react/form";
+import Form, {
+  ButtonItem,
+  ButtonOptions,
+  GroupItem,
+  SimpleItem,
+  Tab,
+  TabbedItem,
+  TabPanelOptions
+} from "devextreme-react/form";
 import * as Title from "devextreme-react/toolbar";
 import "devextreme/data/odata/store";
 import queryString from "query-string";
@@ -14,6 +22,7 @@ import {
 import { TReqPartialUpdateSavingContract, TResSavingContractDetail } from "src/api/types/ISaving";
 import { OnClickLink } from "src/components/alink";
 import PopupConfirm from "src/components/popup/popup-confirm";
+import { ContractDocument } from "src/components/saving/ContractDocument";
 import TableCashflow from "src/components/saving/TableCashflow";
 import { initSavingContractDetail } from "src/interfaces/ISaving";
 import { notifyError, notifySuccess } from "src/utils/devExtremeUtils";
@@ -315,7 +324,26 @@ const SavingContractDetail = () => {
           </Form>
         </div>
 
-        <TableCashflow />
+        <div className={"dx-card responsive-paddings next-card"}>
+          <div className="form__tabs">
+            <Form>
+              <TabbedItem
+                tabPanelOptions={{
+                  scrollByContent: true,
+                  showNavButtons: true
+                }}
+              >
+                <TabPanelOptions deferRendering={false} />
+                <Tab title="Cashflow">
+                  <TableCashflow />
+                </Tab>
+                <Tab title="Dokumen">
+                  <ContractDocument id={ID} />
+                </Tab>
+              </TabbedItem>
+            </Form>
+          </div>
+        </div>
 
         <PopupConfirm
           visible={visible}
