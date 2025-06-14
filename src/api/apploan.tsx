@@ -180,6 +180,11 @@ export const getActiveBranchByUserStore = dataRawCustomStore(`/api/data/branch/u
 export const getActiveProductByBranch = (branchId: string) =>
   dataRawCustomStore(`/api/product/${branchId}?`);
 
+export const changeProduct = async (payload: any): Promise<any> => {
+  const resp = await ajaxPost(`/api/product/change`, payload);
+  return resp.data;
+};
+
 export const getActiveProductStore = dataRawCustomStore(`/api/product/list?`);
 
 export const loanTermStore = (appId: string) =>

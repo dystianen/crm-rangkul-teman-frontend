@@ -20,15 +20,16 @@ import { useLocation } from "react-router-dom";
 import SockJS from "sockjs-client";
 import {
   bankCheckValid,
+  changeProduct,
   createAppLoanOnboardingStep1,
   createCommodity,
   detailAppLoan,
+  getActiveProductByBranch,
   getDetailCommodity,
   getListBank,
   getListCommodity,
   getLoanPurpose,
-  getUnsignedDoc,
-  loanTermStore,
+  getUnsignedDoc, loanTermStore,
   processCancel
 } from "src/api/apploan";
 import { selectBoxOptions } from "src/api/contact";
@@ -49,6 +50,7 @@ export default function Step1Page() {
   const location = useLocation();
   const { id } = queryString.parse(location.search);
   const idData = id as string;
+  const [disableField, setDisableField] = useState(true);
   const [onboardingLoan, setOnboardingLoan] = useState<AppLoanOnboardingStep1Request>(
     initLoanOnboardingStep1Value
   );
@@ -62,6 +64,8 @@ export default function Step1Page() {
   const [isShowPopupMessage, setShowPopupMessage] = useState(false);
   const [popupMessage, setPopupMessage] = useState("");
   const [url, setUrl] = useState("");
+  const [productComboOptions, setComboProductOptions] = useState<any>({});
+  const [loanTerm, setLoanTerm] = useState({});
 
   const handleCheckBankAccount = (e: any) => {
     console.log("handle check bank account ", e, onboardingLoan);
@@ -90,7 +94,21 @@ export default function Step1Page() {
       getDetailCommodity(idData)
     ]);
 
+    if (loanRes.branchId) {
+      setComboProductOptions(
+        selectBoxOptions(
+          new DataSource(getActiveProductByBranch(loanRes.branchId)),
+          "Select product"
+        )
+      );
+    }
+    if(loanRes.productId){
+      setDisableField(false);
+    }
+    setLoanTerm(selectBoxOptions(new DataSource(loanTermStore(idData)), "Pilih term"));
+    
     const map = {
+      productId: loanRes.productId,
       amount: loanRes.loanAmount,
       termId: loanRes.loanTermId,
       bankId: loanRes.bankId,
@@ -99,6 +117,7 @@ export default function Step1Page() {
       monthlyIncome: loanRes.monthlyIncome,
       commodityId: commodityRes?.type?.id ?? ""
     };
+    
     setOnboardingLoan(map);
     if (typeof loanRes?.bankCheck !== "undefined") {
       setDisableButtonNext(!loanRes.bankCheck);
@@ -122,8 +141,7 @@ export default function Step1Page() {
       commodityId: ""
     });
   }, [loanapp]);
-
-  const loanTerm = selectBoxOptions(new DataSource(loanTermStore(idData)), "Pilih term");
+  
   const listBank = selectBoxOptions(new DataSource(getListBank), "Pilih bank");
   const listLoanPurpose = selectBoxOptions(new DataSource(getLoanPurpose), "Pilih tujuan pinjaman");
   const listCommodity = selectBoxOptions(new DataSource(getListCommodity), "Pilih commodity");
@@ -191,6 +209,17 @@ export default function Step1Page() {
 
   const onFieldDataChanged = (evt: any) => {
     const { dataField, value } = evt;
+    if (dataField === "productId" && value != null) {
+      changeProduct({
+        appId: idData,
+        productId: value
+      }).then((res) => {
+        setLoanTerm(selectBoxOptions(new DataSource(res), "Pilih term"));
+        setDisableField(false);
+      });
+      return;
+    }
+
     onboardingLoan[dataField] = value;
   };
 
@@ -315,13 +344,25 @@ export default function Step1Page() {
             validationGroup="loanAppStep1"
             onFieldDataChanged={onFieldDataChanged}
           >
+            <GroupItem colCount={2} cssClass={"dx-card responsive-paddings next-card"}>
+              <SimpleItem
+                colSpan={1}
+                dataField="productId"
+                label={{ text: "Product" }}
+                editorType="dxSelectBox"
+                editorOptions={productComboOptions}
+              >
+                <RequiredRule message="Product is required" />
+              </SimpleItem>
+            </GroupItem>
             <GroupItem colSpan={2} cssClass={"dx-card responsive-paddings next-card"}>
               <GroupItem caption="Pengajuan" colCount={2}>
                 <SimpleItem
                   dataField="amount"
                   label={{ text: "Jumlah Pinjaman" }}
                   editorType="dxNumberBox"
-                  editorOptions={{ format: "Rp #,##0.00" }}
+                  editorOptions={{ format: "Rp #,##0.00", disabled: disableField}}
+                  
                 >
                   <RequiredRule message="Jumlah Pinjaman is required" />
                   <PatternRule message="hanya angka" pattern={/^[0-9]+$/} />
@@ -329,7 +370,7 @@ export default function Step1Page() {
                 <SimpleItem
                   dataField="termId"
                   editorType="dxSelectBox"
-                  editorOptions={loanTerm}
+                  editorOptions={{...loanTerm, disabled: disableField}}
                   label={{ text: "Jangka waktu" }}
                 >
                   <RequiredRule message="Jangka waktu wajib diisi" />
