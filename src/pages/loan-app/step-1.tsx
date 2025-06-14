@@ -19,10 +19,10 @@ import { useNavigate } from "react-router";
 import { useLocation } from "react-router-dom";
 import SockJS from "sockjs-client";
 import {
-  bankCheckValid,
+  bankCheckValid, changeProduct,
   createAppLoanOnboardingStep1,
   createCommodity,
-  detailAppLoan,
+  detailAppLoan, getActiveProductByBranch,
   getDetailCommodity,
   getListBank,
   getListCommodity,
@@ -62,7 +62,8 @@ export default function Step1Page() {
   const [isShowPopupMessage, setShowPopupMessage] = useState(false);
   const [popupMessage, setPopupMessage] = useState("");
   const [url, setUrl] = useState("");
-
+  const [productComboOptions, setComboProductOptions] = useState<any>({});
+  
   const handleCheckBankAccount = (e: any) => {
     console.log("handle check bank account ", e, onboardingLoan);
     if (typeof onboardingLoan.bankId === "undefined") {
@@ -89,7 +90,13 @@ export default function Step1Page() {
       detailAppLoan(idData),
       getDetailCommodity(idData)
     ]);
-
+    
+    if (loanRes.branchId) {
+      setComboProductOptions(
+          selectBoxOptions(new DataSource(getActiveProductByBranch(loanRes.branchId)), "Select product")
+      );
+    }
+    
     const map = {
       amount: loanRes.loanAmount,
       termId: loanRes.loanTermId,
@@ -97,7 +104,8 @@ export default function Step1Page() {
       bankAccNumber: loanRes.bankAccNumber,
       purposeId: loanRes.loanPurposeId,
       monthlyIncome: loanRes.monthlyIncome,
-      commodityId: commodityRes?.type?.id ?? ""
+      commodityId: commodityRes?.type?.id ?? "",
+      branchId: loanRes?.branchId ?? ""
     };
     setOnboardingLoan(map);
     if (typeof loanRes?.bankCheck !== "undefined") {
@@ -119,7 +127,8 @@ export default function Step1Page() {
       bankAccNumber: loanapp.loanappStep1.bankAccNumber,
       purposeId: loanapp.loanappStep1.purposeId,
       monthlyIncome: loanapp.loanappStep1.monthlyIncome,
-      commodityId: ""
+      commodityId: "",
+      branchId: ""
     });
   }, [loanapp]);
 
@@ -191,6 +200,13 @@ export default function Step1Page() {
 
   const onFieldDataChanged = (evt: any) => {
     const { dataField, value } = evt;
+    if (dataField === "productId" && value != null) {
+      changeProduct({
+        appId: idData,
+        productId: value
+      }).then(console.log);
+    }
+    
     onboardingLoan[dataField] = value;
   };
 
@@ -317,6 +333,15 @@ export default function Step1Page() {
           >
             <GroupItem colSpan={2} cssClass={"dx-card responsive-paddings next-card"}>
               <GroupItem caption="Pengajuan" colCount={2}>
+                <SimpleItem
+                    dataField="productId"
+                    label={{ text: "Product" }}
+                    editorType="dxSelectBox"
+                    editorOptions={productComboOptions}
+                >
+                  <RequiredRule message="Product is required" />
+                </SimpleItem>
+                <SimpleItem>&nbsp;</SimpleItem>
                 <SimpleItem
                   dataField="amount"
                   label={{ text: "Jumlah Pinjaman" }}
