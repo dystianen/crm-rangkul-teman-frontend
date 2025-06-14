@@ -29,7 +29,7 @@ import {
   getListBank,
   getListCommodity,
   getLoanPurpose,
-  getUnsignedDoc,
+  getUnsignedDoc, loanTermStore,
   processCancel
 } from "src/api/apploan";
 import { selectBoxOptions } from "src/api/contact";
@@ -50,6 +50,7 @@ export default function Step1Page() {
   const location = useLocation();
   const { id } = queryString.parse(location.search);
   const idData = id as string;
+  const [disableField, setDisableField] = useState(true);
   const [onboardingLoan, setOnboardingLoan] = useState<AppLoanOnboardingStep1Request>(
     initLoanOnboardingStep1Value
   );
@@ -101,7 +102,11 @@ export default function Step1Page() {
         )
       );
     }
-
+    if(loanRes.productId){
+      setDisableField(false);
+    }
+    setLoanTerm(selectBoxOptions(new DataSource(loanTermStore(idData)), "Pilih term"));
+    
     const map = {
       productId: loanRes.productId,
       amount: loanRes.loanAmount,
@@ -110,16 +115,9 @@ export default function Step1Page() {
       bankAccNumber: loanRes.bankAccNumber,
       purposeId: loanRes.loanPurposeId,
       monthlyIncome: loanRes.monthlyIncome,
-      commodityId: commodityRes?.type?.id ?? "",
-      branchId: loanRes?.branchId ?? ""
+      commodityId: commodityRes?.type?.id ?? ""
     };
-    changeProduct({
-      appId: idData,
-      productId: loanRes.productId
-    }).then((res) => {
-      setLoanTerm(selectBoxOptions(new DataSource(res), "Pilih term"));
-    });
-
+    
     setOnboardingLoan(map);
     if (typeof loanRes?.bankCheck !== "undefined") {
       setDisableButtonNext(!loanRes.bankCheck);
@@ -140,11 +138,10 @@ export default function Step1Page() {
       bankAccNumber: loanapp.loanappStep1.bankAccNumber,
       purposeId: loanapp.loanappStep1.purposeId,
       monthlyIncome: loanapp.loanappStep1.monthlyIncome,
-      commodityId: "",
-      branchId: ""
+      commodityId: ""
     });
   }, [loanapp]);
-
+  
   const listBank = selectBoxOptions(new DataSource(getListBank), "Pilih bank");
   const listLoanPurpose = selectBoxOptions(new DataSource(getLoanPurpose), "Pilih tujuan pinjaman");
   const listCommodity = selectBoxOptions(new DataSource(getListCommodity), "Pilih commodity");
@@ -217,8 +214,8 @@ export default function Step1Page() {
         appId: idData,
         productId: value
       }).then((res) => {
-        handleGetDetail();
         setLoanTerm(selectBoxOptions(new DataSource(res), "Pilih term"));
+        setDisableField(false);
       });
       return;
     }
@@ -364,8 +361,8 @@ export default function Step1Page() {
                   dataField="amount"
                   label={{ text: "Jumlah Pinjaman" }}
                   editorType="dxNumberBox"
-                  editorOptions={{ format: "Rp #,##0.00" }}
-                  disabled={onboardingLoan.produc}
+                  editorOptions={{ format: "Rp #,##0.00", disabled: disableField}}
+                  
                 >
                   <RequiredRule message="Jumlah Pinjaman is required" />
                   <PatternRule message="hanya angka" pattern={/^[0-9]+$/} />
@@ -373,7 +370,7 @@ export default function Step1Page() {
                 <SimpleItem
                   dataField="termId"
                   editorType="dxSelectBox"
-                  editorOptions={loanTerm}
+                  editorOptions={{...loanTerm, disabled: disableField}}
                   label={{ text: "Jangka waktu" }}
                 >
                   <RequiredRule message="Jangka waktu wajib diisi" />
