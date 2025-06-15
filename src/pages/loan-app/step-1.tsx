@@ -216,6 +216,10 @@ export default function Step1Page() {
       }).then((res) => {
         setLoanTerm(selectBoxOptions(new DataSource(res), "Pilih term"));
         setDisableField(false);
+        onboardingLoan["amount"] = 0;
+        onboardingLoan["termId"] = "";
+      }).catch((e) => {
+        notifyError(e?.message);
       });
       return;
     }
