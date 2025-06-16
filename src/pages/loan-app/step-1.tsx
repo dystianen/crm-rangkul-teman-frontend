@@ -50,6 +50,7 @@ export default function Step1Page() {
   const location = useLocation();
   const { id } = queryString.parse(location.search);
   const idData = id as string;
+  const [disableFieldProduct, setDisableFieldProduct] = useState<boolean>(true);
   const [disableField, setDisableField] = useState(true);
   const [onboardingLoan, setOnboardingLoan] = useState<AppLoanOnboardingStep1Request>(
     initLoanOnboardingStep1Value
@@ -102,9 +103,10 @@ export default function Step1Page() {
         )
       );
     }
-    if(loanRes.productId){
-      setDisableField(false);
-    }
+    
+    setDisableFieldProduct(!loanRes.isAllowedChange);
+    setDisableField(!loanRes.isAllowedChange && loanRes.productId);
+    
     setLoanTerm(selectBoxOptions(new DataSource(loanTermStore(idData)), "Pilih term"));
     
     const map = {
@@ -354,7 +356,7 @@ export default function Step1Page() {
                 dataField="productId"
                 label={{ text: "Product" }}
                 editorType="dxSelectBox"
-                editorOptions={productComboOptions}
+                editorOptions={{...productComboOptions, disabled: disableFieldProduct}}
               >
                 <RequiredRule message="Product is required" />
               </SimpleItem>
