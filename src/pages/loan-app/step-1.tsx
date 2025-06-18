@@ -23,7 +23,7 @@ import {
   changeProduct,
   createAppLoanOnboardingStep1,
   createCommodity,
-  detailAppLoan,
+  detailAppLoan, getActiveProductByApp,
   getActiveProductByBranch,
   getDetailCommodity,
   getListBank,
@@ -98,7 +98,7 @@ export default function Step1Page() {
     if (loanRes.branchId) {
       setComboProductOptions(
         selectBoxOptions(
-          new DataSource(getActiveProductByBranch(loanRes.branchId)),
+          new DataSource(getActiveProductByApp(loanRes.id)),
           "Select product"
         )
       );
@@ -215,12 +215,12 @@ export default function Step1Page() {
       changeProduct({
         appId: idData,
         productId: value
-      }).then((res) => {
+      }).then((res:any) => {
         setLoanTerm(selectBoxOptions(new DataSource(res), "Pilih term"));
         setDisableField(false);
         onboardingLoan["amount"] = 0;
         onboardingLoan["termId"] = "";
-      }).catch((e) => {
+      }).catch((e:any) => {
         notifyError(e?.message);
       });
       return;
