@@ -1,6 +1,7 @@
 import { Client } from "@stomp/stompjs";
-import { LoadIndicator, Popup } from "devextreme-react";
+import { DataGrid, LoadIndicator, Popup } from "devextreme-react";
 import { Button } from "devextreme-react/button";
+import { Column, Pager, Paging } from "devextreme-react/cjs/data-grid";
 import "devextreme-react/date-box";
 import "devextreme-react/file-uploader";
 import Form, {
@@ -23,14 +24,16 @@ import {
   changeProduct,
   createAppLoanOnboardingStep1,
   createCommodity,
-  detailAppLoan, getActiveProductByApp,
-  getActiveProductByBranch,
+  detailAppLoan,
+  getActiveProductByApp,
   getDetailCommodity,
   getListBank,
   getListCommodity,
   getLoanPurpose,
-  getUnsignedDoc, loanTermStore,
-  processCancel
+  getUnsignedDoc,
+  loanTermStore,
+  processCancel,
+  productCalculate
 } from "src/api/apploan";
 import { selectBoxOptions } from "src/api/contact";
 import Loader from "src/components/loader";
@@ -43,6 +46,7 @@ import { store } from "src/store/store";
 import { notifyError, notifySuccess, notifyWarning } from "../../utils/devExtremeUtils";
 import { ApprovalHistory } from "../approval1-app/ApprovalHistory";
 import "./loan-app.scss";
+import LoanDetailsAccordion from "./LoanDetailsAccordion";
 
 export default function Step1Page() {
   const navigate = useNavigate();
@@ -67,6 +71,9 @@ export default function Step1Page() {
   const [url, setUrl] = useState("");
   const [productComboOptions, setComboProductOptions] = useState<any>({});
   const [loanTerm, setLoanTerm] = useState({});
+  const [summaryList, setSummaryList] = useState([]);
+  const [installment, setInstallment] = useState([]);
+  const [isAccordionOpen, setIsAccordionOpen] = useState(false);
 
   const handleCheckBankAccount = (e: any) => {
     console.log("handle check bank account ", e, onboardingLoan);
@@ -89,6 +96,22 @@ export default function Step1Page() {
     sendBankCheck();
   };
 
+  const handleCalculate = useCallback((loanApp: AppLoanOnboardingStep1Request) => {
+    const { productId, amount, termId } = loanApp;
+    if (productId && amount && termId) {
+      const payload = {
+        productId,
+        amountToReceive: amount,
+        termId
+      };
+      productCalculate(payload).then((res) => {
+        console.log({ res });
+        setSummaryList(res.summary.summaryList);
+        setInstallment(res.installment);
+      });
+    }
+  }, []);
+
   const handleGetDetail = useCallback(async () => {
     const [loanRes, commodityRes] = await Promise.all([
       detailAppLoan(idData),
@@ -97,18 +120,15 @@ export default function Step1Page() {
 
     if (loanRes.branchId) {
       setComboProductOptions(
-        selectBoxOptions(
-          new DataSource(getActiveProductByApp(loanRes.id)),
-          "Select product"
-        )
+        selectBoxOptions(new DataSource(getActiveProductByApp(loanRes.id)), "Select product")
       );
     }
-    
+
     setDisableFieldProduct(!loanRes.isAllowedChange);
     setDisableField(!loanRes.isAllowedChange && loanRes.productId);
-    
+
     setLoanTerm(selectBoxOptions(new DataSource(loanTermStore(idData)), "Pilih term"));
-    
+
     const map = {
       productId: loanRes.productId,
       amount: loanRes.loanAmount,
@@ -119,14 +139,15 @@ export default function Step1Page() {
       monthlyIncome: loanRes.monthlyIncome,
       commodityId: commodityRes?.type?.id ?? ""
     };
-    
+
+    handleCalculate(map);
     setOnboardingLoan(map);
     if (typeof loanRes?.bankCheck !== "undefined") {
       setDisableButtonNext(!loanRes.bankCheck);
     } else {
       setDisableButtonNext(true);
     }
-  }, [idData]);
+  }, [handleCalculate, idData]);
 
   useEffect(() => {
     handleGetDetail();
@@ -143,7 +164,7 @@ export default function Step1Page() {
       commodityId: ""
     });
   }, [loanapp]);
-  
+
   const listBank = selectBoxOptions(new DataSource(getListBank), "Pilih bank");
   const listLoanPurpose = selectBoxOptions(new DataSource(getLoanPurpose), "Pilih tujuan pinjaman");
   const listCommodity = selectBoxOptions(new DataSource(getListCommodity), "Pilih commodity");
@@ -215,17 +236,23 @@ export default function Step1Page() {
       changeProduct({
         appId: idData,
         productId: value
-      }).then((res:any) => {
-        setLoanTerm(selectBoxOptions(new DataSource(res), "Pilih term"));
-        setDisableField(false);
-        onboardingLoan["amount"] = 0;
-        onboardingLoan["termId"] = "";
-      }).catch((e:any) => {
-        notifyError(e?.message);
-      });
+      })
+        .then((res: any) => {
+          setLoanTerm(selectBoxOptions(new DataSource(res), "Pilih term"));
+          setDisableField(false);
+          onboardingLoan["amount"] = 0;
+          onboardingLoan["termId"] = "";
+          setSummaryList([]);
+          setInstallment([]);
+        })
+        .catch((e: any) => {
+          notifyError(e?.message);
+        });
       return;
     }
 
+    handleCalculate(onboardingLoan);
+    // @ts-expect-error
     onboardingLoan[dataField] = value;
   };
 
@@ -356,7 +383,7 @@ export default function Step1Page() {
                 dataField="productId"
                 label={{ text: "Product" }}
                 editorType="dxSelectBox"
-                editorOptions={{...productComboOptions, disabled: disableFieldProduct}}
+                editorOptions={{ ...productComboOptions, disabled: disableFieldProduct }}
               >
                 <RequiredRule message="Product is required" />
               </SimpleItem>
@@ -365,10 +392,9 @@ export default function Step1Page() {
               <GroupItem caption="Pengajuan" colCount={2}>
                 <SimpleItem
                   dataField="amount"
-                  label={{ text: "Jumlah Pinjaman" }}
+                  label={{ text: "Jumlah Diterima" }}
                   editorType="dxNumberBox"
-                  editorOptions={{ format: "Rp #,##0.00", disabled: disableField}}
-                  
+                  editorOptions={{ format: "Rp #,##0.00", disabled: disableField }}
                 >
                   <RequiredRule message="Jumlah Pinjaman is required" />
                   <PatternRule message="hanya angka" pattern={/^[0-9]+$/} />
@@ -376,7 +402,7 @@ export default function Step1Page() {
                 <SimpleItem
                   dataField="termId"
                   editorType="dxSelectBox"
-                  editorOptions={{...loanTerm, disabled: disableField}}
+                  editorOptions={{ ...loanTerm, disabled: disableField }}
                   label={{ text: "Jangka waktu" }}
                 >
                   <RequiredRule message="Jangka waktu wajib diisi" />
@@ -450,6 +476,70 @@ export default function Step1Page() {
                   <RequiredRule message="Commodity wajib diisi" />
                 </SimpleItem>
               </GroupItem>
+            </GroupItem>
+
+            <GroupItem visible={!disableFieldProduct} colSpan={2} cssClass={"p-0"}>
+              <LoanDetailsAccordion
+                isOpen={isAccordionOpen}
+                onToggle={() => setIsAccordionOpen((prev) => !prev)}
+              >
+                <Form>
+                  <GroupItem caption="Detail Pinjaman">
+                    <DataGrid
+                      dataSource={summaryList}
+                      focusedRowEnabled={true}
+                      remoteOperations={false}
+                      columnAutoWidth={true}
+                      wordWrapEnabled={false}
+                      showBorders={true}
+                      dateSerializationFormat={"yyyy-MM-ddTHH:mm:ss.SSSxxx"}
+                      repaintChangesOnly={true}
+                      keyExpr={"name"}
+                    >
+                      <Column dataField={"name"} caption={"Name"} />
+                      <Column dataField={"value"} caption={"Value"} />
+
+                      <Paging defaultPageSize={50} />
+                      <Pager
+                        showPageSizeSelector={true}
+                        showInfo={true}
+                        allowedPageSizes={[10, 50, 100]}
+                      />
+                    </DataGrid>
+                  </GroupItem>
+
+                  <GroupItem caption="Jadwal Pembayaran">
+                    <DataGrid
+                      dataSource={installment}
+                      focusedRowEnabled={true}
+                      remoteOperations={false}
+                      columnAutoWidth={true}
+                      wordWrapEnabled={false}
+                      showBorders={true}
+                      dateSerializationFormat={"yyyy-MM-ddTHH:mm:ss.SSSxxx"}
+                      repaintChangesOnly={true}
+                      keyExpr={"seqNum"}
+                    >
+                      <Column
+                        alignment={"center"}
+                        dataField={"seqNum"}
+                        caption={"No."}
+                        width={100}
+                        sortOrder={"asc"}
+                      />
+                      <Column dataField={"dueDate"} caption={"Jatuh Tempo"} />
+                      <Column dataField={"amount"} caption={"Jumlah"} />
+
+                      <Paging defaultPageSize={50} />
+                      <Pager
+                        showPageSizeSelector={true}
+                        showInfo={true}
+                        allowedPageSizes={[10, 50, 100]}
+                      />
+                    </DataGrid>
+                  </GroupItem>
+                </Form>
+              </LoanDetailsAccordion>
             </GroupItem>
 
             <GroupItem colSpan={2} cssClass={"dx-card responsive-paddings next-card"}>
