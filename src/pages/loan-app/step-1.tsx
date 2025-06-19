@@ -490,74 +490,76 @@ export default function Step1Page() {
                 onToggle={() => setIsAccordionOpen((prev) => !prev)}
               >
                 <Form>
-                  <GroupItem caption="Detail Pinjaman">
-                    <DataGrid
-                      dataSource={summaryList}
-                      focusedRowEnabled={true}
-                      remoteOperations={false}
-                      columnAutoWidth={true}
-                      wordWrapEnabled={false}
-                      showBorders={true}
-                      dateSerializationFormat={"yyyy-MM-ddTHH:mm:ss.SSSxxx"}
-                      repaintChangesOnly={true}
-                      keyExpr={"name"}
-                    >
-                      <Column dataField={"name"} caption={"Parameter name"} width={200} />
-                      <Column dataField={"value"} caption={"Parameter value"} />
+                  <GroupItem colCount={2}>
+                    <GroupItem caption="Detail Pinjaman">
+                      <DataGrid
+                        dataSource={summaryList}
+                        focusedRowEnabled={true}
+                        remoteOperations={false}
+                        columnAutoWidth={true}
+                        wordWrapEnabled={false}
+                        showBorders={true}
+                        dateSerializationFormat={"yyyy-MM-ddTHH:mm:ss.SSSxxx"}
+                        repaintChangesOnly={true}
+                        keyExpr={"name"}
+                      >
+                        <Column dataField={"name"} caption={"Parameter name"} width={200} />
+                        <Column dataField={"value"} caption={"Parameter value"} />
 
-                      <Paging defaultPageSize={50} />
-                      <Pager
-                        showPageSizeSelector={true}
-                        showInfo={true}
-                        allowedPageSizes={[10, 50, 100]}
-                      />
-                    </DataGrid>
-                  </GroupItem>
+                        <Paging defaultPageSize={50} />
+                        <Pager
+                          showPageSizeSelector={true}
+                          showInfo={true}
+                          allowedPageSizes={[10, 50, 100]}
+                        />
+                      </DataGrid>
+                    </GroupItem>
 
-                  <GroupItem caption="Jadwal Pembayaran">
-                    <DataGrid
-                      dataSource={installment}
-                      focusedRowEnabled={true}
-                      remoteOperations={false}
-                      columnAutoWidth={true}
-                      wordWrapEnabled={false}
-                      showBorders={true}
-                      dateSerializationFormat={"yyyy-MM-ddTHH:mm:ss.SSSxxx"}
-                      repaintChangesOnly={true}
-                      keyExpr={"seqNum"}
-                    >
-                      <Column
-                        alignment={"center"}
-                        dataField={"seqNum"}
-                        caption={"No."}
-                        width={100}
-                        sortOrder={"asc"}
-                      />
-                      <Column
-                        dataField={"dueDate"}
-                        width={120}
-                        caption={"Jatuh Tempo"}
-                        dataType={"date"}
-                        format={"dd MMM yyyy"}
-                        calculateFilterExpression={calculateFilterExpressionCustom}
-                        filterOperations={filterOperation.date}
-                      />
-                      <Column
-                        dataField={"amount"}
-                        width={200}
-                        caption={"Jumlah"}
-                        filterOperations={filterOperation.numeric}
-                        format="Rp #,##0.00"
-                      />
-                      <Column dataField={""} caption={""} />
+                    <GroupItem caption="Jadwal Pembayaran">
+                      <DataGrid
+                        dataSource={installment}
+                        focusedRowEnabled={true}
+                        remoteOperations={false}
+                        columnAutoWidth={true}
+                        wordWrapEnabled={false}
+                        showBorders={true}
+                        dateSerializationFormat={"yyyy-MM-ddTHH:mm:ss.SSSxxx"}
+                        repaintChangesOnly={true}
+                        keyExpr={"seqNum"}
+                      >
+                        <Column
+                          alignment={"center"}
+                          dataField={"seqNum"}
+                          caption={"No."}
+                          width={100}
+                          sortOrder={"asc"}
+                        />
+                        <Column
+                          dataField={"dueDate"}
+                          width={200}
+                          caption={"Jatuh Tempo"}
+                          dataType={"date"}
+                          format={"dd MMM yyyy"}
+                          calculateFilterExpression={calculateFilterExpressionCustom}
+                          filterOperations={filterOperation.date}
+                        />
+                        <Column
+                          dataField={"amount"}
+                          width={200}
+                          caption={"Jumlah"}
+                          filterOperations={filterOperation.numeric}
+                          format="Rp #,##0.00"
+                        />
+                        <Column dataField={""} caption={""} />
 
-                      <Paging defaultPageSize={50} />
-                      <Pager
-                        showPageSizeSelector={true}
-                        showInfo={true}
-                        allowedPageSizes={[10, 50, 100]}
-                      />
-                    </DataGrid>
+                        <Paging defaultPageSize={50} />
+                        <Pager
+                          showPageSizeSelector={true}
+                          showInfo={true}
+                          allowedPageSizes={[10, 50, 100]}
+                        />
+                      </DataGrid>
+                    </GroupItem>
                   </GroupItem>
                 </Form>
               </LoanDetailsAccordion>
