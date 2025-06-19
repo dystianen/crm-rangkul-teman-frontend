@@ -31,6 +31,7 @@ export interface AppLoanOnboardingRequest {
 }
 
 export interface AppLoanOnboardingStep1Request {
+    productId?: string;
     amount: number;
     termId: string;
     bankId: string;
