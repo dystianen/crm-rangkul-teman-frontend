@@ -10,7 +10,7 @@ interface LoanDetailsAccordionProps {
 
 const LoanDetailsAccordion: React.FC<LoanDetailsAccordionProps> = ({
   children,
-  title = "Loan Details",
+  title = "Kalkulator Pinjaman",
   isOpen,
   onToggle
 }) => {
