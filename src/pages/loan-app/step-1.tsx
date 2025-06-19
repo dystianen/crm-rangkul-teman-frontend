@@ -38,12 +38,18 @@ import {
 import { selectBoxOptions } from "src/api/contact";
 import Loader from "src/components/loader";
 import PopupMessage from "src/components/popup-message";
+import { filterOperation } from "src/constants/FilterOperation";
 import {
   AppLoanOnboardingStep1Request,
   initLoanOnboardingStep1Value
 } from "src/interfaces/appLoanOnboarding";
 import { store } from "src/store/store";
-import { notifyError, notifySuccess, notifyWarning } from "../../utils/devExtremeUtils";
+import {
+  calculateFilterExpressionCustom,
+  notifyError,
+  notifySuccess,
+  notifyWarning
+} from "../../utils/devExtremeUtils";
 import { ApprovalHistory } from "../approval1-app/ApprovalHistory";
 import "./loan-app.scss";
 import LoanDetailsAccordion from "./LoanDetailsAccordion";
@@ -496,8 +502,8 @@ export default function Step1Page() {
                       repaintChangesOnly={true}
                       keyExpr={"name"}
                     >
-                      <Column dataField={"name"} caption={"Name"} />
-                      <Column dataField={"value"} caption={"Value"} />
+                      <Column dataField={"name"} caption={"Parameter name"} width={200} />
+                      <Column dataField={"value"} caption={"Parameter value"} />
 
                       <Paging defaultPageSize={50} />
                       <Pager
@@ -527,8 +533,23 @@ export default function Step1Page() {
                         width={100}
                         sortOrder={"asc"}
                       />
-                      <Column dataField={"dueDate"} caption={"Jatuh Tempo"} />
-                      <Column dataField={"amount"} caption={"Jumlah"} />
+                      <Column
+                        dataField={"dueDate"}
+                        width={120}
+                        caption={"Jatuh Tempo"}
+                        dataType={"date"}
+                        format={"dd MMM yyyy"}
+                        calculateFilterExpression={calculateFilterExpressionCustom}
+                        filterOperations={filterOperation.date}
+                      />
+                      <Column
+                        dataField={"amount"}
+                        width={200}
+                        caption={"Jumlah"}
+                        filterOperations={filterOperation.numeric}
+                        format="Rp #,##0.00"
+                      />
+                      <Column dataField={""} caption={""} />
 
                       <Paging defaultPageSize={50} />
                       <Pager
