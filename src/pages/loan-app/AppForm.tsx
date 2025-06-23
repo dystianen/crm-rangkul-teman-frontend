@@ -196,6 +196,18 @@ export const AppForm: FC<any> = ({ detail }) => {
               editorType="dxNumberBox"
               editorOptions={{ format: "Rp #,##0.00" }}
             />
+            <SimpleItem
+              dataField="outcomeProved"
+              label={{ text: "Pengeluaran (Dibuktikan)" }}
+              editorType="dxNumberBox"
+              editorOptions={{ format: "Rp #,##0.00" }}
+            />
+            <SimpleItem
+              dataField="incomeProved"
+              label={{ text: "Pemasukan (Dibuktikan)" }}
+              editorType="dxNumberBox"
+              editorOptions={{ format: "Rp #,##0.00" }}
+            />
           </GroupItem>
 
           {incomeProof && (
