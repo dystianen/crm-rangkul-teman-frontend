@@ -27,11 +27,11 @@ export interface AppLoanRequest {
 
 export interface AppLoanOnboardingRequest {
     branchId?: string;
-    productId: string;
     contactIdentity: string;
 }
 
 export interface AppLoanOnboardingStep1Request {
+    productId?: string;
     amount: number;
     termId: string;
     bankId: string;
@@ -111,7 +111,6 @@ export const initLoanIncomeProofValue: AppLoanIncomeProofRequest = {
 };
 
 export const initLoanOnboardingValue: AppLoanOnboardingRequest = {
-    productId: "",
     contactIdentity: "",
 };
 

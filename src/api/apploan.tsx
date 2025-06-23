@@ -180,6 +180,14 @@ export const getActiveBranchByUserStore = dataRawCustomStore(`/api/data/branch/u
 export const getActiveProductByBranch = (branchId: string) =>
   dataRawCustomStore(`/api/product/${branchId}?`);
 
+export const getActiveProductByApp = (appId: string) =>
+  dataRawCustomStore(`/api/product/app/${appId}?`);
+
+export const changeProduct = async (payload: any): Promise<any> => {
+  const resp = await ajaxPost(`/api/product/change`, payload);
+  return resp.data;
+};
+
 export const getActiveProductStore = dataRawCustomStore(`/api/product/list?`);
 
 export const loanTermStore = (appId: string) =>
@@ -291,4 +299,13 @@ export const getDetailCommodity = async (id: string): Promise<TResCommodityDetai
 export const createCommodity = async (id: string, payload: { typeId: string }): Promise<any> => {
   const resp = await ajaxPost(`${API_PATH.CONTACT}/commodity/${id}`, payload);
   return resp.data;
+};
+
+export const productCalculate = async (payload: {
+  productId: string;
+  amountToReceive: number;
+  termId: string;
+}): Promise<any> => {
+  const resp = await ajaxPost("api/product/calc", payload);
+  return resp;
 };

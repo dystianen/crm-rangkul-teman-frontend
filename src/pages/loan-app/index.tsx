@@ -13,10 +13,9 @@ import {
   createAppLoanOnboarding,
   detailAppStep,
   getActiveBranchByUserStore,
-  getActiveProductByBranch,
   getQuickFilterListStore
 } from "src/api/apploan";
-import { selectBoxBranchOptions, selectBoxOptions, validateIdNumber } from "src/api/contact";
+import { selectBoxBranchOptions, validateIdNumber } from "src/api/contact";
 import { filterOperation } from "../../constants/FilterOperation";
 
 import { SelectBox, SelectBoxTypes } from "devextreme-react/select-box";
@@ -35,7 +34,12 @@ import { OnClickLink } from "../../components/alink";
 import { ApplicationStatus } from "../../components/application-status";
 import { backofficeAccess } from "../../constants/variableConstata";
 import { useAuth } from "../../contexts/auth";
-import {calculateFilterExpressionCustom, confirmNotify, notifyError, notifySuccess} from "../../utils/devExtremeUtils";
+import {
+  calculateFilterExpressionCustom,
+  confirmNotify,
+  notifyError,
+  notifySuccess
+} from "../../utils/devExtremeUtils";
 import "./loan-app.scss";
 
 export default function Index() {
@@ -44,7 +48,6 @@ export default function Index() {
   const formRef = useRef<Form>(null);
   const dataGrid = useRef<DataGrid>(null);
   const [popupVisible, setPopupVisible] = React.useState(false);
-  const [productComboOptions, setComboProductOptions] = useState<any>({});
   const [loanAppOnboarding, setLoanAppOnboarding] =
     useState<AppLoanOnboardingRequest>(initLoanOnboardingValue);
   const [isPengajuanVisible, setPengajuanVisible] = useState<boolean>(false);
@@ -76,12 +79,6 @@ export default function Index() {
   };
 
   const onFieldDataChanged = (evt: any) => {
-    if (evt.dataField === "branchId" && evt.value != null) {
-      setComboProductOptions(
-        selectBoxOptions(new DataSource(getActiveProductByBranch(evt.value)), "Select product")
-      );
-    }
-
     loanAppOnboarding[evt.dataField] = evt.value;
   };
 
@@ -100,7 +97,7 @@ export default function Index() {
             navigate(`/loan-app/create/step/1/?id=${res.appId}&autoNext=false`);
           } else {
             navigate(
-              `/contact/edit?id=${res.contactId}&ktp=${request.contactIdentity}&branchId=${request.branchId}&productId=${request.productId}&backTo=step1`
+              `/contact/edit?id=${res.contactId}&ktp=${request.contactIdentity}&branchId=${request.branchId}&backTo=step1`
             );
           }
         }
@@ -441,14 +438,6 @@ export default function Index() {
               editorOptions={getBranchByUser}
             >
               <RequiredRule message="Branch is required" />
-            </SimpleItem>
-            <SimpleItem
-              dataField="productId"
-              label={{ text: "Product" }}
-              editorType="dxSelectBox"
-              editorOptions={productComboOptions}
-            >
-              <RequiredRule message="Product is required" />
             </SimpleItem>
             <SimpleItem
               dataField="contactIdentity"
