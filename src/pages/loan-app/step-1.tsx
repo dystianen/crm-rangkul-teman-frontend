@@ -492,7 +492,7 @@ export default function Step1Page() {
                 onToggle={() => setIsAccordionOpen((prev) => !prev)}
               >
                 <Form>
-                  <GroupItem colCount={2}>
+                  <GroupItem>
                     <GroupItem caption="Detail Pinjaman">
                       <DataGrid
                         dataSource={summaryList}
