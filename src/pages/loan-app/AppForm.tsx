@@ -177,36 +177,40 @@ export const AppForm: FC<any> = ({ detail }) => {
               dataField="monthlyIncome"
               label={{ text: "Penghasilan perbulan" }}
               editorType="dxNumberBox"
-              editorOptions={{ format: "Rp #,##0.00" }}
+              editorOptions={{
+                readOnly: true,
+                format: "Rp #,##0.00"
+              }}
             />
             <SimpleItem
               dataField="handwrittenSalesBook"
               label={{ text: "Handwritten Sales book" }}
               editorType="dxCheckBox"
+              editorOptions={{ readOnly: true }}
             />
             <SimpleItem
               dataField="debitTransaction"
               label={{ text: "Debit Transaksi" }}
               editorType="dxNumberBox"
-              editorOptions={{ format: "Rp #,##0.00" }}
+              editorOptions={{ readOnly: true, format: "Rp #,##0.00" }}
             />
             <SimpleItem
               dataField="creditTransaction"
               label={{ text: "Kredit Transaksi" }}
               editorType="dxNumberBox"
-              editorOptions={{ format: "Rp #,##0.00" }}
+              editorOptions={{ readOnly: true, format: "Rp #,##0.00" }}
             />
             <SimpleItem
               dataField="outcomeProved"
               label={{ text: "Pengeluaran (Dibuktikan)" }}
               editorType="dxNumberBox"
-              editorOptions={{ format: "Rp #,##0.00" }}
+              editorOptions={{ readOnly: true, format: "Rp #,##0.00" }}
             />
             <SimpleItem
               dataField="incomeProved"
               label={{ text: "Pemasukan (Dibuktikan)" }}
               editorType="dxNumberBox"
-              editorOptions={{ format: "Rp #,##0.00" }}
+              editorOptions={{ readOnly: true, format: "Rp #,##0.00" }}
             />
           </GroupItem>
 
