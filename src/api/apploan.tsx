@@ -309,3 +309,12 @@ export const productCalculate = async (payload: {
   const resp = await ajaxPost("api/product/calc", payload);
   return resp;
 };
+
+export const getAssignVerificator = dataRawCustomStore(`${API_PATH.APPLICATION}/data/verificator?`);
+export const submitAssignVerificator = async (payload: {
+  appId: string;
+  verifiedBy: string;
+}): Promise<any> => {
+  const resp = await ajaxPost(`${API_PATH.APPLICATION}/assign`, payload);
+  return resp.data;
+};
