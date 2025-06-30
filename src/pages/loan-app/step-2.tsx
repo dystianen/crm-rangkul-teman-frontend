@@ -105,7 +105,7 @@ export default function Step2Page() {
   });
 
   const listAssignVerificator = selectBoxOptions(
-    new DataSource(getAssignVerificator),
+    new DataSource(getAssignVerificator(ID)),
     "Select verificator"
   );
 
@@ -298,7 +298,7 @@ export default function Step2Page() {
 
     const payload = {
       appId: ID,
-      verifiedBy: assignVerificator.verifiedBy
+      assignTo: assignVerificator.verifiedBy
     };
 
     submitAssignVerificator(payload)
