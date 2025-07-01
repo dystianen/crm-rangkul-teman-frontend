@@ -48,12 +48,12 @@ export default function PreviewPage() {
           getDetailCommodity(appId)
         ]);
 
-        const isIncomplete = appStatusIncomplete.includes(loanRes.statusId);
-
-        if (!isIncomplete) {
-          navigate("/loan-app");
-          return;
-        }
+        // const isIncomplete = appStatusIncomplete.includes(loanRes.statusId);
+        //
+        // if (!isIncomplete) {
+        //   navigate("/loan-app");
+        //   return;
+        // }
 
         setLoanApp({
           ...loanRes,
