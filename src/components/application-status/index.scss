@@ -62,13 +62,16 @@
   color: #ffffff;
 }
 
-.status-canceled {
-}
 .status-toverify {
   background: #cad710;
   color: #ffffff;
 }
 .status-unsignedchanges {
   background: #d78110;
+  color: #ffffff;
+}
+
+.status-waitingfordocuments {
+  background: #ff7700;
   color: #ffffff;
 }

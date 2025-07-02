@@ -17,6 +17,7 @@ import Form, {
   RequiredRule,
   SimpleItem
 } from "devextreme-react/form";
+import DataSource from "devextreme/data/data_source";
 import notify from "devextreme/ui/notify";
 import queryString from "query-string";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -30,8 +31,11 @@ import {
   detailAppLoan,
   fetchCheckPartial,
   fetchStep2Activity,
-  getSignedDoc
+  getAssignVerificator,
+  getSignedDoc,
+  submitAssignVerificator
 } from "src/api/apploan";
+import { selectBoxOptions } from "src/api/contact";
 import BusinessAddress from "src/components/loan-app/BusinessAddress";
 import DocumentCard from "src/components/loan-app/DocumentCard";
 import FamilyCard from "src/components/loan-app/FamilyCard";
@@ -40,7 +44,7 @@ import PreviewFile from "src/components/loan-app/PreviewFile";
 import SellingQuestions from "src/components/loan-app/SellingQuestions";
 import StreetShop from "src/components/loan-app/StreetShop";
 import PopupMessage from "src/components/popup-message";
-import { notifySuccess } from "src/utils/devExtremeUtils";
+import { notifyError, notifySuccess } from "src/utils/devExtremeUtils";
 import { getFileBase64 } from "../../api/helper";
 import { ApprovalHistory } from "../approval1-app/ApprovalHistory";
 import "./loan-app.scss";
@@ -77,6 +81,8 @@ export default function Step2Page() {
   const [fileType, setFileType] = useState<string>("");
   const [dataGrid, setDataGrid] = useState<any[]>([]);
   const formRef = useRef<Form>(null);
+  const formAssignVerificatorRef = useRef<Form>(null);
+
   const [onStep2Loan, setOnStep2Loan] = useState<TLoanApp>({
     monthlyIncome: 0,
     handwrittenSalesBook: false,
@@ -93,6 +99,15 @@ export default function Step2Page() {
   const [isShowPopupMessage, setShowPopupMessage] = useState(false);
   const [popupMessage, setPopupMessage] = useState("");
   const [visibleSection, setVisibleSection] = useState<VisibleSection>([]);
+  const [popupVisibleAssignVerificator, setPopupVisibleAssignVerificator] = useState(false);
+  const [assignVerificator, setAssignVerificator] = useState<{ verifiedBy: string }>({
+    verifiedBy: ""
+  });
+
+  const listAssignVerificator = selectBoxOptions(
+    new DataSource(getAssignVerificator(ID)),
+    "Select verificator"
+  );
 
   const detailLoanApp = useCallback(async (appId: any) => {
     setLoadingPage(true);
@@ -119,6 +134,12 @@ export default function Step2Page() {
         creditTransaction: data.creditTransaction,
         incomeProved: data.incomeProved,
         outcomeProved: data.outcomeProved
+      });
+    }
+
+    if (data.verifiedBy) {
+      setAssignVerificator({
+        verifiedBy: data.verifiedBy
       });
     }
 
@@ -262,6 +283,36 @@ export default function Step2Page() {
     onStep2Loan[evt.dataField] = evt.value;
   };
 
+  const onFieldDataVerificatorChanged = (evt: any) => {
+    setAssignVerificator({
+      verifiedBy: evt.value
+    });
+  };
+
+  const handleAssignVerificator = (e: any) => {
+    e.preventDefault();
+
+    const form = formRef.current!.instance;
+    const { isValid } = form.validate();
+    if (!isValid) return;
+
+    const payload = {
+      appId: ID,
+      assignTo: assignVerificator.verifiedBy
+    };
+
+    submitAssignVerificator(payload)
+      .then((res) => {
+        console.log({ res });
+        notifySuccess("Assign verificator successfully");
+        navigate("/loan-app");
+        form.clear();
+      })
+      .catch((err) => {
+        notifyError(err);
+      });
+  };
+
   const handleConfirmPopupMessage = useCallback(() => {
     navigate("/loan-app");
   }, [navigate]);
@@ -364,6 +415,10 @@ export default function Step2Page() {
 
               if (e.itemData === "Reject") {
                 setShowPopupReject(true);
+              }
+
+              if (e.itemData === "Assign Verificator") {
+                setPopupVisibleAssignVerificator(true);
               }
             }}
             width={230}
@@ -501,6 +556,47 @@ export default function Step2Page() {
         message={popupMessage}
         handleConfirm={handleConfirmPopupMessage}
       />
+
+      <Popup
+        width={360}
+        height={200}
+        visible={popupVisibleAssignVerificator}
+        onHiding={() => setPopupVisibleAssignVerificator(false)}
+        hideOnOutsideClick={true}
+        showCloseButton={true}
+        title="Assign Verificator"
+      >
+        <form onSubmit={handleAssignVerificator}>
+          <Form
+            ref={formAssignVerificatorRef}
+            colCount={1}
+            id="form"
+            showColonAfterLabel={true}
+            showValidationSummary={false}
+            validationGroup="assignVerificator"
+            formData={assignVerificator}
+            onFieldDataChanged={onFieldDataVerificatorChanged}
+          >
+            <SimpleItem
+              dataField="verifiedBy"
+              editorType="dxSelectBox"
+              editorOptions={listAssignVerificator}
+              label={{ text: "Assign to" }}
+            >
+              <RequiredRule message="Assign to is required!" />
+            </SimpleItem>
+            <ButtonItem
+              horizontalAlignment="left"
+              buttonOptions={{
+                width: "100%",
+                text: "Submit",
+                type: "success",
+                useSubmitBehavior: true
+              }}
+            />
+          </Form>
+        </form>
+      </Popup>
     </>
   );
 }
