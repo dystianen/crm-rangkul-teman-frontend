@@ -97,6 +97,11 @@ export const appCancel = async (appId: string): Promise<any> => {
   return resp.data;
 };
 
+export const isAllowedDetail = async (appId: string): Promise<any> => {
+  const resp = await ajaxGet(`/api/trx/application/isAllowedDetail/${appId}`);
+  return resp.data;
+};
+
 export const processCancel = async (appId: string): Promise<any> => {
   const resp = await ajaxGet(`/api/loan/sign/cancel/${appId}`);
   return resp.data;

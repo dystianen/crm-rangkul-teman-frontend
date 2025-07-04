@@ -53,6 +53,7 @@ import {
 import { ApprovalHistory } from "../approval1-app/ApprovalHistory";
 import "./loan-app.scss";
 import LoanDetailsAccordion from "./LoanDetailsAccordion";
+import PopupForbiddenMessage from "../../components/warning-app-detail";
 
 export default function Step1Page() {
   const navigate = useNavigate();
@@ -260,7 +261,6 @@ export default function Step1Page() {
     }
 
     handleCalculate(onboardingLoan);
-    // @ts-expect-error
     onboardingLoan[dataField] = value;
   };
 
@@ -620,6 +620,7 @@ export default function Step1Page() {
         message={popupMessage}
         handleConfirm={handleConfirmPopupMessage}
       />
+      <PopupForbiddenMessage appId={idData} />
     </>
   );
 }
