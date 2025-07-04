@@ -71,6 +71,8 @@ export default function SavingApplication() {
         const { errorCode, data } = error.options;
         if (errorCode === 1020001) {
           navigate(`/contact/leads/create?ktp=${savingApp.ktp}`);
+        } else if (errorCode === 1020004) {
+          navigate(`/contact/leads/edit?id=${data.refId}`);
         } else if (errorCode === 1020002) {
           navigate(`/contact/edit?id=${data.refId}`);
         } else {
