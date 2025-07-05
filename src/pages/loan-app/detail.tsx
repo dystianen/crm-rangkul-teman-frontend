@@ -18,6 +18,7 @@ import {
     initAppLoanDetailValue,
 } from "src/interfaces/appLoanOnboarding";
 import {AppForm} from "./AppForm";
+import PopupForbiddenMessage from "../../components/warning-app-detail";
 
 export default function DetailPage() {
     const navigate = useNavigate();
@@ -88,5 +89,6 @@ export default function DetailPage() {
             </div>
         </div>
         <AppForm detail={detail}/>
+        <PopupForbiddenMessage appId={id as string} />
     </>);
 }
