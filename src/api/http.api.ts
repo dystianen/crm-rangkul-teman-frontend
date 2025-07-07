@@ -28,7 +28,7 @@ httpApi.interceptors.response.use(undefined, (error: any) => {
     const { status } = error.response;
     if (status === 401) {
       localStorage.clear();
-      // window.location.href = document.URL;
+      window.location.href = document.URL;
     }
   }
   throw new ApiError<ApiErrorData>(
