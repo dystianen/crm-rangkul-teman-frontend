@@ -20,7 +20,7 @@ import Form, {
 import DataSource from "devextreme/data/data_source";
 import notify from "devextreme/ui/notify";
 import queryString from "query-string";
-import { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import ReactDOM from "react-dom/client";
 import Resizer from "react-image-file-resizer";
 import { useNavigate } from "react-router";
@@ -49,6 +49,7 @@ import { getFileBase64 } from "../../api/helper";
 import { ApprovalHistory } from "../approval1-app/ApprovalHistory";
 import "./loan-app.scss";
 import { RejectPopup } from "./RejectPopup";
+import PopupForbiddenMessage from "../../components/warning-app-detail";
 
 export type SectionName =
   | "FAMILY_CARD"
@@ -279,7 +280,6 @@ export default function Step2Page() {
   };
 
   const onFieldDataChanged = (evt: any) => {
-    // @ts-expect-error
     onStep2Loan[evt.dataField] = evt.value;
   };
 
@@ -597,6 +597,7 @@ export default function Step2Page() {
           </Form>
         </form>
       </Popup>
+      <PopupForbiddenMessage appId={ID} />
     </>
   );
 }

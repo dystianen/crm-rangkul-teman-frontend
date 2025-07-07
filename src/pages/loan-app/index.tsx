@@ -382,12 +382,9 @@ export default function Index() {
               filterOperations={filterOperation.string}
             />
             <Column
-              dataField={"verifiedAt"}
-              caption={"Tanggal Verifikasi"}
-              dataType={"date"}
-              format={"dd MMM yyyy HH:mm:ss"}
-              calculateFilterExpression={calculateFilterExpressionCustom}
-              filterOperations={filterOperation.date}
+                dataField={"createdByName"}
+                caption={"Dibuat Oleh"}
+                filterOperations={filterOperation.string}
             />
             <Column
               type={"buttons"}
