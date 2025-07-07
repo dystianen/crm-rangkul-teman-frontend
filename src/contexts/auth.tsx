@@ -1,7 +1,7 @@
 import React, {useState, useEffect, createContext, useContext, useCallback} from 'react';
 import {getUser, logOut, signIn as sendSignInRequest} from '../api/auth';
 import type {User, AuthContextType} from '../types';
-import {signOutData} from "../utils/localStorage.util";
+import {readToken, signOutData} from "../utils/localStorage.util";
 
 function AuthProvider(props: React.PropsWithChildren<unknown>) {
     const [user, setUser] = useState<User>();
@@ -9,11 +9,14 @@ function AuthProvider(props: React.PropsWithChildren<unknown>) {
 
     useEffect(() => {
         (async function () {
-            const result = await getUser();
-            if (result?.isOk) {
-                setUser(result.data);
+            if (readToken()) {
+                const result = await getUser();
+                if (result?.isOk) {
+                    setUser(result.data);
+                }
+            } else {
+                setUser(undefined);
             }
-
             setLoading(false);
         })();
     }, []);
