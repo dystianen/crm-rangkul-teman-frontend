@@ -378,13 +378,13 @@ export default function Index() {
             />
             <Column
               dataField={"verifiedByName"}
-              caption={"Diverifikasi Oleh"}
+              caption={"Nama Verifikator"}
               filterOperations={filterOperation.string}
             />
             <Column
-                dataField={"salesByName"}
-                caption={"Dibuat Oleh"}
-                filterOperations={filterOperation.string}
+              dataField={"salesByName"}
+              caption={"Nama Sales"}
+              filterOperations={filterOperation.string}
             />
             <Column
               type={"buttons"}

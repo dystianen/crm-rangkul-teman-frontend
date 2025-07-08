@@ -5,15 +5,8 @@ import queryString from "query-string";
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { useLocation } from "react-router-dom";
-import {
-  appLoanDetailActivityApi,
-  appLoanDetailApi,
-  getFile,
-  postVerificatorComment
-} from "src/api/apploan";
-import { PopupComment, TRequestComment } from "src/components/loan-app/PopupComment";
+import { appLoanDetailActivityApi, appLoanDetailApi, getFile } from "src/api/apploan";
 import { AppLoanDetailRequest, initAppLoanDetailValue } from "src/interfaces/appLoanOnboarding";
-import { notifyError, notifySuccess } from "src/utils/devExtremeUtils";
 import PopupForbiddenMessage from "../../components/warning-app-detail";
 import { AppForm } from "./AppForm";
 import "./loan-app.scss";
@@ -25,7 +18,6 @@ export default function DetailPage() {
   const appId = String(id);
   const [detail, setDetail] = useState<AppLoanDetailRequest>(initAppLoanDetailValue);
   const [activity, setActivity] = useState<Array<any>>([]);
-  const [isShowPopupComment, setShowPopupComment] = useState(false);
 
   const downloadFile = (urlPath: string) => {
     var filename = urlPath.replace(/^.*[\\/]/, "");
@@ -56,22 +48,6 @@ export default function DetailPage() {
     fetchAppLoanData();
   }, [appId, fetchAppLoanData]);
 
-  const hidePopupComment = () => {
-    setShowPopupComment(false);
-  };
-
-  const handleFormCommentSubmit = async (payload: TRequestComment) => {
-    postVerificatorComment(appId, payload)
-      .then(() => {
-        notifySuccess("Status berhasil diubah menjadi 'Waiting for Documents'");
-        fetchAppLoanData();
-        hidePopupComment();
-      })
-      .catch((err) => {
-        notifyError(err.message);
-      });
-  };
-
   return (
     <>
       <div className="title-detail">
@@ -96,8 +72,6 @@ export default function DetailPage() {
                 downloadFile(detail.document.unsignedDocPath);
               } else if (text === "Upload signed application") {
                 navigate(`/loan-app/detail/upload-signed?id=${detail.application.id}`);
-              } else if (text === "Waiting for Document") {
-                setShowPopupComment(true);
               }
             }}
             width={230}
@@ -105,12 +79,6 @@ export default function DetailPage() {
         </div>
       </div>
       <AppForm detail={detail} />
-
-      <PopupComment
-        popupVisible={isShowPopupComment}
-        onFormSubmit={handleFormCommentSubmit}
-        hide={hidePopupComment}
-      />
 
       <PopupForbiddenMessage appId={appId} />
     </>

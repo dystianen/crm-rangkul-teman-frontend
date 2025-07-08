@@ -106,7 +106,7 @@ export const RejectPopup: FC<any> = (props) => {
               render={({ component, dataField }) => (
                 <MultiSelect
                   value={request.rejectList}
-                  dataSource={rejectReasonStore}
+                  dataSource={rejectReasonStore()}
                   component={component}
                   fieldName={dataField}
                   placeholder={"Select Reason"}
