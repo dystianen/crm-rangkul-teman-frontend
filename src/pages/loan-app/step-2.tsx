@@ -650,9 +650,10 @@ export default function Step2Page() {
       />
 
       <AssignSalesPopup
-          assign={assignSales}
-          visible={popupVisibleAssignSales}
-          handleSubmit={handleSubmitAssignSales}
+        assign={assignSales}
+        visible={popupVisibleAssignSales}
+        handleSubmit={handleSubmitAssignSales}
+        hide={() => setPopupVisibleAssignSales(false)}
       />
 
       <Popup

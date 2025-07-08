@@ -10,9 +10,10 @@ type TProps = {
     assign: any;
     visible: boolean;
     handleSubmit: (e: any) => void;
+    hide: () => void;
 };
 
-const AssignSalesPopup = ({ assign, visible, handleSubmit }: TProps) => {
+const AssignSalesPopup = ({ assign, visible, handleSubmit, hide }: TProps) => {
     const formRef = useRef<Form>(null);
 
     const onFieldDataChanged = (evt: any) => {
@@ -29,6 +30,7 @@ const AssignSalesPopup = ({ assign, visible, handleSubmit }: TProps) => {
             width={360}
             height={200}
             visible={visible}
+            onHiding={hide}
             hideOnOutsideClick={true}
             showCloseButton={true}
             title="Assign Sales"
