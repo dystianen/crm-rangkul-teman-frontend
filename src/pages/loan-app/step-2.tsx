@@ -34,6 +34,7 @@ import {
   getAssignVerificator,
   getSignedDoc,
   postSalesComment,
+  postVerificatorComment,
   submitAssignSales,
   submitAssignVerificator
 } from "src/api/apploan";
@@ -172,10 +173,14 @@ export default function Step2Page() {
     setLoadingPage(false);
   }, []);
 
+  const handleGetActivity = useCallback(() => {
+    fetchStep2Activity(ID).then(setActivity);
+  }, [ID]);
+
   useEffect(() => {
     detailLoanApp(ID);
-    fetchStep2Activity(ID).then(setActivity);
-  }, [ID, detailLoanApp]);
+    handleGetActivity();
+  }, [ID, detailLoanApp, handleGetActivity]);
 
   useEffect(() => {
     checkAccessStep2(ID).then((res) => {
@@ -344,15 +349,27 @@ export default function Step2Page() {
   };
 
   const handleFormCommentSubmit = async (payload: TRequestComment) => {
-    postSalesComment(ID, payload)
-      .then(() => {
-        hidePopupComment();
-        navigate("/loan-app");
-        notifySuccess("Status berhasil diubah menjadi 'To Collect Docs'");
-      })
-      .catch((err) => {
-        notifyError(err.message);
-      });
+    if (isSales) {
+      postSalesComment(ID, payload)
+        .then(() => {
+          hidePopupComment();
+          navigate("/loan-app");
+          notifySuccess("Status berhasil diubah menjadi 'To Collect Docs'");
+        })
+        .catch((err) => {
+          notifyError(err.message);
+        });
+    } else {
+      postVerificatorComment(ID, payload)
+        .then(() => {
+          notifySuccess("Status berhasil diubah menjadi 'Waiting for Documents'");
+          handleGetActivity();
+          hidePopupComment();
+        })
+        .catch((err) => {
+          notifyError(err.message);
+        });
+    }
   };
 
   const handleSubmitAssignSales = (e: any) => {
@@ -480,6 +497,10 @@ export default function Step2Page() {
                   }
                   if (e.itemData === "Assign Sales") {
                     setPopupVisibleAssignSales(true);
+                  }
+
+                  if (e.itemData === "Waiting for Document") {
+                    setShowPopupComment(true);
                   }
                 }}
                 width={230}
