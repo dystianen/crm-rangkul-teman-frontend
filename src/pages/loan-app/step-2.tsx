@@ -33,7 +33,9 @@ import {
   fetchStep2Activity,
   getAssignVerificator,
   getSignedDoc,
-  postSalesComment, submitAssignSales,
+  postSalesComment,
+  postVerificatorComment,
+  submitAssignSales,
   submitAssignVerificator
 } from "src/api/apploan";
 import { selectBoxOptions } from "src/api/contact";
@@ -48,11 +50,11 @@ import StreetShop from "src/components/loan-app/StreetShop";
 import PopupMessage from "src/components/popup-message";
 import { notifyError, notifySuccess } from "src/utils/devExtremeUtils";
 import { getFileBase64 } from "../../api/helper";
+import AssignSalesPopup from "../../components/loan-app/assign-sales-popup";
 import PopupForbiddenMessage from "../../components/warning-app-detail";
 import { ApprovalHistory } from "../approval1-app/ApprovalHistory";
 import "./loan-app.scss";
 import { RejectPopup } from "./RejectPopup";
-import AssignSalesPopup from "../../components/loan-app/assign-sales-popup";
 
 export type SectionName =
   | "FAMILY_CARD"
@@ -112,9 +114,11 @@ export default function Step2Page() {
 
   const [popupVisibleAssignSales, setPopupVisibleAssignSales] = useState(false);
   const [assignSales, setAssignSales] = useState<{
-      appId: string, salesBy: string }>({
-      appId: "",
-      salesBy: ""
+    appId: string;
+    salesBy: string;
+  }>({
+    appId: "",
+    salesBy: ""
   });
 
   const listAssignVerificator = selectBoxOptions(
@@ -169,10 +173,14 @@ export default function Step2Page() {
     setLoadingPage(false);
   }, []);
 
+  const handleGetActivity = useCallback(() => {
+    fetchStep2Activity(ID).then(setActivity);
+  }, [ID]);
+
   useEffect(() => {
     detailLoanApp(ID);
-    fetchStep2Activity(ID).then(setActivity);
-  }, [ID, detailLoanApp]);
+    handleGetActivity();
+  }, [ID, detailLoanApp, handleGetActivity]);
 
   useEffect(() => {
     checkAccessStep2(ID).then((res) => {
@@ -341,17 +349,28 @@ export default function Step2Page() {
   };
 
   const handleFormCommentSubmit = async (payload: TRequestComment) => {
-    postSalesComment(ID, payload)
-      .then(() => {
-        hidePopupComment();
-        navigate("/loan-app");
-        notifySuccess("Status berhasil diubah menjadi 'To Collect Docs'");
-      })
-      .catch((err) => {
-        notifyError(err.message);
-      });
+    if (isSales) {
+      postSalesComment(ID, payload)
+        .then(() => {
+          hidePopupComment();
+          navigate("/loan-app");
+          notifySuccess("Status berhasil diubah menjadi 'To Collect Docs'");
+        })
+        .catch((err) => {
+          notifyError(err.message);
+        });
+    } else {
+      postVerificatorComment(ID, payload)
+        .then(() => {
+          notifySuccess("Status berhasil diubah menjadi 'Waiting for Documents'");
+          handleGetActivity();
+          hidePopupComment();
+        })
+        .catch((err) => {
+          notifyError(err.message);
+        });
+    }
   };
-
 
   const handleSubmitAssignSales = (e: any) => {
     e.preventDefault();
@@ -359,18 +378,17 @@ export default function Step2Page() {
     const { isValid } = form.validate();
     if (!isValid) return;
     submitAssignSales(assignSales)
-        .then((res) => {
-          console.log({ res });
-          notifySuccess("Assign Sales successfully");
-          form.clear();
-          setPopupVisibleAssignSales(false);
-          detailLoanApp(assignSales.appId);
-        })
-        .catch((err) => {
-          notifyError(err);
-        });
+      .then((res) => {
+        console.log({ res });
+        notifySuccess("Assign Sales successfully");
+        form.clear();
+        setPopupVisibleAssignSales(false);
+        detailLoanApp(assignSales.appId);
+      })
+      .catch((err) => {
+        notifyError(err);
+      });
   };
-
 
   const componentsMap: Record<SectionName, () => JSX.Element> = {
     FAMILY_CARD: () => <FamilyCard appId={ID} />,
@@ -479,6 +497,10 @@ export default function Step2Page() {
                   }
                   if (e.itemData === "Assign Sales") {
                     setPopupVisibleAssignSales(true);
+                  }
+
+                  if (e.itemData === "Waiting for Document") {
+                    setShowPopupComment(true);
                   }
                 }}
                 width={230}
@@ -608,15 +630,17 @@ export default function Step2Page() {
             </ul>
           </div>
           {isSales ? (
-            <Button
-              style={{ marginTop: 16 }}
-              text="To Collect Docs"
-              type="normal"
-              onClick={() => {
-                setShowRemainingPopup(false);
-                setShowPopupComment(true);
-              }}
-            />
+            <div style={{ display: "flex", gap: 8, marginTop: 16 }}>
+              <Button text="Kembali" type="normal" onClick={() => navigate("/loan-app")} />
+              <Button
+                text="To Collect Docs"
+                type="default"
+                onClick={() => {
+                  setShowRemainingPopup(false);
+                  setShowPopupComment(true);
+                }}
+              />
+            </div>
           ) : (
             <Button
               style={{ marginTop: 16 }}
