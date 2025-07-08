@@ -315,6 +315,18 @@ export const productCalculate = async (payload: {
   return resp;
 };
 
+
+export const getAssignSales = (id: string) =>
+    dataRawCustomStore(`${API_PATH.APPLICATION}/data/assign/sales/${id}?`);
+
+export const submitAssignSales = async (payload: {
+  appId: string;
+  salesBy: string;
+}): Promise<any> => {
+  const resp = await ajaxPost(`${API_PATH.APPLICATION}/assign/sales`, payload);
+  return resp.data;
+};
+
 export const getAssignVerificator = (id: string) =>
   dataRawCustomStore(`${API_PATH.APPLICATION}/data/assignee/${id}?`);
 

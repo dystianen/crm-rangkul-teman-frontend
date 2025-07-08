@@ -382,7 +382,7 @@ export default function Index() {
               filterOperations={filterOperation.string}
             />
             <Column
-                dataField={"createdByName"}
+                dataField={"salesByName"}
                 caption={"Dibuat Oleh"}
                 filterOperations={filterOperation.string}
             />
