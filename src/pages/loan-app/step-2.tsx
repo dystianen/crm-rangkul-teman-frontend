@@ -33,7 +33,7 @@ import {
   fetchStep2Activity,
   getAssignVerificator,
   getSignedDoc,
-  postSalesComment,
+  postSalesComment, submitAssignSales,
   submitAssignVerificator
 } from "src/api/apploan";
 import { selectBoxOptions } from "src/api/contact";
@@ -52,6 +52,7 @@ import PopupForbiddenMessage from "../../components/warning-app-detail";
 import { ApprovalHistory } from "../approval1-app/ApprovalHistory";
 import "./loan-app.scss";
 import { RejectPopup } from "./RejectPopup";
+import AssignSalesPopup from "../../components/loan-app/assign-sales-popup";
 
 export type SectionName =
   | "FAMILY_CARD"
@@ -109,6 +110,13 @@ export default function Step2Page() {
     verifiedBy: ""
   });
 
+  const [popupVisibleAssignSales, setPopupVisibleAssignSales] = useState(false);
+  const [assignSales, setAssignSales] = useState<{
+      appId: string, salesBy: string }>({
+      appId: "",
+      salesBy: ""
+  });
+
   const listAssignVerificator = selectBoxOptions(
     new DataSource(getAssignVerificator(ID)),
     "Select verificator"
@@ -149,6 +157,11 @@ export default function Step2Page() {
         verifiedBy: data.verifiedBy
       });
     }
+
+    setAssignSales({
+      appId: data.id,
+      salesBy: data.salesBy
+    });
 
     setVisibleSection(data.items);
     setMissingFields(checkPartialRes.messages);
@@ -339,6 +352,26 @@ export default function Step2Page() {
       });
   };
 
+
+  const handleSubmitAssignSales = (e: any) => {
+    e.preventDefault();
+    const form = formRef.current!.instance;
+    const { isValid } = form.validate();
+    if (!isValid) return;
+    submitAssignSales(assignSales)
+        .then((res) => {
+          console.log({ res });
+          notifySuccess("Assign Sales successfully");
+          form.clear();
+          setPopupVisibleAssignSales(false);
+          detailLoanApp(assignSales.appId);
+        })
+        .catch((err) => {
+          notifyError(err);
+        });
+  };
+
+
   const componentsMap: Record<SectionName, () => JSX.Element> = {
     FAMILY_CARD: () => <FamilyCard appId={ID} />,
     DOCUMENTS: () => <DocumentCard appId={ID} />,
@@ -443,6 +476,9 @@ export default function Step2Page() {
 
                   if (e.itemData === "Assign Verificator") {
                     setPopupVisibleAssignVerificator(true);
+                  }
+                  if (e.itemData === "Assign Sales") {
+                    setPopupVisibleAssignSales(true);
                   }
                 }}
                 width={230}
@@ -611,6 +647,13 @@ export default function Step2Page() {
         visible={isShowPopupMessage}
         message={popupMessage}
         handleConfirm={handleConfirmPopupMessage}
+      />
+
+      <AssignSalesPopup
+        assign={assignSales}
+        visible={popupVisibleAssignSales}
+        handleSubmit={handleSubmitAssignSales}
+        hide={() => setPopupVisibleAssignSales(false)}
       />
 
       <Popup
