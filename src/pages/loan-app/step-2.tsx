@@ -355,6 +355,7 @@ export default function Step2Page() {
           hidePopupComment();
           navigate("/loan-app");
           notifySuccess("Status berhasil diubah menjadi 'To Collect Docs'");
+          detailLoanApp(ID);
         })
         .catch((err) => {
           notifyError(err.message);
@@ -365,6 +366,7 @@ export default function Step2Page() {
           notifySuccess("Status berhasil diubah menjadi 'Waiting for Documents'");
           handleGetActivity();
           hidePopupComment();
+          detailLoanApp(ID);
         })
         .catch((err) => {
           notifyError(err.message);
