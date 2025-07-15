@@ -378,16 +378,13 @@ export default function Index() {
             />
             <Column
               dataField={"verifiedByName"}
-              caption={"Diverifikasi Oleh"}
+              caption={"Nama Verifikator"}
               filterOperations={filterOperation.string}
             />
             <Column
-              dataField={"verifiedAt"}
-              caption={"Tanggal Verifikasi"}
-              dataType={"date"}
-              format={"dd MMM yyyy HH:mm:ss"}
-              calculateFilterExpression={calculateFilterExpressionCustom}
-              filterOperations={filterOperation.date}
+              dataField={"salesByName"}
+              caption={"Nama Sales"}
+              filterOperations={filterOperation.string}
             />
             <Column
               type={"buttons"}

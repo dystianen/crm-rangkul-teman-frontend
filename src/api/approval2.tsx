@@ -10,9 +10,16 @@ export const getDetail = async (id: string): Promise<AppLoanDetailRequest> => {
   return resp.data;
 };
 
-export const rejectReasonStore = dataRawCustomStore(`${API_PATH.APPROVAL}/reject/reason?`);
+export const rejectReasonStore = (approvalId?: string) =>
+  dataRawCustomStore(
+    approvalId
+      ? `${API_PATH.APPROVAL}/reject/reason/${approvalId}?`
+      : `${API_PATH.APPROVAL}/reject/reason?`
+  );
+
 export const approvalHistoryStore = (appId: string) =>
   dataRawCustomStore(`${API_PATH.APPROVAL}/history/${appId}?`);
+
 export const appFilesStore = (appId: string) =>
   dataRawCustomStore(`/api/trx/application/files/${appId}?`);
 

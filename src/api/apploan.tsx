@@ -97,6 +97,11 @@ export const appCancel = async (appId: string): Promise<any> => {
   return resp.data;
 };
 
+export const isAllowedDetail = async (appId: string): Promise<any> => {
+  const resp = await ajaxGet(`/api/trx/application/isAllowedDetail/${appId}`);
+  return resp.data;
+};
+
 export const processCancel = async (appId: string): Promise<any> => {
   const resp = await ajaxGet(`/api/loan/sign/cancel/${appId}`);
   return resp.data;
@@ -310,11 +315,38 @@ export const productCalculate = async (payload: {
   return resp;
 };
 
-export const getAssignVerificator = (id: string)=>dataRawCustomStore(`${API_PATH.APPLICATION}/data/assignee/${id}?`);
+
+export const getAssignSales = (id: string) =>
+    dataRawCustomStore(`${API_PATH.APPLICATION}/data/assign/sales/${id}?`);
+
+export const submitAssignSales = async (payload: {
+  appId: string;
+  salesBy: string;
+}): Promise<any> => {
+  const resp = await ajaxPost(`${API_PATH.APPLICATION}/assign/sales`, payload);
+  return resp.data;
+};
+
+export const getAssignVerificator = (id: string) =>
+  dataRawCustomStore(`${API_PATH.APPLICATION}/data/assignee/${id}?`);
+
 export const submitAssignVerificator = async (payload: {
   appId: string;
   assignTo: string;
 }): Promise<any> => {
   const resp = await ajaxPost(`${API_PATH.APPLICATION}/assign`, payload);
+  return resp.data;
+};
+
+export const postSalesComment = async (id: string, payload: { comment: string }): Promise<any> => {
+  const resp = await ajaxPost(`${API_PATH.APPLICATION}/sales/${id}`, payload);
+  return resp.data;
+};
+
+export const postVerificatorComment = async (
+  id: string,
+  payload: { comment: string }
+): Promise<any> => {
+  const resp = await ajaxPost(`${API_PATH.APPLICATION}/verificator/${id}`, payload);
   return resp.data;
 };

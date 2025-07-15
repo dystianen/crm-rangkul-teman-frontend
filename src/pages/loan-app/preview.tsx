@@ -5,7 +5,7 @@ import "devextreme-react/file-uploader";
 import Form, { GroupItem, SimpleItem } from "devextreme-react/form";
 import notify from "devextreme/ui/notify";
 import queryString from "query-string";
-import { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { useLocation } from "react-router-dom";
 import { checkAccess, detailAppLoan, getDetailCommodity, submitAppLoan } from "src/api/apploan";
@@ -22,6 +22,7 @@ import { confirmNotify, notifyWarning } from "../../utils/devExtremeUtils";
 import { ApprovalHistory } from "../approval1-app/ApprovalHistory";
 import "./loan-app.scss";
 import { SectionName } from "./step-2";
+import PopupForbiddenMessage from "../../components/warning-app-detail";
 
 export default function PreviewPage() {
   const navigate = useNavigate();
@@ -283,6 +284,7 @@ export default function PreviewPage() {
           />
         </div>
       </div>
+      <PopupForbiddenMessage appId={ID} />
     </>
   );
 }
