@@ -224,6 +224,9 @@ export default function Index() {
             searchExpr="contactName"
             searchMode={searchMode}
             pageLoadMode="scrollBottom"
+            searchEditorOptions={{
+              height: 50
+            }}
           />
         </div>
 
