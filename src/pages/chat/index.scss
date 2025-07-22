@@ -1,6 +1,8 @@
 .chat-card {
-  margin: 2px 0 0 !important;
-  height: calc(100dvh - 140px) !important;
+  display: flex;
+  flex-direction: row;
+  margin: 2px 0 0;
+  height: calc(100dvh - 140px);
   position: relative;
 }
 
@@ -15,12 +17,20 @@
 
 .left {
   float: left;
-  width: 330px;
   height: 100%;
   background: #fff;
   margin: 0;
   padding: 0;
   overflow: hidden;
+  width: 330px;
+  transition: all 0.3s ease;
+}
+
+.left.closed {
+  width: 0;
+  padding: 0;
+  opacity: 0;
+  pointer-events: none;
 }
 
 .left .list .dx-list-group-header {
@@ -79,6 +89,7 @@
   height: 100%;
   display: flex;
   flex-direction: column;
+  width: 100%;
 }
 
 .right .chat-container {
@@ -106,6 +117,9 @@
 
 .right .header .name-container {
   float: left;
+  display: flex;
+  align-items: center;
+  gap: 16px;
 }
 
 .right .header .name {
@@ -176,8 +190,6 @@
   opacity: 0.7;
 }
 
-/**/
-
 .flex-container {
   display: flex;
   flex-direction: column;
@@ -247,7 +259,6 @@
 }
 
 .message-main-receiver {
-  /*padding: 10px 20px;*/
   max-width: 60%;
 }
 
@@ -306,10 +317,6 @@
 .dx-texteditor-container,
 .dx-textarea .dx-texteditor-input-container {
   border-radius: 5px !important;
-  -webkit-border-radius: 5px !important;
-  -moz-border-radius: 5px !important;
-  -ms-border-radius: 5px !important;
-  -o-border-radius: 5px !important;
 }
 
 .action-container {
@@ -324,4 +331,62 @@
   align-items: center;
   height: 100%;
   text-align: center;
+}
+
+/* Responsive */
+@media screen and (max-width: 768px) {
+  .chat-card {
+    flex-direction: column;
+    display: flex;
+  }
+
+  .left {
+    width: 100% !important;
+    height: auto;
+    overflow-y: auto;
+    border-right: none;
+    border-bottom: 1px solid #ccc;
+    transition:
+      max-height 0.3s ease,
+      opacity 0.3s ease;
+  }
+
+  .left.closed {
+    max-height: 0;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .right {
+    width: 100%;
+    margin: 0 !important;
+    border-left: none;
+  }
+
+  .right .header {
+    flex-direction: column;
+    align-items: flex-start;
+    height: auto;
+    gap: 10px;
+    padding: 10px;
+  }
+
+  .action-container {
+    flex-wrap: wrap;
+    width: 100%;
+    gap: 8px;
+  }
+
+  .options-container {
+    flex-wrap: wrap;
+  }
+
+  .option.textarea {
+    width: 100%;
+  }
+
+  .message-main-receiver,
+  .message-main-sender {
+    max-width: 100%;
+  }
 }
