@@ -450,8 +450,10 @@ export default function Index() {
               <img src={IconChat} alt="Chat" width={100} height={100} />
               <h2>Belum Ada Pesan yang Dipilih</h2>
               <p>
-                Silakan pilih percakapan di sebelah kiri untuk melihat isi pesan. <br /> Anda dapat
-                mulai membalas pesan dari pelanggan atau melihat riwayat obrolan mereka di sini.
+                Silakan pilih percakapan di sebelah kiri untuk melihat isi pesan.
+                <br />
+                Anda dapat mulai mengirim atau membalas pesan, serta melihat riwayat obrolan di
+                sini.
               </p>
             </div>
           )}
