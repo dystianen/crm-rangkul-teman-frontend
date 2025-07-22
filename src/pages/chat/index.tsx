@@ -7,7 +7,7 @@ import { LoadPanel } from "devextreme-react/load-panel";
 import TextArea from "devextreme-react/text-area";
 import EmojiPicker from "emoji-picker-react";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   getMessage,
   getMessageProfile,
@@ -71,6 +71,8 @@ const INITIAL_CONTACT: Contact = {
 
 export default function WhatsAppChat() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+
   // State management
   const [textMsg, setTextMsg] = useState<string>("");
   const [emojiVisible, setEmojiVisible] = useState<boolean>(false);
@@ -88,9 +90,14 @@ export default function WhatsAppChat() {
   const [isListOpen, setIsListOpen] = useState(true);
   const [isMobileView, setIsMobileView] = useState(false);
   const [actionButtons, setActionButtons] = useState<string[]>([]);
-  const [contactId, setContactId] = useState("");
   const [justSelectedEmoji, setJustSelectedEmoji] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [profile, setProfile] = useState({
+    contactId: "",
+    contractId: "",
+    applicationId: "",
+    contactType: ""
+  });
 
   // Refs
   const textRef = useRef<any>(null);
@@ -122,7 +129,12 @@ export default function WhatsAppChat() {
 
   const resetActionButton = useCallback(() => {
     setActionButtons([]);
-    setContactId("");
+    setProfile({
+      contactId: "",
+      contractId: "",
+      applicationId: "",
+      contactType: ""
+    });
   }, []);
 
   const handleListSelectionChange = useCallback(
@@ -144,6 +156,8 @@ export default function WhatsAppChat() {
         const messages = await getMessage(contact.phoneNumber);
         setMessages(Array.isArray(messages) ? messages : []);
 
+        navigate(`?phone=${contact.phoneNumber}`, { replace: true });
+
         e.component?.scrollToItem(contact);
       } catch (error) {
         console.error("Failed to load messages:", error);
@@ -152,7 +166,7 @@ export default function WhatsAppChat() {
         setLoadPanelVisible(false);
       }
     },
-    [isMobileView, resetActionButton]
+    [isMobileView, resetActionButton, navigate]
   );
 
   const handleTextAreaValueChanged = useCallback((value: string) => {
@@ -269,6 +283,36 @@ export default function WhatsAppChat() {
   }, []);
 
   useEffect(() => {
+    const initChatFromUrl = async () => {
+      const phone = searchParams.get("phone");
+      if (phone) {
+        try {
+          const receivers = await getReceiver();
+          const selectedContact = receivers.find((r: Contact) => r.phoneNumber === phone);
+          if (selectedContact) {
+            setReceiver(receivers);
+            setCurrentContact(selectedContact);
+            setSelectedItemKeys([selectedContact.phoneNumber]);
+            const messages = await getMessage(phone);
+            setMessages(Array.isArray(messages) ? messages : []);
+
+            if (isMobileView) {
+              setIsListOpen(false);
+            }
+          }
+        } catch (err) {
+          console.error("Failed to load chat from URL", err);
+        }
+      } else {
+        const receivers = await getReceiver();
+        setReceiver(Array.isArray(receivers) ? receivers : []);
+      }
+    };
+
+    initChatFromUrl();
+  }, [searchParams, isMobileView]);
+
+  useEffect(() => {
     const handleResize = () => {
       setIsMobileView(window.innerWidth <= 768);
       if (window.innerWidth > 768) {
@@ -285,8 +329,9 @@ export default function WhatsAppChat() {
     if (currentContact.phoneNumber) {
       getMessageProfile(currentContact.phoneNumber)
         .then((res) => {
-          setActionButtons(res.buttons);
-          setContactId(res.contactId);
+          const { buttons, ...profileData } = res;
+          setActionButtons(buttons);
+          setProfile(profileData);
         })
         .catch(resetActionButton);
     }
@@ -419,14 +464,13 @@ export default function WhatsAppChat() {
 
               {isMediaMessage && hasMediaUrl && (
                 <img
-                  width="25%"
                   src={
                     isExternalUrl
                       ? item.mediaUrl
                       : `${process.env.REACT_APP_BACKEND}api/file/get/${item.mediaUrl}`
                   }
                   alt={item.messageType}
-                  style={{ maxWidth: "200px", height: "auto" }}
+                  style={{ maxWidth: "200px", height: "auto", borderRadius: "10px" }}
                 />
               )}
 
@@ -441,7 +485,7 @@ export default function WhatsAppChat() {
                   rel="noopener noreferrer"
                   download
                 >
-                  <Button icon="file" text="Download File" />
+                  <Button icon="file" text="Download File" type="default" />
                 </a>
               )}
 
@@ -490,7 +534,10 @@ export default function WhatsAppChat() {
                     <Button
                       icon={"chevronleft"}
                       stylingMode="outlined"
-                      onClick={() => setIsListOpen(!isListOpen)}
+                      onClick={() => {
+                        setIsListOpen(!isListOpen);
+                        navigate("?", { replace: true });
+                      }}
                       hint={isListOpen ? "Tutup daftar kontak" : "Buka daftar kontak"}
                     />
                   )}
@@ -500,23 +547,29 @@ export default function WhatsAppChat() {
                   <Button
                     type="danger"
                     visible={actionButtons.includes("Detail Contact")}
-                    onClick={() => navigate(`/contact/edit?id=${contactId}`)}
+                    onClick={() => {
+                      if (profile.contactType === "contact") {
+                        navigate(`/contact/edit?id=${profile.contactId}`);
+                      } else {
+                        navigate(`/contact/leads/edit?id=${profile.contactId}`);
+                      }
+                    }}
                   >
                     Detail Kontak
                   </Button>
                   <Button
                     type="default"
                     visible={actionButtons.includes("Detail Application")}
-                    onClick={() => navigate(`/loan-app/detail?id=${contactId}`)}
+                    onClick={() => navigate(`/loan-app/detail?id=${profile.applicationId}`)}
                   >
                     Pengajuan Aktif
                   </Button>
                   <Button
                     type="success"
                     visible={actionButtons.includes("Detail Loan")}
-                    onClick={() => navigate(`/saving/contract/detail?id=${contactId}`)}
+                    onClick={() => navigate(`/contract/detail?id=${profile.contractId}`)}
                   >
-                    Simpanan Aktif
+                    Pinjaman Aktif
                   </Button>
                 </div>
               </div>
