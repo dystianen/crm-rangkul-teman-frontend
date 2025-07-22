@@ -462,12 +462,7 @@ export default function EditPage() {
     }
 
     const handleBack = () => {
-        const isFromContactActivity = from?.includes('contact-activities');
-        if (isFromContactActivity) {
-            navigate('/contact-activities');
-        } else {
-            navigate(`/contact`);
-        }
+        navigate(-1);
     };
 
     const submitCancel = () => {
