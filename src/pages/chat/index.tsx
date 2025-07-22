@@ -73,7 +73,6 @@ export default function WhatsAppChat() {
   const navigate = useNavigate();
   // State management
   const [textMsg, setTextMsg] = useState<string>("");
-  const [cursorPosition, setCursorPosition] = useState<number>(0);
   const [emojiVisible, setEmojiVisible] = useState<boolean>(false);
   const [attachType, setAttachType] = useState<AttachmentType | null>(null);
   const [receiver, setReceiver] = useState<Contact[]>([]);
@@ -90,11 +89,14 @@ export default function WhatsAppChat() {
   const [isMobileView, setIsMobileView] = useState(false);
   const [actionButtons, setActionButtons] = useState<string[]>([]);
   const [contactId, setContactId] = useState("");
+  const [justSelectedEmoji, setJustSelectedEmoji] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
 
   // Refs
   const textRef = useRef<any>(null);
   const listRefs = useRef<Record<string, HTMLElement>>({});
   const fileUploaderRef = useRef<any>(null);
+  const emojiPickerRef = useRef<HTMLDivElement | null>(null);
 
   const scrollToLatestMessage = useCallback(() => {
     if (messages.length > 0) {
@@ -169,8 +171,6 @@ export default function WhatsAppChat() {
       const textAreaElement = ref._element.querySelector("textarea") as HTMLTextAreaElement;
 
       if (textAreaElement) {
-        textAreaElement.focus();
-
         const fullText = textAreaElement.value;
         const start = textAreaElement.selectionStart ?? 0;
         const end = textAreaElement.selectionEnd ?? 0;
@@ -181,17 +181,19 @@ export default function WhatsAppChat() {
 
         setTextMsg(newText);
 
+        // Set penanda agar Popover tidak langsung muncul lagi
+        setJustSelectedEmoji(true);
+
         setTimeout(() => {
           textAreaElement.focus();
           const newCursor = start + emoji.length;
           textAreaElement.setSelectionRange(newCursor, newCursor);
+          setJustSelectedEmoji(false); // reset setelah fokus
         }, 0);
       }
     } else {
       setTextMsg((prev) => prev + emoji);
     }
-
-    setEmojiVisible(false);
   }, []);
 
   const onItemClick = useCallback((e: DropDownButtonTypes.ItemClickEvent) => {
@@ -248,6 +250,22 @@ export default function WhatsAppChat() {
 
   const hideLoadPanel = useCallback(() => {
     setLoadPanelVisible(false);
+  }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (
+        emojiPickerRef.current &&
+        !emojiPickerRef.current.contains(e.target as Node) &&
+        e.target instanceof HTMLElement &&
+        !e.target.closest("#emoji")
+      ) {
+        setEmojiVisible(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   useEffect(() => {
@@ -315,6 +333,7 @@ export default function WhatsAppChat() {
       if (!attachType || !currentContact.phoneNumber || !fileAttach) return;
 
       try {
+        setIsUploading(true);
         const attachData = fileAttach.attach.includes(",")
           ? fileAttach.attach.split(",")[1]
           : fileAttach.attach;
@@ -340,6 +359,7 @@ export default function WhatsAppChat() {
       } finally {
         setAttachType(null);
         setFileAttach(null);
+        setIsUploading(false);
       }
     };
 
@@ -524,9 +544,13 @@ export default function WhatsAppChat() {
                       visible={emojiVisible}
                       target="#emoji"
                       position="top"
-                      onHiding={handleEmoji}
+                      onHiding={() => {
+                        if (!justSelectedEmoji) setEmojiVisible(false);
+                      }}
                     >
-                      <EmojiPicker onEmojiClick={onSelectEmoji} />
+                      <div ref={emojiPickerRef}>
+                        <EmojiPicker onEmojiClick={onSelectEmoji} />
+                      </div>
                     </Popover>
 
                     <Button
@@ -540,14 +564,15 @@ export default function WhatsAppChat() {
                     <DropDownButton
                       splitButton={false}
                       useSelectMode={false}
-                      text=""
-                      icon="attach"
+                      text={isUploading ? "Uploading..." : ""}
+                      icon={isUploading ? "" : "attach"}
                       items={ATTACHMENT_TYPES}
                       displayExpr="name"
                       keyExpr="id"
                       onItemClick={onItemClick}
                       dropDownOptions={{ width: 125 }}
-                      showArrowIcon={false}
+                      showArrowIcon={!isUploading}
+                      disabled={isUploading}
                     />
                   </div>
 
