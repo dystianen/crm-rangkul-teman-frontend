@@ -127,7 +127,6 @@ export default function WhatsAppChat() {
     async (e: ListTypes.SelectionChangedEvent) => {
       try {
         const contact = e.addedItems?.[0] as Contact;
-        console.log({ contact });
         if (!contact) return;
 
         setLoadPanelVisible(true);
@@ -162,31 +161,38 @@ export default function WhatsAppChat() {
     setEmojiVisible((prev) => !prev);
   }, []);
 
-  const onSelectEmoji = useCallback(
-    (emojiData: any) => {
-      const { emoji } = emojiData;
-      const ref = textRef.current;
+  const onSelectEmoji = useCallback((emojiData: any) => {
+    const { emoji } = emojiData;
+    const ref = textRef.current;
 
-      if (ref?._element) {
-        try {
-          const textAreaElement = ref._element.querySelector("textarea");
-          if (textAreaElement) {
-            textAreaElement.focus();
-            const start = textMsg.substring(0, textAreaElement.selectionStart || 0);
-            const end = textMsg.substring(textAreaElement.selectionStart || 0);
-            const newText = start + emoji + end;
-            setTextMsg(newText);
-            setCursorPosition(start.length + emoji.length);
-          }
-        } catch (error) {
-          // Fallback: just append emoji to end
-          setTextMsg((prev) => prev + emoji);
-        }
+    if (ref?._element) {
+      const textAreaElement = ref._element.querySelector("textarea") as HTMLTextAreaElement;
+
+      if (textAreaElement) {
+        textAreaElement.focus();
+
+        const fullText = textAreaElement.value;
+        const start = textAreaElement.selectionStart ?? 0;
+        const end = textAreaElement.selectionEnd ?? 0;
+
+        const before = fullText.slice(0, start);
+        const after = fullText.slice(end);
+        const newText = before + emoji + after;
+
+        setTextMsg(newText);
+
+        setTimeout(() => {
+          textAreaElement.focus();
+          const newCursor = start + emoji.length;
+          textAreaElement.setSelectionRange(newCursor, newCursor);
+        }, 0);
       }
-      setEmojiVisible(false);
-    },
-    [textMsg]
-  );
+    } else {
+      setTextMsg((prev) => prev + emoji);
+    }
+
+    setEmojiVisible(false);
+  }, []);
 
   const onItemClick = useCallback((e: DropDownButtonTypes.ItemClickEvent) => {
     const item = e.itemData;
@@ -214,7 +220,6 @@ export default function WhatsAppChat() {
       }
     };
     fileReader.onerror = () => {
-      console.error("Failed to read file");
       setFileAttach(null);
     };
     fileReader.readAsDataURL(file);
