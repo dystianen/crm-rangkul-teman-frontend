@@ -33,7 +33,13 @@ export const getReceiver = async (): Promise<any[]> => {
 
 export const getMessageProfile = async (
   id: string
-): Promise<{ buttons: string[]; contactId: string }> => {
+): Promise<{
+  buttons: string[];
+  contactId: string;
+  contractId: string;
+  applicationId: string;
+  contactType: string;
+}> => {
   const resp = await ajaxGet(`${API_PATH.MESSAGE_WHATSAPP}/profile/${id}`);
   return resp.data;
 };
