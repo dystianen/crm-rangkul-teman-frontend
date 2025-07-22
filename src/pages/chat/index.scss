@@ -1,6 +1,6 @@
 .chat-card {
   margin: 2px 0 0 !important;
-  height: calc(100dvh - 150px) !important;
+  height: calc(100dvh - 140px) !important;
   position: relative;
 }
 
@@ -20,6 +20,7 @@
   background: #fff;
   margin: 0;
   padding: 0;
+  overflow: hidden;
 }
 
 .left .list .dx-list-group-header {
@@ -99,6 +100,8 @@
   top: 0;
   z-index: 10;
   height: 50px;
+  display: flex;
+  gap: 32px;
 }
 
 .right .header .name-container {
@@ -223,8 +226,6 @@
   resize: none;
   box-shadow: none;
   outline: none;
-  min-height: 20px;
-  max-height: 120px;
 }
 
 .btn-emoji {
@@ -233,19 +234,6 @@
   font-size: 20px;
   cursor: pointer;
   margin-left: 5px;
-}
-
-.btn-send {
-  background-color: #00bfa5;
-  border: none;
-  padding: 10px;
-  border-radius: 50%;
-  cursor: pointer;
-  color: white;
-}
-
-.btn-send:hover {
-  background-color: #00a58f;
 }
 
 .message-body {
@@ -317,9 +305,23 @@
 .dx-texteditor.dx-editor-outlined,
 .dx-texteditor-container,
 .dx-textarea .dx-texteditor-input-container {
-  border-radius: 16px !important;
-  -webkit-border-radius: 16px !important;
-  -moz-border-radius: 16px !important;
-  -ms-border-radius: 16px !important;
-  -o-border-radius: 16px !important;
+  border-radius: 5px !important;
+  -webkit-border-radius: 5px !important;
+  -moz-border-radius: 5px !important;
+  -ms-border-radius: 5px !important;
+  -o-border-radius: 5px !important;
+}
+
+.action-container {
+  display: flex;
+  gap: 8px;
+}
+
+.empty-state {
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+  text-align: center;
 }

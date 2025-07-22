@@ -15,6 +15,7 @@ import {
   sendMessageText,
   uploadFile
 } from "src/api/whatsapp";
+import IconChat from "src/assets/images/chat.png";
 import { dateHandler } from "../../utils/dateUtils";
 import "./index.scss";
 
@@ -47,11 +48,6 @@ export default function Index() {
         setMessage(rsp);
         setLoadPanelVisible(false);
       });
-
-      // getReceiver().then((rsp: any) => {
-      //     setReceiver(rsp);
-      //     setLoadPanelVisible(false);
-      // });
 
       e.component.scrollToItem(contact);
     },
@@ -231,214 +227,234 @@ export default function Index() {
         </div>
 
         <div className="right">
-          <div className="header">
-            <div className="name-container">
-              <div className="name">{currentContact?.contactName}</div>
-            </div>
-          </div>
-          <div id={"whatsapp-container"} className={"chat-container"}>
-            <div className="description">
-              {messages.map((item: any, index: any) => {
-                // console.log("messages", item, index);
-                return (
-                  <div key={item?.id + "msg-key"} id={"msg-" + index}>
-                    {item?.category == "RECEIVER" && (
-                      <>
-                        <div className="row message-body">
-                          <div className="col-sm-12 message-main-receiver">
-                            <div className="receiver">
-                              {item?.text && (
-                                <div className="message-text">
-                                  <span
-                                    dangerouslySetInnerHTML={{
-                                      __html: item?.text.replaceAll("\n", "<br />")
-                                    }}
-                                  ></span>
+          {currentContact.contactName ? (
+            <>
+              <div className="header">
+                <div className="name-container">
+                  <div className="name">{currentContact?.contactName}</div>
+                </div>
+                <div className="action-container">
+                  <Button type="danger">Kontak</Button>
+                  <Button type="default">Pengajuan Aktif</Button>
+                  <Button type="success">Simpanan Aktif</Button>
+                </div>
+              </div>
+              <div id={"whatsapp-container"} className={"chat-container"}>
+                <div className="description">
+                  {messages.map((item: any, index: any) => {
+                    return (
+                      <div key={item?.id + "msg-key"} id={"msg-" + index}>
+                        {item?.category === "RECEIVER" && (
+                          <>
+                            <div className="row message-body">
+                              <div className="col-sm-12 message-main-receiver">
+                                <div className="receiver">
+                                  {item?.text && (
+                                    <div className="message-text">
+                                      <span
+                                        dangerouslySetInnerHTML={{
+                                          __html: item?.text.replaceAll("\n", "<br />")
+                                        }}
+                                      ></span>
+                                    </div>
+                                  )}
+                                  {["STICKER", "IMAGE"].includes(item?.messageType) &&
+                                    item?.mediaUrl !== "" && (
+                                      <img
+                                        width={"25%"}
+                                        src={
+                                          process.env.REACT_APP_BACKEND +
+                                          "api/file/get/" +
+                                          item?.mediaUrl
+                                        }
+                                        alt="File"
+                                      />
+                                    )}
+                                  {["DOCUMENT"].includes(item?.messageType) &&
+                                    item?.mediaUrl !== "" &&
+                                    !item?.mediaUrl.includes("http") && (
+                                      <a
+                                        href={
+                                          process.env.REACT_APP_BACKEND +
+                                          "api/file/get/" +
+                                          item?.mediaUrl
+                                        }
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        download
+                                      >
+                                        <Button icon={"file"} text={"file"} />
+                                      </a>
+                                    )}
+                                  <div className="message-time pull-right">
+                                    {item?.createdOn && dateHandler(item?.createdOn)}
+                                  </div>
                                 </div>
-                              )}
-                              {["STICKER", "IMAGE"].includes(item?.messageType) &&
-                                item?.mediaUrl !== "" && (
-                                  <img
-                                    width={"25%"}
-                                    src={
-                                      process.env.REACT_APP_BACKEND +
-                                      "api/file/get/" +
-                                      item?.mediaUrl
-                                    }
-                                    alt="File"
-                                  />
-                                )}
-                              {["DOCUMENT"].includes(item?.messageType) &&
-                                item?.mediaUrl !== "" &&
-                                !item?.mediaUrl.includes("http") && (
-                                  <a
-                                    href={
-                                      process.env.REACT_APP_BACKEND +
-                                      "api/file/get/" +
-                                      item?.mediaUrl
-                                    }
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    download
-                                  >
-                                    <Button icon={"file"} text={"file"} />
-                                  </a>
-                                )}
-                              <div className="message-time pull-right">
-                                {item?.createdOn && dateHandler(item?.createdOn)}
                               </div>
                             </div>
-                          </div>
-                        </div>
-                      </>
-                    )}
-                    {item?.category == "SENDER" && (
-                      <>
-                        <div className="row message-body">
-                          <div className="col-sm-12 message-main-sender">
-                            <div className="sender pull-right">
-                              {item?.text && (
-                                <div className="message-text">
-                                  <span
-                                    dangerouslySetInnerHTML={{
-                                      __html: item?.text.replaceAll("\n", "<br />")
-                                    }}
-                                  ></span>
+                          </>
+                        )}
+                        {item?.category === "SENDER" && (
+                          <>
+                            <div className="row message-body">
+                              <div className="col-sm-12 message-main-sender">
+                                <div className="sender pull-right">
+                                  {item?.text && (
+                                    <div className="message-text">
+                                      <span
+                                        dangerouslySetInnerHTML={{
+                                          __html: item?.text.replaceAll("\n", "<br />")
+                                        }}
+                                      ></span>
+                                    </div>
+                                  )}
+                                  {["STICKER", "IMAGE"].includes(item?.messageType) &&
+                                    item?.mediaUrl !== "" &&
+                                    !item?.mediaUrl.includes("http") && (
+                                      <img
+                                        width={"25%"}
+                                        src={
+                                          process.env.REACT_APP_BACKEND +
+                                          "api/file/get/" +
+                                          item?.mediaUrl
+                                        }
+                                        alt="File"
+                                      />
+                                    )}
+                                  {["STICKER", "IMAGE"].includes(item?.messageType) &&
+                                    item?.mediaUrl !== "" &&
+                                    item?.mediaUrl.includes("http") && (
+                                      <img width={"25%"} src={item?.mediaUrl} alt="Media" />
+                                    )}
+                                  {["DOCUMENT"].includes(item?.messageType) &&
+                                    item?.mediaUrl !== "" &&
+                                    !item?.mediaUrl.includes("http") && (
+                                      <a
+                                        href={
+                                          process.env.REACT_APP_BACKEND +
+                                          "api/file/get/" +
+                                          item?.mediaUrl
+                                        }
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        download
+                                      >
+                                        <Button icon={"file"} text={"file"} />
+                                      </a>
+                                    )}
+                                  {["DOCUMENT"].includes(item?.messageType) &&
+                                    item?.mediaUrl !== "" &&
+                                    item?.mediaUrl.includes("http") && (
+                                      <a
+                                        href={item?.mediaUrl}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        download
+                                      >
+                                        <Button icon={"file"} text={"file"} />
+                                      </a>
+                                    )}
+                                  <div className="message-time pull-right">
+                                    {item?.createdOn && dateHandler(item?.createdOn)}
+                                  </div>
+                                  <div className="message-time pull-right">
+                                    Sent by: {item?.sentBy}
+                                  </div>
                                 </div>
-                              )}
-                              {["STICKER", "IMAGE"].includes(item?.messageType) &&
-                                item?.mediaUrl !== "" &&
-                                !item?.mediaUrl.includes("http") && (
-                                  <img
-                                    width={"25%"}
-                                    src={
-                                      process.env.REACT_APP_BACKEND +
-                                      "api/file/get/" +
-                                      item?.mediaUrl
-                                    }
-                                    alt="File"
-                                  />
-                                )}
-                              {["STICKER", "IMAGE"].includes(item?.messageType) &&
-                                item?.mediaUrl !== "" &&
-                                item?.mediaUrl.includes("http") && (
-                                  <img width={"25%"} src={item?.mediaUrl} alt="Media" />
-                                )}
-                              {["DOCUMENT"].includes(item?.messageType) &&
-                                item?.mediaUrl !== "" &&
-                                !item?.mediaUrl.includes("http") && (
-                                  <a
-                                    href={
-                                      process.env.REACT_APP_BACKEND +
-                                      "api/file/get/" +
-                                      item?.mediaUrl
-                                    }
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    download
-                                  >
-                                    <Button icon={"file"} text={"file"} />
-                                  </a>
-                                )}
-                              {["DOCUMENT"].includes(item?.messageType) &&
-                                item?.mediaUrl !== "" &&
-                                item?.mediaUrl.includes("http") && (
-                                  <a
-                                    href={item?.mediaUrl}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    download
-                                  >
-                                    <Button icon={"file"} text={"file"} />
-                                  </a>
-                                )}
-                              <div className="message-time pull-right">
-                                {item?.createdOn && dateHandler(item?.createdOn)}
                               </div>
-                              <div className="message-time pull-right">Sent by: {item?.sentBy}</div>
                             </div>
-                          </div>
-                        </div>
-                      </>
-                    )}
+                          </>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+              <LoadPanel
+                shadingColor="rgba(255,255,255,0.8)"
+                position={{ of: "#whatsapp-container" }}
+                onHiding={hideLoadPanel}
+                visible={loadPanelVisible}
+                showIndicator={true}
+                shading={true}
+                showPane={true}
+              />
+
+              <div className="options">
+                <div className="options-container">
+                  <div className="option tools">
+                    <Popover
+                      visible={emojiVisible}
+                      target="#emoji"
+                      position={"top"}
+                      onHiding={handleEmoji}
+                    >
+                      <EmojiPicker onEmojiClick={onSelectEmoji} />
+                    </Popover>
+                    <Button
+                      id="emoji"
+                      text="😃"
+                      className="btn-emoji"
+                      stylingMode="outlined"
+                      onClick={handleEmoji}
+                    />
+                    <DropDownButton
+                      splitButton={false}
+                      useSelectMode={false}
+                      text=""
+                      icon="attach"
+                      items={[
+                        { id: "image", name: "Image", icon: "image" },
+                        { id: "document", name: "Document", icon: "file" }
+                      ]}
+                      displayExpr="name"
+                      keyExpr="id"
+                      onItemClick={onItemClick}
+                      dropDownOptions={{ width: 125 }}
+                      showArrowIcon={false}
+                    />
+                    <FileUploader
+                      className="open-button"
+                      dialogTrigger={targetElement}
+                      dropZone=".open-button"
+                      multiple={false}
+                      visible={false}
+                      allowedFileExtensions={allowedFileExtensions}
+                      uploadMode="instantly"
+                      uploadUrl={process.env.REACT_APP_BACKEND + "api/vendor/infobip/upload/tmp"}
+                      onUploaded={onUploaded}
+                    />
                   </div>
-                );
-              })}
-            </div>
-          </div>
-          <LoadPanel
-            shadingColor="rgba(255,255,255,0.8)"
-            position={{ of: "#whatsapp-container" }}
-            onHiding={hideLoadPanel}
-            visible={loadPanelVisible}
-            showIndicator={true}
-            shading={true}
-            showPane={true}
-          />
+                  <div className="option textarea">
+                    <TextArea
+                      ref={textRef}
+                      id="msg-textarea"
+                      placeholder="Ketik pesan"
+                      value={textMsg}
+                      onValueChange={onTextAreaValueChanged}
+                      stylingMode="underlined"
+                      autoResizeEnabled={true}
+                      minHeight={10}
+                      maxHeight={120}
+                    />
+                  </div>
 
-          <div className="options">
-            <div className="options-container">
-              <div className="option tools">
-                <Popover
-                  visible={emojiVisible}
-                  target="#emoji"
-                  position={"top"}
-                  onHiding={handleEmoji}
-                >
-                  <EmojiPicker onEmojiClick={onSelectEmoji} />
-                </Popover>
-                <Button
-                  id="emoji"
-                  text="😃"
-                  className="btn-emoji"
-                  stylingMode="outlined"
-                  onClick={handleEmoji}
-                />
-                <DropDownButton
-                  splitButton={false}
-                  useSelectMode={false}
-                  text=""
-                  icon="attach"
-                  items={[
-                    { id: "image", name: "Image", icon: "image" },
-                    { id: "document", name: "Document", icon: "file" }
-                  ]}
-                  displayExpr="name"
-                  keyExpr="id"
-                  onItemClick={onItemClick}
-                  dropDownOptions={{ width: 125 }}
-                  showArrowIcon={false}
-                />
-                <FileUploader
-                  className="open-button"
-                  dialogTrigger={targetElement}
-                  dropZone=".open-button"
-                  multiple={false}
-                  visible={false}
-                  allowedFileExtensions={allowedFileExtensions}
-                  uploadMode="instantly"
-                  uploadUrl={process.env.REACT_APP_BACKEND + "api/vendor/infobip/upload/tmp"}
-                  onUploaded={onUploaded}
-                />
+                  <div className="option send">
+                    <Button type="default" icon="send" onClick={onClickSend} />
+                  </div>
+                </div>
               </div>
-              <div className="option textarea">
-                <TextArea
-                  ref={textRef}
-                  id="msg-textarea"
-                  autoResizeEnabled={false}
-                  placeholder="Ketik pesan"
-                  value={textMsg}
-                  onValueChange={onTextAreaValueChanged}
-                  height={40}
-                  stylingMode="outlined"
-                />
-              </div>
-
-              <div className="option send">
-                <Button type="default" icon="send" onClick={onClickSend} />
-              </div>
+            </>
+          ) : (
+            <div className="empty-state">
+              <img src={IconChat} alt="Chat" width={100} height={100} />
+              <h2>Belum Ada Pesan yang Dipilih</h2>
+              <p>
+                Silakan pilih percakapan di sebelah kiri untuk melihat isi pesan. <br /> Anda dapat
+                mulai membalas pesan dari pelanggan atau melihat riwayat obrolan mereka di sini.
+              </p>
             </div>
-          </div>
+          )}
         </div>
       </div>
     </>
