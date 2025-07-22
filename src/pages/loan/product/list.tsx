@@ -21,7 +21,7 @@ import {
   notifySuccess
 } from "../../../utils/devExtremeUtils";
 import {disableUser, enableUser, resetPasswordUser} from "../../../api/user.api";
-import {listProductStore} from "../../../api/product.api";
+import {copyProductApi, disableProductApi, enableProductApi, listProductStore} from "../../../api/product.api";
 
 export const LoanProductPage: FC = () => {
   const navigate = useNavigate();
@@ -132,10 +132,8 @@ export const LoanProductPage: FC = () => {
 						`Apakah yakin akan meng-copy produk ini #${e.row.data.seqId} ??`
 					).then((result) => {
 					  if (result) {
-						resetPasswordUser(key)
+						copyProductApi(key)
 						.then((rs: any) => {
-						  
-						  
 						  e.component.refresh(true).done(function () {
 							e.component.cancelEditData();
 						  });
@@ -163,10 +161,8 @@ export const LoanProductPage: FC = () => {
 						`Apakah yakin akan mengaktifkan produk ini #${e.row.data.seqId} ??`
 					).then((result) => {
 					  if (result) {
-						enableUser(key)
+						enableProductApi(key)
 						.then((rs: any) => {
-						  
-						  
 						  e.component.refresh(true).done(function () {
 							e.component.cancelEditData();
 						  });
@@ -194,8 +190,8 @@ export const LoanProductPage: FC = () => {
 						`Apakah yakin akan menonaktifkan produk ini #${e.row.data.seqId} ??`
 					).then((result) => {
 					  if (result) {
-						disableUser(key)
-						.then((resp: boolean) => {
+						disableProductApi(key)
+						.then((resp) => {
 						  notifySuccess("Product sudah dinon-aktifkan");
 						  e.component.refresh(true).done(function () {
 							e.component.cancelEditData();

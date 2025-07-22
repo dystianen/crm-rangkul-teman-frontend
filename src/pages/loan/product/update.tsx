@@ -17,11 +17,16 @@ import {selectBoxBranchOptions, selectBoxOptions} from "../../../api/contact";
 import DataSource from "devextreme/data/data_source";
 import {getActiveBranchByUserStore, getActiveProductByBranch} from "../../../api/apploan";
 import * as Title from "devextreme-react/toolbar";
-import {TabFooter} from "./TabFooter";
+import {TabFooter} from "./tab-footer";
 import LoanDetailsAccordion from "../../loan-app/LoanDetailsAccordion";
 import {DataGrid} from "devextreme-react";
 import {Column, Pager, Paging} from "devextreme-react/data-grid";
 import {productDetailApi} from "../../../api/product.api";
+import ProductTerm from "../../../components/product/loan/ProductTerm";
+import ProductByBranch from "../../../components/product/loan/ProductByBranch";
+import ProductParameter from "../../../components/product/loan/ProductParameter";
+import LpfByProduct from "../../../components/product/loan/LpfByProduct";
+import {AccordionProduct} from "./accordion-product";
 
 
 export const LoanProductUpdatePage: FC = () => {
@@ -31,13 +36,6 @@ export const LoanProductUpdatePage: FC = () => {
   const location = useLocation();
   const {id} = queryString.parse(location.search);
   const [detail, setDetail] = useState<any>({});
-  const [isAccordionProductParameterOpen, setIsAccordionProductParameterOpen] = useState(true);
-  const [isAccordionProductTermOpen, setIsAccordionProductTermOpen] = useState(false);
-  const [isAccordionProductByBranchOpen, setIsAccordionProductByBranchOpen] = useState(false);
-  const [isAccordionLPFByProductOpen, setIsAccordionLPFByProductOpen] = useState(false);
-  const [isAccordionApplicationFileTypeOpen, setIsAccordionApplicationFileTypeOpen] = useState(false);
-  const [isAccordionQuestionarySellingOpen, setIsAccordionQuestionarySellingOpen] = useState(false);
-  const [isAccordionQuestionaryNeighbourOpen, setIsAccordionQuestionaryNeighbourOpen] = useState(false);
   const [title, setTitle] = useState("Nama Produk");
   
   useEffect(() => {
@@ -95,68 +93,8 @@ export const LoanProductUpdatePage: FC = () => {
                   <RequiredRule message="Product is required"/>
                 </SimpleItem>
               </GroupItem>
-              <GroupItem visible={true} colSpan={2} cssClass={"p-0"}>
-                <LoanDetailsAccordion
-                    title={"Product Parameters"}
-                    isOpen={isAccordionProductParameterOpen}
-                    onToggle={() => setIsAccordionProductParameterOpen((prev) => !prev)}
-                >
-                  <></>
-                </LoanDetailsAccordion>
-              </GroupItem>
-              <GroupItem visible={true} colSpan={2} cssClass={"p-0"}>
-                <LoanDetailsAccordion
-                    title={"Product Term"}
-                    isOpen={isAccordionProductTermOpen}
-                    onToggle={() => setIsAccordionProductTermOpen((prev) => !prev)}
-                >
-                  <></>
-                </LoanDetailsAccordion>
-              </GroupItem>
-              <GroupItem visible={true} colSpan={2} cssClass={"p-0"}>
-                <LoanDetailsAccordion
-                    title={"Product By Branch"}
-                    isOpen={isAccordionProductByBranchOpen}
-                    onToggle={() => setIsAccordionProductByBranchOpen((prev) => !prev)}
-                >
-                  <></>
-                </LoanDetailsAccordion>
-              </GroupItem>
-              <GroupItem visible={true} colSpan={2} cssClass={"p-0"}>
-                <LoanDetailsAccordion
-                    title={"LPF By Product"}
-                    isOpen={isAccordionLPFByProductOpen}
-                    onToggle={() => setIsAccordionLPFByProductOpen((prev) => !prev)}
-                >
-                  <></>
-                </LoanDetailsAccordion>
-              </GroupItem>
-              <GroupItem visible={true} colSpan={2} cssClass={"p-0"}>
-                <LoanDetailsAccordion
-                    title={"Application File Type"}
-                    isOpen={isAccordionApplicationFileTypeOpen}
-                    onToggle={() => setIsAccordionApplicationFileTypeOpen((prev) => !prev)}
-                >
-                  <></>
-                </LoanDetailsAccordion>
-              </GroupItem>
-              <GroupItem visible={true} colSpan={2} cssClass={"p-0"}>
-                <LoanDetailsAccordion
-                    title={"Questionary Selling"}
-                    isOpen={isAccordionQuestionarySellingOpen}
-                    onToggle={() => setIsAccordionQuestionarySellingOpen((prev) => !prev)}
-                >
-                  <></>
-                </LoanDetailsAccordion>
-              </GroupItem>
-              <GroupItem visible={true} colSpan={2} cssClass={"p-0"}>
-                <LoanDetailsAccordion
-                    title={"Questionary Neighbour"}
-                    isOpen={isAccordionQuestionaryNeighbourOpen}
-                    onToggle={() => setIsAccordionQuestionaryNeighbourOpen((prev) => !prev)}
-                >
-                  <></>
-                </LoanDetailsAccordion>
+              <GroupItem cssClass={"p-0"}>
+                <AccordionProduct productId={id as string} />
               </GroupItem>
               <ButtonItem
                   colSpan={2} horizontalAlignment="left"
@@ -168,6 +106,7 @@ export const LoanProductUpdatePage: FC = () => {
               />
             </Form>
           </form>
+          
         </div>
       </>
   );
