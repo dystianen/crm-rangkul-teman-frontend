@@ -1,351 +1,683 @@
-import "./index.scss";
-import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
-import TextArea, {TextAreaTypes} from 'devextreme-react/text-area';
-import {Button} from "devextreme-react/button";
-import List, {ListTypes} from 'devextreme-react/list';
-import {getMessage, getReceiver, sendMessageFile, sendMessageText, uploadFile} from "src/api/whatsapp";
-import {SelectBoxTypes} from "devextreme-react/select-box";
-import {dateHandler} from "../../utils/dateUtils";
-import {IPopoverOptions, Popover} from 'devextreme-react/popover';
+import { Popover } from "devextreme-react";
+import { Button } from "devextreme-react/button";
+import DropDownButton, { DropDownButtonTypes } from "devextreme-react/drop-down-button";
+import FileUploader, { FileUploaderTypes } from "devextreme-react/file-uploader";
+import List, { ListTypes } from "devextreme-react/list";
+import { LoadPanel } from "devextreme-react/load-panel";
+import TextArea from "devextreme-react/text-area";
 import EmojiPicker from "emoji-picker-react";
-import DropDownButton, {DropDownButtonTypes} from 'devextreme-react/drop-down-button';
-import FileUploader, {FileUploaderTypes} from 'devextreme-react/file-uploader';
-import {LoadPanel} from 'devextreme-react/load-panel';
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import {
+  getMessage,
+  getMessageProfile,
+  getReceiver,
+  sendMessageFile,
+  sendMessageText,
+  uploadFile
+} from "src/api/whatsapp";
+import IconChat from "src/assets/images/chat.png";
+import { dateHandler } from "../../utils/dateUtils";
+import "./index.scss";
 
-const listAttrs = {class: 'list'};
+// Types
+interface Contact {
+  phoneNumber: string;
+  contactName: string;
+  receiveAt: string;
+  unreadTotal: number;
+}
 
-export default function Index() {
-    const [textMsg, setTxtMsg] = useState("");
-    const textRef: any = useRef();
-    const [cursorPosition, setCursorPosition]: any = useState();
-    const [emojiVisible, setEmojiVisible] = useState(false);
+interface Message {
+  id: string;
+  category: "RECEIVER" | "SENDER";
+  text?: string;
+  messageType: "TEXT" | "STICKER" | "IMAGE" | "DOCUMENT";
+  mediaUrl?: string;
+  createdOn: string;
+  sentBy?: string;
+}
 
-    const [attachType, setAttachType]: any = useState(undefined);
-    const [receiver, setReceiver]: any[] = useState([]);
-    const [messages, setMessage]: any[] = useState([]);
-    const [currentContact, setCurrentContact] = useState({
-        phoneNumber: "",
-        contactName: "",
-        receiveAt: new Date().toDateString(),
-        unreadTotal: 0
+interface AttachmentType {
+  id: "image" | "document";
+  name: string;
+  icon: string;
+}
+
+interface FileAttachment {
+  contentType: string;
+  attach: string;
+}
+
+// Constants
+const ATTACHMENT_TYPES: AttachmentType[] = [
+  { id: "image", name: "Image", icon: "image" },
+  { id: "document", name: "Document", icon: "file" }
+];
+
+const FILE_EXTENSIONS = {
+  document: [".docx", ".doc", ".pptx", ".ppt", ".xlsx", ".xls", ".pdf"],
+  image: [".jpg", ".jpeg", ".gif", ".png"]
+};
+
+const listAttrs = { class: "list" };
+
+const INITIAL_CONTACT: Contact = {
+  phoneNumber: "",
+  contactName: "",
+  receiveAt: new Date().toDateString(),
+  unreadTotal: 0
+};
+
+export default function WhatsAppChat() {
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+
+  // State management
+  const [textMsg, setTextMsg] = useState<string>("");
+  const [emojiVisible, setEmojiVisible] = useState<boolean>(false);
+  const [attachType, setAttachType] = useState<AttachmentType | null>(null);
+  const [receiver, setReceiver] = useState<Contact[]>([]);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [currentContact, setCurrentContact] = useState<Contact>(INITIAL_CONTACT);
+  const [selectedItemKeys, setSelectedItemKeys] = useState<string[]>([]);
+  const [allowedFileExtensions, setAllowedFileExtensions] = useState<string[]>([]);
+  const [targetElement, setTargetElement] = useState<HTMLElement>();
+  const [fileAttach, setFileAttach] = useState<FileAttachment | null>(null);
+  const [loadPanelVisible, setLoadPanelVisible] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [shouldTriggerFileDialog, setShouldTriggerFileDialog] = useState(false);
+  const [isListOpen, setIsListOpen] = useState(true);
+  const [isMobileView, setIsMobileView] = useState(false);
+  const [actionButtons, setActionButtons] = useState<string[]>([]);
+  const [justSelectedEmoji, setJustSelectedEmoji] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [profile, setProfile] = useState({
+    contactId: "",
+    contractId: "",
+    applicationId: "",
+    contactType: ""
+  });
+
+  // Refs
+  const textRef = useRef<any>(null);
+  const listRefs = useRef<Record<string, HTMLElement>>({});
+  const fileUploaderRef = useRef<any>(null);
+  const emojiPickerRef = useRef<HTMLDivElement | null>(null);
+
+  const scrollToLatestMessage = useCallback(() => {
+    if (messages.length > 0) {
+      const latestMsgElement = document.querySelector(`#msg-${messages.length - 1}`);
+      latestMsgElement?.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages.length]);
+
+  const scrollToCurrentContact = useCallback(() => {
+    if (currentContact.phoneNumber && listRefs.current[`receiver-${currentContact.phoneNumber}`]) {
+      listRefs.current[`receiver-${currentContact.phoneNumber}`].scrollIntoView({
+        behavior: "smooth"
+      });
+    }
+  }, [currentContact.phoneNumber]);
+
+  const resetMessageState = () => {
+    setTextMsg("");
+    setEmojiVisible(false);
+    setAttachType(null);
+    setFileAttach(null);
+  };
+
+  const resetActionButton = useCallback(() => {
+    setActionButtons([]);
+    setProfile({
+      contactId: "",
+      contractId: "",
+      applicationId: "",
+      contactType: ""
     });
+  }, []);
 
-    // useEffect(() => {
-    //     const interval = setInterval(() => getReceiver().then((rsp: any) => {
-    //         setReceiver(rsp);
-    //     }), 15000);
-    //     return () => clearInterval(interval);
-    // }, []);
+  const handleListSelectionChange = useCallback(
+    async (e: ListTypes.SelectionChangedEvent) => {
+      try {
+        const contact = e.addedItems?.[0] as Contact;
+        if (!contact) return;
 
-    const [selectedItemKeys, setSelectedItemKeys] = useState([currentContact?.phoneNumber]);
-    const handleListSelectionChange = useCallback((e: ListTypes.SelectionChangedEvent) => {
-        const contact = e.addedItems[0];
         setLoadPanelVisible(true);
         setCurrentContact(contact);
-        setSelectedItemKeys([contact?.phoneNumber]);
-        getMessage(contact?.phoneNumber)
-            .then((rsp: any) => {
-                setMessage(rsp);
-                setLoadPanelVisible(false);
-            });
+        setSelectedItemKeys([contact.phoneNumber]);
+        resetMessageState();
+        resetActionButton();
 
-        // getReceiver().then((rsp: any) => {
-        //     setReceiver(rsp);
-        //     setLoadPanelVisible(false);
-        // });
-
-        e.component.scrollToItem(contact);
-    }, [setCurrentContact, setSelectedItemKeys]);
-
-    useEffect(() => {
-        getReceiver().then((rsp: any) => setReceiver(rsp));
-    }, []);
-
-    useEffect(() => {
-        let msgWAFocus = document.querySelector(`#msg-${messages.length - 1}`);
-        msgWAFocus?.scrollIntoView(true);
-    }, [messages]);
-
-    useEffect(() => {
-        if (currentContact.phoneNumber.length > 0) {
-            listRefs.current["receiver-" + currentContact.phoneNumber].scrollIntoView({behavior: 'smooth'});
+        if (isMobileView) {
+          setIsListOpen(false);
         }
-    }, [currentContact]);
 
-    const [searchMode, setSearchMode] = useState<ListTypes.Properties['searchMode']>('contains');
+        const messages = await getMessage(contact.phoneNumber);
+        setMessages(Array.isArray(messages) ? messages : []);
 
-    const onSearchModeChange = useCallback((args: SelectBoxTypes.ValueChangedEvent) => {
-        setSearchMode(args.value);
-    }, [setSearchMode]);
+        navigate(`?phone=${contact.phoneNumber}`, { replace: true });
 
-    const onTextAreaValueChanged = (e: any) => setTxtMsg(e);
-
-    const handleEmoji = useCallback(() => {
-        if (emojiVisible) {
-            setEmojiVisible(false);
-        } else {
-            setEmojiVisible(true);
-        }
-    }, [emojiVisible, setEmojiVisible]);
-
-    const onSelectEmoji = (emojiData: any, e: any) => {
-        const {emoji} = emojiData;
-        const ref = textRef.current;
-        console.log("emoji selected", textMsg, emoji, ref);
-        if (ref) {
-            const txtArea = ref._element.children[0].children[0].children[2];
-            if (txtArea) {
-                txtArea.focus();
-                const start = ref.props.value.substring(0, txtArea.selectionStart);
-                const end = ref.props.value.substring(txtArea.selectionStart);
-                const newText = start + emoji + end;
-                setTxtMsg(newText);
-                setCursorPosition(start.length + emoji.length);
-            }
-        }
-        setEmojiVisible(false);
-    }
-
-    const onItemClick = useCallback((e: DropDownButtonTypes.ItemClickEvent) => {
-        setAttachType(e.itemData);
-        if (e.itemData.id == "document") {
-            setFileExtensionAllow([".docx", '.doc', '.pptx', '.ppt', '.xlsx', '.xls', '.pdf']);
-        } else {
-            setFileExtensionAllow([".jpg", '.jpeg', '.gif', '.png']);
-        }
-    }, []);
-
-    const [allowedFileExtensions, setFileExtensionAllow]: any[] = useState([]);
-    const [targetElement, setTargetElement]: any = useState(null);
-    const [fileAttach, setFileAttach]: any = useState<any>(undefined);
-    useEffect(() => {
-        setTargetElement(document.querySelector('.open-button'));
-    }, []);
-    useEffect(() => {
-        if (currentContact?.phoneNumber != "") {
-            let fileUpload: any = document.querySelector('.open-button');
-            fileUpload?.click();
-        }
-    }, [allowedFileExtensions]);
-    const onUploaded = useCallback((e: FileUploaderTypes.UploadedEvent) => {
-        const {file} = e;
-        const fileReader = new FileReader();
-        console.log("file", file);
-        fileReader.onload = () => {
-            setFileAttach({contentType: file?.type, attach: fileReader.result});
-        };
-        fileReader.readAsDataURL(file);
-    }, []);
-
-    useEffect(() => {
-        if (attachType && currentContact?.phoneNumber != "" && fileAttach) {
-            const attach = fileAttach?.attach ? fileAttach?.attach.split(",")[1] : null;
-            uploadFile({contentType: fileAttach.contentType, attach})
-                .then((rsp: any) => {
-                    const pathUrl = process.env.REACT_APP_BACKEND + "api/file/get/" + rsp?.path;
-                    const waReq = {
-                        to: currentContact?.phoneNumber,
-                        content: {
-                            mediaUrl: pathUrl,
-                        }
-                    };
-                    sendMessageFile(attachType?.id, waReq)
-                        .then(() => getMessage(currentContact?.phoneNumber)
-                            .then((rsp: any) => setMessage(rsp)));
-                });
-        }
-    }, [fileAttach]);
-
-    const onClickSend = () => {
-        if (textMsg != "" && currentContact?.phoneNumber != "") {
-            const waReq = {
-                to: currentContact?.phoneNumber,
-                content: {
-                    text: textMsg,
-                }
-            };
-            sendMessageText(waReq)
-                .then(() => getMessage(currentContact?.phoneNumber)
-                    .then((rsp: any) => {
-                        setMessage(rsp);
-                        setTxtMsg("");
-                    }));
-        }
-    }
-
-    const [loadPanelVisible, setLoadPanelVisible] = useState(false);
-    const hideLoadPanel = useCallback(() => {
+        e.component?.scrollToItem(contact);
+      } catch (error) {
+        console.error("Failed to load messages:", error);
+        setMessages([]);
+      } finally {
         setLoadPanelVisible(false);
-    }, [setLoadPanelVisible]);
+      }
+    },
+    [isMobileView, resetActionButton, navigate]
+  );
 
-    const listRefs: React.MutableRefObject<any[]> = useRef([]);
-    const renderListItem = (item: any, i: any) => (
-        <div ref={(el) => (listRefs.current["receiver-" + item.phoneNumber] = el)} key={item.phoneNumber + "-key"}
-             id={item.phoneNumber == currentContact.phoneNumber ? "id-item-selected" : "contact-" + item.phoneNumber}
-             className={item.phoneNumber == currentContact.phoneNumber ? "contact-item-selected contact-item" : "contact-item"}>
-            <div className={"contact"}>
-                <div className="name">{item.contactName}</div>
-                {item.unreadTotal > 0 && <div className="unread">{`${item.unreadTotal}`}</div>}<br/>
-                <div className={`receive pull-right`}>{item?.receiveAt && dateHandler(item.receiveAt)}</div>
-            </div>
+  const handleTextAreaValueChanged = useCallback((value: string) => {
+    setTextMsg(value);
+  }, []);
+
+  const handleEmoji = useCallback(() => {
+    setEmojiVisible((prev) => !prev);
+  }, []);
+
+  const onSelectEmoji = useCallback((emojiData: any) => {
+    const { emoji } = emojiData;
+    const ref = textRef.current;
+
+    if (ref?._element) {
+      const textAreaElement = ref._element.querySelector("textarea") as HTMLTextAreaElement;
+
+      if (textAreaElement) {
+        const fullText = textAreaElement.value;
+        const start = textAreaElement.selectionStart ?? 0;
+        const end = textAreaElement.selectionEnd ?? 0;
+
+        const before = fullText.slice(0, start);
+        const after = fullText.slice(end);
+        const newText = before + emoji + after;
+
+        setTextMsg(newText);
+
+        // Set penanda agar Popover tidak langsung muncul lagi
+        setJustSelectedEmoji(true);
+
+        setTimeout(() => {
+          textAreaElement.focus();
+          const newCursor = start + emoji.length;
+          textAreaElement.setSelectionRange(newCursor, newCursor);
+          setJustSelectedEmoji(false); // reset setelah fokus
+        }, 0);
+      }
+    } else {
+      setTextMsg((prev) => prev + emoji);
+    }
+  }, []);
+
+  const onItemClick = useCallback((e: DropDownButtonTypes.ItemClickEvent) => {
+    const item = e.itemData;
+    setAttachType(item);
+    if (item.id === "document") {
+      setAllowedFileExtensions(FILE_EXTENSIONS.document);
+    } else {
+      setAllowedFileExtensions(FILE_EXTENSIONS.image);
+    }
+
+    setShouldTriggerFileDialog(true);
+  }, []);
+
+  const onUploaded = useCallback((e: FileUploaderTypes.UploadedEvent) => {
+    const { file } = e;
+    if (!file) return;
+
+    const fileReader = new FileReader();
+    fileReader.onload = () => {
+      if (fileReader.result) {
+        setFileAttach({
+          contentType: file.type || "application/octet-stream",
+          attach: fileReader.result as string
+        });
+      }
+    };
+    fileReader.onerror = () => {
+      setFileAttach(null);
+    };
+    fileReader.readAsDataURL(file);
+  }, []);
+
+  const onClickSend = useCallback(async () => {
+    if (!textMsg.trim() || !currentContact.phoneNumber || isLoading) return;
+
+    setIsLoading(true);
+    try {
+      const waReq = {
+        to: currentContact.phoneNumber,
+        content: { text: textMsg.trim() }
+      };
+
+      await sendMessageText(waReq);
+      const updatedMessages = await getMessage(currentContact.phoneNumber);
+      setMessages(Array.isArray(updatedMessages) ? updatedMessages : []);
+      setTextMsg("");
+    } catch (error) {
+      console.error("Failed to send message:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [textMsg, currentContact.phoneNumber, isLoading]);
+
+  const hideLoadPanel = useCallback(() => {
+    setLoadPanelVisible(false);
+  }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (
+        emojiPickerRef.current &&
+        !emojiPickerRef.current.contains(e.target as Node) &&
+        e.target instanceof HTMLElement &&
+        !e.target.closest("#emoji")
+      ) {
+        setEmojiVisible(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  useEffect(() => {
+    const initChatFromUrl = async () => {
+      const phone = searchParams.get("phone");
+      if (phone) {
+        try {
+          const receivers = await getReceiver();
+          const selectedContact = receivers.find((r: Contact) => r.phoneNumber === phone);
+          if (selectedContact) {
+            setReceiver(receivers);
+            setCurrentContact(selectedContact);
+            setSelectedItemKeys([selectedContact.phoneNumber]);
+            const messages = await getMessage(phone);
+            setMessages(Array.isArray(messages) ? messages : []);
+
+            if (isMobileView) {
+              setIsListOpen(false);
+            }
+          }
+        } catch (err) {
+          console.error("Failed to load chat from URL", err);
+        }
+      } else {
+        const receivers = await getReceiver();
+        setReceiver(Array.isArray(receivers) ? receivers : []);
+      }
+    };
+
+    initChatFromUrl();
+  }, [searchParams, isMobileView]);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobileView(window.innerWidth <= 768);
+      if (window.innerWidth > 768) {
+        setIsListOpen(true);
+      }
+    };
+
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  useEffect(() => {
+    if (currentContact.phoneNumber) {
+      getMessageProfile(currentContact.phoneNumber)
+        .then((res) => {
+          const { buttons, ...profileData } = res;
+          setActionButtons(buttons);
+          setProfile(profileData);
+        })
+        .catch(resetActionButton);
+    }
+  }, [currentContact.phoneNumber, resetActionButton]);
+
+  useEffect(() => {
+    const loadReceivers = async () => {
+      try {
+        const receivers = await getReceiver();
+        setReceiver(Array.isArray(receivers) ? receivers : []);
+      } catch (error) {
+        console.error("Failed to load receivers:", error);
+        setReceiver([]);
+      }
+    };
+
+    loadReceivers();
+  }, []);
+
+  useEffect(() => {
+    scrollToLatestMessage();
+  }, [scrollToLatestMessage]);
+
+  useEffect(() => {
+    scrollToCurrentContact();
+  }, [scrollToCurrentContact]);
+
+  useEffect(() => {
+    const element = document.querySelector(".open-button") as HTMLElement;
+    setTargetElement(element);
+  }, []);
+
+  useEffect(() => {
+    if (shouldTriggerFileDialog && allowedFileExtensions.length > 0) {
+      const fileUploadButton = document.querySelector(".open-button") as HTMLElement;
+      fileUploadButton?.click();
+
+      setShouldTriggerFileDialog(false);
+    }
+  }, [shouldTriggerFileDialog, allowedFileExtensions]);
+
+  useEffect(() => {
+    const handleFileUpload = async () => {
+      if (!attachType || !currentContact.phoneNumber || !fileAttach) return;
+
+      try {
+        setIsUploading(true);
+        const attachData = fileAttach.attach.includes(",")
+          ? fileAttach.attach.split(",")[1]
+          : fileAttach.attach;
+
+        const uploadResponse = await uploadFile({
+          contentType: fileAttach.contentType,
+          attach: attachData
+        });
+
+        if (uploadResponse?.path) {
+          const pathUrl = `${process.env.REACT_APP_BACKEND}api/file/get/${uploadResponse.path}`;
+          const waReq = {
+            to: currentContact.phoneNumber,
+            content: { mediaUrl: pathUrl }
+          };
+
+          await sendMessageFile(attachType.id, waReq);
+          const updatedMessages = await getMessage(currentContact.phoneNumber);
+          setMessages(Array.isArray(updatedMessages) ? updatedMessages : []);
+        }
+      } catch (error) {
+        console.error("Failed to upload file:", error);
+      } finally {
+        setAttachType(null);
+        setFileAttach(null);
+        setIsUploading(false);
+      }
+    };
+
+    handleFileUpload();
+  }, [attachType, currentContact.phoneNumber, fileAttach]);
+
+  const renderListItem = useCallback(
+    (item: Contact) => (
+      <div
+        ref={(el) => {
+          if (el) listRefs.current[`receiver-${item.phoneNumber}`] = el;
+        }}
+        key={`${item.phoneNumber}-key`}
+        id={
+          item.phoneNumber === currentContact.phoneNumber
+            ? "id-item-selected"
+            : `contact-${item.phoneNumber}`
+        }
+        className={
+          item.phoneNumber === currentContact.phoneNumber
+            ? "contact-item-selected contact-item"
+            : "contact-item"
+        }
+      >
+        <div className="contact">
+          <div className="name">{item.contactName}</div>
+          {item.unreadTotal > 0 && <div className="unread">{item.unreadTotal}</div>}
+          <br />
+          <div className="receive pull-right">{item.receiveAt && dateHandler(item.receiveAt)}</div>
         </div>
+      </div>
+    ),
+    [currentContact.phoneNumber]
+  );
+
+  const renderMessage = useCallback((item: Message, index: number) => {
+    const isReceiver = item.category === "RECEIVER";
+    const isMediaMessage = ["STICKER", "IMAGE"].includes(item.messageType);
+    const isDocumentMessage = item.messageType === "DOCUMENT";
+    const hasMediaUrl = item.mediaUrl && item.mediaUrl !== "";
+    const isExternalUrl = item.mediaUrl?.includes("http");
+
+    return (
+      <div key={`${item.id}-msg-key`} id={`msg-${index}`}>
+        <div className="row message-body">
+          <div className={`col-sm-12 message-main-${isReceiver ? "receiver" : "sender"}`}>
+            <div className={`${isReceiver ? "receiver" : "sender pull-right"}`}>
+              {item.text && (
+                <div className="message-text">
+                  <span
+                    dangerouslySetInnerHTML={{
+                      __html: item.text.replace(/\n/g, "<br />")
+                    }}
+                  />
+                </div>
+              )}
+
+              {isMediaMessage && hasMediaUrl && (
+                <img
+                  src={
+                    isExternalUrl
+                      ? item.mediaUrl
+                      : `${process.env.REACT_APP_BACKEND}api/file/get/${item.mediaUrl}`
+                  }
+                  alt={item.messageType}
+                  style={{ maxWidth: "200px", height: "auto", borderRadius: "10px" }}
+                />
+              )}
+
+              {isDocumentMessage && hasMediaUrl && (
+                <a
+                  href={
+                    isExternalUrl
+                      ? item.mediaUrl
+                      : `${process.env.REACT_APP_BACKEND}api/file/get/${item.mediaUrl}`
+                  }
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  download
+                >
+                  <Button icon="file" text="Download File" type="default" />
+                </a>
+              )}
+
+              <div className="message-time pull-right">
+                {item.createdOn && dateHandler(item.createdOn)}
+              </div>
+
+              {!isReceiver && item.sentBy && (
+                <div className="message-time pull-right">Sent by: {item.sentBy}</div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
     );
+  }, []);
 
-    // const onFocusedItem = (e: any) => {
-    //     e.component.scrollToItem(currentContact);
-    // };
-    return (<>
-        <div className={"chat-card"}>
-            <div className="left">
-                <List
-                    className={"contact-receiver"}
-                    selectionMode="single"
-                    dataSource={receiver}
-                    searchEnabled={true}
-                    selectedItemKeys={selectedItemKeys}
-                    onSelectionChanged={handleListSelectionChange}
-                    itemRender={renderListItem}
-                    elementAttr={listAttrs}
-                    searchExpr="contactName"
-                    searchMode={searchMode}
-                    pageLoadMode="scrollBottom"
-                />
-            </div>
-
-            <div className="right">
-                <div className="header">
-                    <div className="name-container">
-                        <div className="name">{currentContact?.contactName}</div>
-                    </div>
-                </div>
-                <div id={"whatsapp-container"} className={"chat-container"}>
-                    <div className="description">
-                        {messages.map((item: any, index: any) => {
-                            // console.log("messages", item, index);
-                            return <div key={item?.id + "msg-key"} id={"msg-" + index}>
-                                {(item?.category == "RECEIVER") && <>
-                                    <div className="row message-body">
-                                        <div className="col-sm-12 message-main-receiver">
-                                            <div className="receiver">
-                                                {item?.text && <div className="message-text"><span
-                                                    dangerouslySetInnerHTML={{__html: item?.text.replaceAll('\n', '<br />')}}></span>
-                                                </div>}
-                                                {(['STICKER', 'IMAGE'].includes(item?.messageType) && item?.mediaUrl !== "") &&
-                                                    <img width={"25%"}
-                                                         src={process.env.REACT_APP_BACKEND + "api/file/get/" + item?.mediaUrl}/>}
-                                                {(['DOCUMENT'].includes(item?.messageType) && item?.mediaUrl !== "" && !item?.mediaUrl.includes("http")) &&
-                                                    <a href={process.env.REACT_APP_BACKEND + "api/file/get/" + item?.mediaUrl}
-                                                       target="_blank"
-                                                       rel="noopener noreferrer" download>
-                                                        <Button icon={'file'} text={"file"}/>
-                                                    </a>}
-                                                <div
-                                                    className="message-time pull-right">{item?.createdOn && dateHandler(item?.createdOn)}</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </>}
-                                {(item?.category == "SENDER") && <>
-                                    <div className="row message-body">
-                                        <div className="col-sm-12 message-main-sender">
-                                            <div className="sender pull-right">
-                                                {(item?.text) && <div className="message-text"><span
-                                                    dangerouslySetInnerHTML={{__html: item?.text.replaceAll('\n', '<br />')}}></span>
-                                                </div>}
-                                                {(['STICKER', 'IMAGE'].includes(item?.messageType) && item?.mediaUrl !== "" && !item?.mediaUrl.includes("http")) &&
-                                                    <img width={"25%"}
-                                                         src={process.env.REACT_APP_BACKEND + "api/file/get/" + item?.mediaUrl}/>}
-                                                {(['STICKER', 'IMAGE'].includes(item?.messageType) && item?.mediaUrl !== "" && item?.mediaUrl.includes("http")) &&
-                                                    <img width={"25%"}
-                                                         src={item?.mediaUrl}/>}
-                                                {(['DOCUMENT'].includes(item?.messageType) && item?.mediaUrl !== "" && !item?.mediaUrl.includes("http")) &&
-                                                    <a href={process.env.REACT_APP_BACKEND + "api/file/get/" + item?.mediaUrl}
-                                                       target="_blank"
-                                                       rel="noopener noreferrer" download>
-                                                        <Button icon={'file'} text={"file"}/>
-                                                    </a>}
-                                                {(['DOCUMENT'].includes(item?.messageType) && item?.mediaUrl !== "" && item?.mediaUrl.includes("http")) &&
-                                                    <a href={item?.mediaUrl} target="_blank" rel="noopener noreferrer"
-                                                       download>
-                                                        <Button icon={'file'} text={"file"}/>
-                                                    </a>}
-                                                <div
-                                                    className="message-time pull-right">{item?.createdOn && dateHandler(item?.createdOn)}</div>
-                                                <div
-                                                    className="message-time pull-right">Sent by: {item?.sentBy}</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </>}
-                            </div>;
-                        })}
-                    </div>
-                </div>
-                <LoadPanel
-                    shadingColor="rgba(0,0,0,0.4)"
-                    position={{of: '#whatsapp-container'}}
-                    onHiding={hideLoadPanel}
-                    visible={loadPanelVisible}
-                    showIndicator={true}
-                    shading={true}
-                    showPane={true}
-                />
-                <div className="options">
-                    <div className="options-container">
-                        <Popover
-                            visible={emojiVisible}
-                            target="#emoji"
-                            position={"top"}
-                        ><EmojiPicker onEmojiClick={onSelectEmoji}/></Popover>
-                        <div className="option">
-                            <Button id="emoji" text={"😃"} className={"btn-emoji"}
-                                    onClick={handleEmoji}/>
-                            <DropDownButton
-                                splitButton={false}
-                                useSelectMode={false}
-                                text=" "
-                                icon="attach"
-                                items={[
-                                    {id: "image", name: 'Image', icon: 'image'},
-                                    {id: "document", name: 'Document', icon: 'file'}]}
-                                displayExpr="name"
-                                keyExpr="id"
-                                onItemClick={onItemClick}
-                                dropDownOptions={{width: 125}}
-                            />
-                            <FileUploader
-                                className="open-button"
-                                dialogTrigger={targetElement}
-                                dropZone={".open-button"}
-                                multiple={false}
-                                visible={false}
-                                allowedFileExtensions={allowedFileExtensions}
-                                uploadMode="instantly"
-                                uploadUrl={process.env.REACT_APP_BACKEND + "api/vendor/infobip/upload/tmp"}
-                                onUploaded={onUploaded}
-                            ></FileUploader>
-                        </div>
-                        <div className="option">
-                            <div className="textarea-wrapper">
-                                <TextArea
-                                    ref={textRef}
-                                    id={"msg-textarea"}
-                                    autoResizeEnabled={false}
-                                    placeholder={"Ketik pesan"}
-                                    value={textMsg}
-                                    onValueChange={onTextAreaValueChanged}
-                                />
-                            </div>
-                        </div>
-                        <div className="option">
-                            <div className="btn-send">
-                                <Button text={" "} icon="send"
-                                        onClick={onClickSend}/>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+  return (
+    <div className="chat-card">
+      {(!isMobileView || isListOpen) && (
+        <div className={`left ${!isListOpen ? "closed" : ""}`}>
+          <List
+            className="contact-receiver"
+            selectionMode="single"
+            dataSource={receiver}
+            searchEnabled={true}
+            selectedItemKeys={selectedItemKeys}
+            onSelectionChanged={handleListSelectionChange}
+            itemRender={renderListItem}
+            elementAttr={listAttrs}
+            searchExpr="contactName"
+            searchMode={"contains"}
+            pageLoadMode="scrollBottom"
+            searchEditorOptions={{ height: 50 }}
+          />
         </div>
-    </>)
+      )}
+
+      {(!isMobileView || !isListOpen) && (
+        <div className="right">
+          {currentContact.contactName ? (
+            <>
+              <div className="header">
+                <div className="name-container">
+                  {isMobileView && !isListOpen && (
+                    <Button
+                      icon={"chevronleft"}
+                      stylingMode="outlined"
+                      onClick={() => {
+                        setIsListOpen(!isListOpen);
+                        navigate("?", { replace: true });
+                      }}
+                      hint={isListOpen ? "Tutup daftar kontak" : "Buka daftar kontak"}
+                    />
+                  )}
+                  <div className="name">{currentContact.contactName}</div>
+                </div>
+                <div className="action-container">
+                  <Button
+                    type="danger"
+                    visible={actionButtons.includes("Detail Contact")}
+                    onClick={() => {
+                      if (profile.contactType === "contact") {
+                        navigate(`/contact/edit?id=${profile.contactId}`);
+                      } else {
+                        navigate(`/contact/leads/edit?id=${profile.contactId}`);
+                      }
+                    }}
+                  >
+                    Detail Kontak
+                  </Button>
+                  <Button
+                    type="default"
+                    visible={actionButtons.includes("Detail Application")}
+                    onClick={() => navigate(`/loan-app/detail?id=${profile.applicationId}`)}
+                  >
+                    Pengajuan Aktif
+                  </Button>
+                  <Button
+                    type="success"
+                    visible={actionButtons.includes("Detail Loan")}
+                    onClick={() => navigate(`/contract/detail?id=${profile.contractId}`)}
+                  >
+                    Pinjaman Aktif
+                  </Button>
+                </div>
+              </div>
+
+              <div id="whatsapp-container" className="chat-container">
+                <div className="description">
+                  {messages.map((item, index) => renderMessage(item, index))}
+                </div>
+              </div>
+
+              <LoadPanel
+                shadingColor="rgba(255,255,255,0.8)"
+                position={{ of: "#whatsapp-container" }}
+                onHiding={hideLoadPanel}
+                visible={loadPanelVisible}
+                showIndicator={true}
+                shading={true}
+                showPane={true}
+              />
+
+              <div className="options">
+                <div className="options-container">
+                  <div className="option tools">
+                    <Popover
+                      visible={emojiVisible}
+                      target="#emoji"
+                      position="top"
+                      onHiding={() => {
+                        if (!justSelectedEmoji) setEmojiVisible(false);
+                      }}
+                    >
+                      <div ref={emojiPickerRef}>
+                        <EmojiPicker onEmojiClick={onSelectEmoji} />
+                      </div>
+                    </Popover>
+
+                    <Button
+                      id="emoji"
+                      text="😃"
+                      className="btn-emoji"
+                      stylingMode="outlined"
+                      onClick={handleEmoji}
+                    />
+
+                    <DropDownButton
+                      splitButton={false}
+                      useSelectMode={false}
+                      text={isUploading ? "Uploading..." : ""}
+                      icon={isUploading ? "" : "attach"}
+                      items={ATTACHMENT_TYPES}
+                      displayExpr="name"
+                      keyExpr="id"
+                      onItemClick={onItemClick}
+                      dropDownOptions={{ width: 125 }}
+                      showArrowIcon={!isUploading}
+                      disabled={isUploading}
+                    />
+                  </div>
+
+                  <div className="option textarea">
+                    <TextArea
+                      ref={textRef}
+                      id="msg-textarea"
+                      placeholder="Ketik pesan"
+                      value={textMsg}
+                      onValueChange={handleTextAreaValueChanged}
+                      stylingMode="underlined"
+                      autoResizeEnabled={true}
+                      minHeight={10}
+                      maxHeight={120}
+                      disabled={isLoading}
+                    />
+                  </div>
+
+                  <div className="option send">
+                    <Button type="default" icon="send" onClick={onClickSend} disabled={isLoading} />
+                  </div>
+                </div>
+              </div>
+            </>
+          ) : (
+            <div className="empty-state">
+              <img src={IconChat} alt="Chat" width={100} height={100} />
+              <h2>Belum Ada Pesan yang Dipilih</h2>
+              <p>
+                Silakan pilih percakapan di sebelah kiri untuk melihat isi pesan.
+                <br />
+                Anda dapat mulai mengirim atau membalas pesan, serta melihat riwayat obrolan di
+                sini.
+              </p>
+            </div>
+          )}
+        </div>
+      )}
+
+      <FileUploader
+        ref={fileUploaderRef}
+        dialogTrigger={targetElement}
+        className="open-button"
+        dropZone={".open-button"}
+        uploadMode="instantly"
+        uploadUrl={process.env.REACT_APP_BACKEND + "api/vendor/infobip/upload/tmp"}
+        onUploaded={onUploaded}
+        allowedFileExtensions={allowedFileExtensions}
+        accept={allowedFileExtensions.join(",")}
+        multiple={false}
+        visible={false}
+      />
+    </div>
+  );
 }
