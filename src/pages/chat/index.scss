@@ -95,6 +95,9 @@
 .right .chat-container {
   flex: 1;
   overflow-y: auto;
+  background-image: url("../../assets/images/bg-pattern-chat.png");
+  background-repeat: repeat;
+  background-size: 450px auto;
 }
 
 .right .description {
@@ -263,6 +266,7 @@
 }
 
 .bubble {
+  min-width: 100px;
   max-width: 60%;
   padding: 8px 10px;
   border-radius: 12px;

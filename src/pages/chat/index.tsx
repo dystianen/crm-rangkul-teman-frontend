@@ -576,7 +576,7 @@ export default function WhatsAppChat() {
               </div>
 
               <LoadPanel
-                shadingColor="rgba(255,255,255,0.8)"
+                shadingColor="#f2f2f2"
                 position={{ of: "#whatsapp-container" }}
                 onHiding={hideLoadPanel}
                 visible={loadPanelVisible}
