@@ -1,0 +1,45 @@
+.chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-size: 12px;
+  background-color: #e0e0e0;
+  color: #333;
+  user-select: none;
+}
+
+.chip-clickable {
+  cursor: pointer;
+}
+
+.chip-default {
+  background-color: #e0e0e0;
+  color: #333;
+}
+
+.chip-primary {
+  background-color: #e3f2fd;
+  color: #1976d2;
+}
+
+.chip-success {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+}
+
+.chip-danger {
+  background-color: #ffebee;
+  color: #d32f2f;
+}
+
+.chip-close {
+  margin-left: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  user-select: none;
+}
+
+.chip-close:hover {
+  color: #000;
+}

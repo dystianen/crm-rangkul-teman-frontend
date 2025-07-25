@@ -17,6 +17,7 @@ import {
   uploadFile
 } from "src/api/whatsapp";
 import IconChat from "src/assets/images/chat.png";
+import Chip from "src/components/chip";
 import { dateHandler } from "../../utils/dateUtils";
 import "./index.scss";
 
@@ -429,9 +430,11 @@ export default function WhatsAppChat() {
         }
       >
         <div className="contact">
-          <div className="name">{item.contactName}</div>
+          <div className="wrapper-contact-name">
+            <Chip label="New" variant="success" />
+            <div className="name">{item.contactName}</div>
+          </div>
           {item.unreadTotal > 0 && <div className="unread">{item.unreadTotal}</div>}
-          <br />
           <div className="receive pull-right">{item.receiveAt && dateHandler(item.receiveAt)}</div>
         </div>
       </div>
@@ -536,7 +539,10 @@ export default function WhatsAppChat() {
                       hint={isListOpen ? "Tutup daftar kontak" : "Buka daftar kontak"}
                     />
                   )}
-                  <div className="name">{currentContact.contactName}</div>
+                  <div className="wrapper-contact-name">
+                    <div className="name">{currentContact.contactName}</div>
+                    <Chip label="New" variant="success" />
+                  </div>
                 </div>
                 <div className="action-container">
                   <Button
