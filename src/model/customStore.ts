@@ -1,12 +1,13 @@
 import CustomStore from "devextreme/data/custom_store";
 import {FilterPss, setFilterPss} from "../interfaces/IFilterPss";
-import {ajaxDelete, ajaxGet, ajaxPost, ajaxPut} from "../api/http.api";
+import {ajaxDelete, ajaxGet, ajaxPatch, ajaxPost, ajaxPut} from "../api/http.api";
 import qs from "qs";
 
 interface RequestUrl {
     loadUrl: string;
     insertUrl?: string;
     updateUrl?: string;
+  	patchUrl?: string;
     deleteUrl?: string;
     customQueryParams?: string;
 }
@@ -73,7 +74,7 @@ export const customStore = (request: RequestUrl) =>
     new CustomStore({
         key: "id",
         load: async (loadOptions) => {
-          // console.log("origin loadOptions ",loadOptions);
+          console.log("origin loadOptions ",loadOptions);
             let sort = loadOptions.sort instanceof Array && loadOptions.sort?.map((val: any) => {
                 if (val.selector == "id") {
                     return {selector: "modifiedOn", desc: false}
@@ -99,7 +100,7 @@ export const customStore = (request: RequestUrl) =>
             if(typeof request.customQueryParams !== "undefined") {
               paramSearch = {...paramSearch, quickFilter: request.customQueryParams};
             }
-          // console.log("filter paramSearch ",paramSearch);
+          console.log("filter paramSearch ",paramSearch);
             const resp = await ajaxGet(
                 `${request.loadUrl}?${qs.stringify(paramSearch)}`
             );
@@ -118,7 +119,10 @@ export const customStore = (request: RequestUrl) =>
             if (request?.updateUrl) {
                 const resp = await ajaxPut(`${request.updateUrl}/${key}`, values);
                 console.log("update", resp);
-            }
+            } else if(request?.patchUrl) {
+			  const resp = await ajaxPatch(`${request.updateUrl}/${key}`, values);
+			  console.log("patch", resp);
+			}
         },
         remove: async (key) => {
             if (request?.deleteUrl) {
