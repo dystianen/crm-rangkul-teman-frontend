@@ -108,7 +108,7 @@ export default function WhatsAppChat() {
   const scrollToLatestMessage = useCallback(() => {
     if (messages.length > 0) {
       const latestMsgElement = document.querySelector(`#msg-${messages.length - 1}`);
-      latestMsgElement?.scrollIntoView({ behavior: "smooth" });
+      latestMsgElement?.scrollIntoView(true);
     }
   }, [messages.length]);
 
@@ -157,8 +157,7 @@ export default function WhatsAppChat() {
         setMessages(Array.isArray(messages) ? messages : []);
 
         navigate(`?phone=${contact.phoneNumber}`, { replace: true });
-
-        e.component?.scrollToItem(contact);
+        e.component.scrollToItem(contact);
       } catch (error) {
         console.error("Failed to load messages:", error);
         setMessages([]);
@@ -448,55 +447,51 @@ export default function WhatsAppChat() {
     const isExternalUrl = item.mediaUrl?.includes("http");
 
     return (
-      <div key={`${item.id}-msg-key`} id={`msg-${index}`}>
-        <div className="row message-body">
-          <div className={`col-sm-12 message-main-${isReceiver ? "receiver" : "sender"}`}>
-            <div className={`${isReceiver ? "receiver" : "sender pull-right"}`}>
-              {item.text && (
-                <div className="message-text">
-                  <span
-                    dangerouslySetInnerHTML={{
-                      __html: item.text.replace(/\n/g, "<br />")
-                    }}
-                  />
-                </div>
-              )}
+      <div
+        key={`${item.id}-msg-key`}
+        id={`msg-${index}`}
+        className={`chat-message ${isReceiver ? "receiver" : "sender"}`}
+      >
+        <div className="bubble">
+          {item.text && (
+            <div
+              className="message-text"
+              dangerouslySetInnerHTML={{
+                __html: item.text.replace(/\n/g, "<br />")
+              }}
+            />
+          )}
 
-              {isMediaMessage && hasMediaUrl && (
-                <img
-                  src={
-                    isExternalUrl
-                      ? item.mediaUrl
-                      : `${process.env.REACT_APP_BACKEND}api/file/get/${item.mediaUrl}`
-                  }
-                  alt={item.messageType}
-                  style={{ maxWidth: "200px", height: "auto", borderRadius: "10px" }}
-                />
-              )}
+          {isMediaMessage && hasMediaUrl && (
+            <img
+              className="chat-image"
+              src={
+                isExternalUrl
+                  ? item.mediaUrl
+                  : `${process.env.REACT_APP_BACKEND}api/file/get/${item.mediaUrl}`
+              }
+              alt={item.messageType}
+            />
+          )}
 
-              {isDocumentMessage && hasMediaUrl && (
-                <a
-                  href={
-                    isExternalUrl
-                      ? item.mediaUrl
-                      : `${process.env.REACT_APP_BACKEND}api/file/get/${item.mediaUrl}`
-                  }
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  download
-                >
-                  <Button icon="file" text="Download File" type="default" />
-                </a>
-              )}
+          {isDocumentMessage && hasMediaUrl && (
+            <a
+              href={
+                isExternalUrl
+                  ? item.mediaUrl
+                  : `${process.env.REACT_APP_BACKEND}api/file/get/${item.mediaUrl}`
+              }
+              target="_blank"
+              rel="noopener noreferrer"
+              download
+            >
+              <Button icon="file" text="Download File" />
+            </a>
+          )}
 
-              <div className="message-time pull-right">
-                {item.createdOn && dateHandler(item.createdOn)}
-              </div>
-
-              {!isReceiver && item.sentBy && (
-                <div className="message-time pull-right">Sent by: {item.sentBy}</div>
-              )}
-            </div>
+          <div className="message-meta">
+            <span>{item.createdOn && dateHandler(item.createdOn)}</span>
+            {!isReceiver && item.sentBy && <span> • {item.sentBy}</span>}
           </div>
         </div>
       </div>
