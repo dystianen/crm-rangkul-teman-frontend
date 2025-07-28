@@ -144,7 +144,7 @@ export default function WhatsAppChat() {
     async (e: ListTypes.SelectionChangedEvent) => {
       try {
         const contact = e.addedItems?.[0] as Contact;
-        if (!contact) return;
+        if (!contact || contact.phoneNumber === currentContact.phoneNumber) return;
 
         setLoadPanelVisible(true);
         setCurrentContact(contact);
@@ -167,7 +167,7 @@ export default function WhatsAppChat() {
         setLoadPanelVisible(false);
       }
     },
-    [isMobileView, resetActionButton]
+    [currentContact.phoneNumber, isMobileView, resetActionButton]
   );
 
   const handleTextAreaValueChanged = useCallback((value: string) => {
