@@ -149,7 +149,7 @@ export default function WhatsAppChat() {
   }, []);
 
   const handleListSelectionChange = useCallback(
-    async (e: ListTypes.SelectionChangedEvent) => {
+    (e: ListTypes.SelectionChangedEvent) => {
       try {
         const contact = e.addedItems?.[0] as Contact;
         if (!contact) return;
@@ -164,10 +164,11 @@ export default function WhatsAppChat() {
           setIsListOpen(false);
         }
 
-        const messages = await getMessage(contact.phoneNumber);
-        setMessages(Array.isArray(messages) ? messages : []);
+        getMessage(contact.phoneNumber).then((res) => {
+          setMessages(res);
+        });
 
-        navigate(`?phone=${contact.phoneNumber}`, { replace: true });
+        window.history.replaceState(null, "", `?phone=${contact.phoneNumber}`);
         e.component.scrollToItem(contact);
       } catch (error) {
         console.error("Failed to load messages:", error);
@@ -176,7 +177,7 @@ export default function WhatsAppChat() {
         setLoadPanelVisible(false);
       }
     },
-    [isMobileView, resetActionButton, navigate]
+    [isMobileView, resetActionButton]
   );
 
   const handleTextAreaValueChanged = useCallback((value: string) => {
@@ -539,9 +540,8 @@ export default function WhatsAppChat() {
             itemRender={renderListItem}
             elementAttr={listAttrs}
             searchExpr="contactName"
-            searchMode={"contains"}
+            searchMode="contains"
             pageLoadMode="scrollBottom"
-            searchEditorOptions={{ height: 50 }}
           />
         </div>
       )}
