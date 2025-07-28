@@ -251,6 +251,12 @@
   margin-left: 5px;
 }
 
+.wrapper-contact-name {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
 .chat-message {
   display: flex;
   margin: 8px 0;
@@ -289,6 +295,7 @@
 }
 
 .chat-image {
+  max-height: 400px;
   max-width: 100%;
   border-radius: 8px;
   margin-top: 8px;

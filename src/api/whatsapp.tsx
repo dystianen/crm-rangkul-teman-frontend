@@ -39,6 +39,7 @@ export const getMessageProfile = async (
   contractId: string;
   applicationId: string;
   contactType: string;
+  isRepeat: boolean;
 }> => {
   const resp = await ajaxGet(`${API_PATH.MESSAGE_WHATSAPP}/profile/${id}`);
   return resp.data;

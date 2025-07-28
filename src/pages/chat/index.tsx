@@ -6,7 +6,7 @@ import List, { ListTypes } from "devextreme-react/list";
 import { LoadPanel } from "devextreme-react/load-panel";
 import TextArea from "devextreme-react/text-area";
 import EmojiPicker from "emoji-picker-react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   getMessage,
@@ -17,6 +17,7 @@ import {
   uploadFile
 } from "src/api/whatsapp";
 import IconChat from "src/assets/images/chat.png";
+import Chip from "src/components/chip";
 import { dateHandler } from "../../utils/dateUtils";
 import "./index.scss";
 
@@ -47,6 +48,14 @@ interface AttachmentType {
 interface FileAttachment {
   contentType: string;
   attach: string;
+}
+
+interface ProfileData {
+  contactId: string;
+  contractId: string;
+  applicationId: string;
+  contactType: string;
+  isRepeat: boolean | null;
 }
 
 // Constants
@@ -92,12 +101,15 @@ export default function WhatsAppChat() {
   const [actionButtons, setActionButtons] = useState<string[]>([]);
   const [justSelectedEmoji, setJustSelectedEmoji] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
-  const [profile, setProfile] = useState({
+  const [profile, setProfile] = useState<ProfileData>({
     contactId: "",
     contractId: "",
     applicationId: "",
-    contactType: ""
+    contactType: "",
+    isRepeat: null
   });
+
+  console.log({ profile });
 
   // Refs
   const textRef = useRef<any>(null);
@@ -133,7 +145,8 @@ export default function WhatsAppChat() {
       contactId: "",
       contractId: "",
       applicationId: "",
-      contactType: ""
+      contactType: "",
+      isRepeat: null
     });
   }, []);
 
@@ -410,6 +423,39 @@ export default function WhatsAppChat() {
     handleFileUpload();
   }, [attachType, currentContact.phoneNumber, fileAttach]);
 
+  const onTestNewReceiver = () => {
+    const newData = {
+      contactName: "Aditiya",
+      phoneNumber: "628544205252",
+      receiveAt: "2025-07-22T15:57:01.000+00:00",
+      unreadTotal: 10
+    };
+
+    setReceiver((prev) => {
+      const existingIndex = prev.findIndex((item) => item.phoneNumber === newData.phoneNumber);
+
+      if (existingIndex !== -1) {
+        // Jika sudah ada, pindahkan ke paling atas
+        const updatedList = [...prev];
+        const [existingItem] = updatedList.splice(existingIndex, 1);
+        return [existingItem, ...updatedList];
+      } else {
+        // Jika belum ada, tambahkan ke atas
+        return [newData, ...prev];
+      }
+    });
+  };
+
+  const repeatChipElement = useMemo(
+    () => (
+      <Chip
+        label={profile.isRepeat ? "RO" : "New"}
+        variant={profile.isRepeat ? "warning" : "success"}
+      />
+    ),
+    [profile.isRepeat]
+  );
+
   const renderListItem = useCallback(
     (item: Contact) => (
       <div
@@ -429,14 +475,16 @@ export default function WhatsAppChat() {
         }
       >
         <div className="contact">
-          <div className="name">{item.contactName}</div>
+          <div className="wrapper-contact-name">
+            {profile.isRepeat != null && repeatChipElement}
+            <div className="name">{item.contactName}</div>
+          </div>
           {item.unreadTotal > 0 && <div className="unread">{item.unreadTotal}</div>}
-          <br />
           <div className="receive pull-right">{item.receiveAt && dateHandler(item.receiveAt)}</div>
         </div>
       </div>
     ),
-    [currentContact.phoneNumber]
+    [currentContact.phoneNumber, profile.isRepeat, repeatChipElement]
   );
 
   const renderMessage = useCallback((item: Message, index: number) => {
@@ -536,7 +584,10 @@ export default function WhatsAppChat() {
                       hint={isListOpen ? "Tutup daftar kontak" : "Buka daftar kontak"}
                     />
                   )}
-                  <div className="name">{currentContact.contactName}</div>
+                  <div className="wrapper-contact-name">
+                    <div className="name">{currentContact.contactName}</div>
+                    {profile.isRepeat != null && repeatChipElement}
+                  </div>
                 </div>
                 <div className="action-container">
                   <Button
