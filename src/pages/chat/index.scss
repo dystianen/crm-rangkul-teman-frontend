@@ -2,8 +2,12 @@
   display: flex;
   flex-direction: row;
   margin: 2px 0 0;
-  height: calc(100dvh - 140px);
+  height: calc(100vh - 125px);
   position: relative;
+
+  @media (max-width: 768px) {
+    height: calc(100vh - 140px);
+  }
 }
 
 .contact-receiver .dx-list-item-content {
@@ -361,7 +365,7 @@
   }
 
   .right {
-    width: 100%;
+    // width: 100%;
     margin: 0 !important;
     border-left: none;
   }
