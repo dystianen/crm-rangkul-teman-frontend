@@ -122,14 +122,6 @@ export default function WhatsAppChat() {
     }
   }, [messages.length]);
 
-  const scrollToCurrentContact = useCallback(() => {
-    if (currentContact.phoneNumber && listRefs.current[`receiver-${currentContact.phoneNumber}`]) {
-      listRefs.current[`receiver-${currentContact.phoneNumber}`].scrollIntoView({
-        behavior: "smooth"
-      });
-    }
-  }, [currentContact.phoneNumber]);
-
   const resetMessageState = () => {
     setTextMsg("");
     setEmojiVisible(false);
@@ -169,7 +161,6 @@ export default function WhatsAppChat() {
         });
 
         window.history.replaceState(null, "", `?phone=${contact.phoneNumber}`);
-        e.component.scrollToItem(contact);
       } catch (error) {
         console.error("Failed to load messages:", error);
         setMessages([]);
@@ -365,10 +356,6 @@ export default function WhatsAppChat() {
   useEffect(() => {
     scrollToLatestMessage();
   }, [scrollToLatestMessage]);
-
-  useEffect(() => {
-    scrollToCurrentContact();
-  }, [scrollToCurrentContact]);
 
   useEffect(() => {
     const element = document.querySelector(".open-button") as HTMLElement;
