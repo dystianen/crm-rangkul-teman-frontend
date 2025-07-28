@@ -450,12 +450,16 @@ export default function WhatsAppChat() {
         }
       >
         <div className="contact">
-          <div className="wrapper-contact-name">
-            {profile.isRepeat != null && repeatChipElement}
-            <div className="name">{item.contactName}</div>
+          <div className="wrapper-contact">
+            <div className="wrapper-contact-name">
+              {profile.isRepeat != null && repeatChipElement}
+              <div className="name">{item.contactName}</div>
+            </div>
+            {item.unreadTotal > 0 && <div className="unread">{item.unreadTotal}</div>}
           </div>
-          {item.unreadTotal > 0 && <div className="unread">{item.unreadTotal}</div>}
-          <div className="receive pull-right">{item.receiveAt && dateHandler(item.receiveAt)}</div>
+          <div className="wrapper-message-meta">
+            <div className="message-meta">{item.receiveAt && dateHandler(item.receiveAt)}</div>
+          </div>
         </div>
       </div>
     ),

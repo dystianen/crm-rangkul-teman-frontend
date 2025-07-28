@@ -50,7 +50,7 @@
 .left .list .contact-item {
   margin: 0;
   clear: both;
-  padding: 20px;
+  padding: 12px 16px;
 }
 
 .dx-list-item-content::before {
@@ -62,8 +62,8 @@
 }
 
 .left .list .contact {
-  min-height: 32px;
-  display: block;
+  display: flex;
+  flex-direction: column;
 }
 
 .left .list .contact .name {
@@ -78,12 +78,12 @@
 
 .left .list .contact .unread {
   font-size: 9px;
-  float: right;
   color: #fff;
   background: #437b6e;
   padding: 5px;
   border-radius: 50%;
   line-height: 7px;
+  margin-right: 5px;
 }
 
 .right {
@@ -255,10 +255,21 @@
   margin-left: 5px;
 }
 
+.wrapper-contact {
+  display: flex;
+  justify-content: space-between;
+}
+
 .wrapper-contact-name {
   display: flex;
   align-items: center;
   gap: 2px;
+}
+
+.wrapper-message-meta {
+  display: flex;
+  flex-direction: column;
+  justify-content: end;
 }
 
 .chat-message {
@@ -314,6 +325,7 @@
   margin-top: 8px;
   color: #888;
   text-align: right;
+  font-size: 11px;
 }
 
 .pull-right {
@@ -338,6 +350,10 @@
   align-items: center;
   height: 100%;
   text-align: center;
+}
+
+.dx-list-search {
+  margin-bottom: 0 !important;
 }
 
 /* Responsive */
