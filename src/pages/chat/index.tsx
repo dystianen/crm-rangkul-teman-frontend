@@ -161,7 +161,6 @@ export default function WhatsAppChat() {
         window.history.replaceState(null, "", `?phone=${contact.phoneNumber}`);
       } catch (err) {
         setMessages([]);
-        setLoadPanelVisible(false);
         console.error("Error loading message:", err);
       } finally {
         setLoadPanelVisible(false);
@@ -592,7 +591,7 @@ export default function WhatsAppChat() {
               </div>
 
               <LoadPanel
-                shadingColor="rgb(242, 242, 242, 0.5)"
+                shadingColor="rgb(242, 242, 242, 0.8)"
                 position={{ of: "#whatsapp-container" }}
                 onHiding={hideLoadPanel}
                 visible={loadPanelVisible}
