@@ -141,7 +141,7 @@ export default function WhatsAppChat() {
   }, []);
 
   const handleListSelectionChange = useCallback(
-    (e: ListTypes.SelectionChangedEvent) => {
+    async (e: ListTypes.SelectionChangedEvent) => {
       try {
         const contact = e.addedItems?.[0] as Contact;
         if (!contact) return;
@@ -156,14 +156,13 @@ export default function WhatsAppChat() {
           setIsListOpen(false);
         }
 
-        getMessage(contact.phoneNumber).then((res) => {
-          setMessages(res);
-        });
-
+        const res = await getMessage(contact.phoneNumber);
+        setMessages(res);
         window.history.replaceState(null, "", `?phone=${contact.phoneNumber}`);
-      } catch (error) {
-        console.error("Failed to load messages:", error);
+      } catch (err) {
         setMessages([]);
+        setLoadPanelVisible(false);
+        console.error("Error loading message:", err);
       } finally {
         setLoadPanelVisible(false);
       }
@@ -593,7 +592,7 @@ export default function WhatsAppChat() {
               </div>
 
               <LoadPanel
-                shadingColor="#f2f2f2"
+                shadingColor="rgb(242, 242, 242, 0.5)"
                 position={{ of: "#whatsapp-container" }}
                 onHiding={hideLoadPanel}
                 visible={loadPanelVisible}
