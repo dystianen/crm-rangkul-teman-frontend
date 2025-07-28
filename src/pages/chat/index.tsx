@@ -479,7 +479,7 @@ export default function WhatsAppChat() {
         id={`msg-${index}`}
         className={`chat-message ${isReceiver ? "receiver" : "sender"}`}
       >
-        <div className="bubble">
+        <div className={`bubble ${isReceiver ? "receiver" : "sender"}`}>
           {item.text && (
             <div
               className="message-text"
