@@ -109,8 +109,6 @@ export default function WhatsAppChat() {
     isRepeat: null
   });
 
-  console.log({ profile });
-
   // Refs
   const textRef = useRef<any>(null);
   const listRefs = useRef<Record<string, HTMLElement>>({});
@@ -422,29 +420,6 @@ export default function WhatsAppChat() {
 
     handleFileUpload();
   }, [attachType, currentContact.phoneNumber, fileAttach]);
-
-  const onTestNewReceiver = () => {
-    const newData = {
-      contactName: "Aditiya",
-      phoneNumber: "628544205252",
-      receiveAt: "2025-07-22T15:57:01.000+00:00",
-      unreadTotal: 10
-    };
-
-    setReceiver((prev) => {
-      const existingIndex = prev.findIndex((item) => item.phoneNumber === newData.phoneNumber);
-
-      if (existingIndex !== -1) {
-        // Jika sudah ada, pindahkan ke paling atas
-        const updatedList = [...prev];
-        const [existingItem] = updatedList.splice(existingIndex, 1);
-        return [existingItem, ...updatedList];
-      } else {
-        // Jika belum ada, tambahkan ke atas
-        return [newData, ...prev];
-      }
-    });
-  };
 
   const repeatChipElement = useMemo(
     () => (
