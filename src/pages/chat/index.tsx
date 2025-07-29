@@ -702,7 +702,7 @@ export default function WhatsAppChat() {
             overflow: "hidden"
           }}
         >
-          <img src={mediaUrl} alt="Income proof document" style={{ maxWidth: "100%" }} />
+          <img src={mediaUrl} alt="Document" style={{ maxWidth: "100%" }} />
         </div>
       </Popup>
     </div>
