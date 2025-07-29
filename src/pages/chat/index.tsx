@@ -1,4 +1,4 @@
-import { Popover } from "devextreme-react";
+import { Popover, Popup } from "devextreme-react";
 import { Button } from "devextreme-react/button";
 import DropDownButton, { DropDownButtonTypes } from "devextreme-react/drop-down-button";
 import FileUploader, { FileUploaderTypes } from "devextreme-react/file-uploader";
@@ -101,6 +101,8 @@ export default function WhatsAppChat() {
   const [actionButtons, setActionButtons] = useState<string[]>([]);
   const [justSelectedEmoji, setJustSelectedEmoji] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [isPopupImageVisible, setPopupImageVisible] = useState(false);
+  const [mediaUrl, setMediaUrl] = useState("");
   const [profile, setProfile] = useState<ProfileData>({
     contactId: "",
     contractId: "",
@@ -459,6 +461,10 @@ export default function WhatsAppChat() {
     const hasMediaUrl = item.mediaUrl && item.mediaUrl !== "";
     const isExternalUrl = item.mediaUrl?.includes("http");
 
+    const url = isExternalUrl
+      ? `${item.mediaUrl}`
+      : `${process.env.REACT_APP_BACKEND}api/file/get/${item.mediaUrl}`;
+
     return (
       <div
         key={`${item.id}-msg-key`}
@@ -476,28 +482,19 @@ export default function WhatsAppChat() {
           )}
 
           {isMediaMessage && hasMediaUrl && (
-            <img
-              className="chat-image"
-              src={
-                isExternalUrl
-                  ? item.mediaUrl
-                  : `${process.env.REACT_APP_BACKEND}api/file/get/${item.mediaUrl}`
-              }
-              alt={item.messageType}
-            />
+            <div
+              style={{ cursor: "pointer" }}
+              onClick={() => {
+                setMediaUrl(url);
+                setPopupImageVisible(true);
+              }}
+            >
+              <img className="chat-image" src={url} alt={item.messageType} />
+            </div>
           )}
 
           {isDocumentMessage && hasMediaUrl && (
-            <a
-              href={
-                isExternalUrl
-                  ? item.mediaUrl
-                  : `${process.env.REACT_APP_BACKEND}api/file/get/${item.mediaUrl}`
-              }
-              target="_blank"
-              rel="noopener noreferrer"
-              download
-            >
+            <a href={url} target="_blank" rel="noopener noreferrer" download>
               <Button icon="file" text="Download File" />
             </a>
           )}
@@ -688,6 +685,26 @@ export default function WhatsAppChat() {
         multiple={false}
         visible={false}
       />
+
+      <Popup
+        visible={isPopupImageVisible}
+        onHiding={() => setPopupImageVisible(false)}
+        showTitle={false}
+        dragEnabled={false}
+        hideOnOutsideClick
+        maxWidth={700}
+        height={"auto"}
+        maxHeight={"80vh"}
+      >
+        <div
+          style={{
+            position: "relative",
+            overflow: "hidden"
+          }}
+        >
+          <img src={mediaUrl} alt="Income proof document" style={{ maxWidth: "100%" }} />
+        </div>
+      </Popup>
     </div>
   );
 }
