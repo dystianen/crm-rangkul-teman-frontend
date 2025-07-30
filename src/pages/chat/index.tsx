@@ -1,4 +1,4 @@
-import { Popover } from "devextreme-react";
+import { Popover, Popup } from "devextreme-react";
 import { Button } from "devextreme-react/button";
 import DropDownButton, { DropDownButtonTypes } from "devextreme-react/drop-down-button";
 import FileUploader, { FileUploaderTypes } from "devextreme-react/file-uploader";
@@ -6,7 +6,7 @@ import List, { ListTypes } from "devextreme-react/list";
 import { LoadPanel } from "devextreme-react/load-panel";
 import TextArea from "devextreme-react/text-area";
 import EmojiPicker from "emoji-picker-react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   getMessage,
@@ -17,6 +17,7 @@ import {
   uploadFile
 } from "src/api/whatsapp";
 import IconChat from "src/assets/images/chat.png";
+import Chip from "src/components/chip";
 import { dateHandler } from "../../utils/dateUtils";
 import "./index.scss";
 
@@ -47,6 +48,14 @@ interface AttachmentType {
 interface FileAttachment {
   contentType: string;
   attach: string;
+}
+
+interface ProfileData {
+  contactId: string;
+  contractId: string;
+  applicationId: string;
+  contactType: string;
+  isRepeat: boolean | null;
 }
 
 // Constants
@@ -92,33 +101,128 @@ export default function WhatsAppChat() {
   const [actionButtons, setActionButtons] = useState<string[]>([]);
   const [justSelectedEmoji, setJustSelectedEmoji] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
-  const [profile, setProfile] = useState({
+  const [isPopupImageVisible, setPopupImageVisible] = useState(false);
+  const [mediaUrl, setMediaUrl] = useState("");
+  const [profile, setProfile] = useState<ProfileData>({
     contactId: "",
     contractId: "",
     applicationId: "",
-    contactType: ""
+    contactType: "",
+    isRepeat: null
   });
+
+  // Pagination
+  const [hasMore, setHasMore] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [page, setPage] = useState(0);
+  const limit = 50;
 
   // Refs
   const textRef = useRef<any>(null);
   const listRefs = useRef<Record<string, HTMLElement>>({});
   const fileUploaderRef = useRef<any>(null);
   const emojiPickerRef = useRef<HTMLDivElement | null>(null);
+  const messageContainerRef = useRef<HTMLDivElement>(null);
+  const oldScrollHeightRef = useRef(0);
+  const oldScrollTopRef = useRef(0);
+  const isAutoScrollingRef = useRef(false);
 
-  const scrollToLatestMessage = useCallback(() => {
+  const scrollToLatestMessage = useCallback((messages: Message[]) => {
     if (messages.length > 0) {
-      const latestMsgElement = document.querySelector(`#msg-${messages.length - 1}`);
-      latestMsgElement?.scrollIntoView({ behavior: "smooth" });
-    }
-  }, [messages.length]);
+      oldScrollHeightRef.current = 0;
+      oldScrollTopRef.current = 0;
+      isAutoScrollingRef.current = true;
 
-  const scrollToCurrentContact = useCallback(() => {
-    if (currentContact.phoneNumber && listRefs.current[`receiver-${currentContact.phoneNumber}`]) {
-      listRefs.current[`receiver-${currentContact.phoneNumber}`].scrollIntoView({
-        behavior: "smooth"
-      });
+      const latestMsgElement = document.querySelector(`#msg-${messages.length - 1}`);
+      latestMsgElement?.scrollIntoView(true);
+
+      // Reset flag setelah scroll otomatis
+      setTimeout(() => {
+        isAutoScrollingRef.current = false;
+      }, 300);
     }
-  }, [currentContact.phoneNumber]);
+  }, []);
+
+  const handleGetMessages = useCallback(
+    async (phoneNumber: string) => {
+      const res = await getMessage(phoneNumber);
+      const messages = res.data;
+      setMessages(messages);
+      setPage(res.totalCount);
+      scrollToLatestMessage(messages);
+    },
+    [scrollToLatestMessage]
+  );
+
+  const loadMoreMessages = useCallback(
+    async (phoneNumber: string, pageToLoad: number) => {
+      const container = messageContainerRef.current;
+      if (!container || isLoadingMore || !hasMore) return;
+
+      // Jangan load jika pageToLoad < 0
+      if (pageToLoad < 0) return;
+
+      setIsLoadingMore(true);
+      try {
+        const res = await getMessage(phoneNumber, pageToLoad);
+
+        if (res.data.length === 0) {
+          setHasMore(false);
+        } else {
+          setMessages((prev) => [...res.data, ...prev]);
+          setPage(pageToLoad);
+        }
+      } catch (err) {
+        console.error("Error loading more messages:", err);
+      } finally {
+        setIsLoadingMore(false);
+      }
+    },
+    [hasMore, isLoadingMore]
+  );
+
+  const handleLoadMore = useCallback(async () => {
+    const container = messageContainerRef.current;
+    if (!container) return;
+
+    // Cegah load lagi jika page sudah 0
+    if (page === 0) return;
+
+    // Simpan posisi scroll lama
+    oldScrollHeightRef.current = container.scrollHeight;
+    oldScrollTopRef.current = container.scrollTop;
+
+    // Hitung page baru, tapi jangan sampai < 0
+    const newPage = Math.max(page - limit, 0);
+
+    await loadMoreMessages(currentContact.phoneNumber, newPage);
+  }, [loadMoreMessages, currentContact.phoneNumber, page, limit]);
+
+  useEffect(() => {
+    const container = messageContainerRef.current;
+    if (!container) return;
+
+    const handleScroll = () => {
+      if (isAutoScrollingRef.current) return;
+
+      if (container.scrollTop === 0 && hasMore && !isLoadingMore) {
+        handleLoadMore();
+      }
+    };
+
+    container.addEventListener("scroll", handleScroll);
+    return () => container.removeEventListener("scroll", handleScroll);
+  }, [handleLoadMore, hasMore, isLoadingMore, loadMoreMessages]);
+
+  useEffect(() => {
+    if (!isLoadingMore && messageContainerRef.current) {
+      const newScrollHeight = messageContainerRef.current.scrollHeight;
+      const delta = newScrollHeight - oldScrollHeightRef.current;
+
+      // Jaga posisi agar tetap pada pesan sebelumnya
+      messageContainerRef.current.scrollTop = oldScrollTopRef.current + delta;
+    }
+  }, [isLoadingMore, messages]);
 
   const resetMessageState = () => {
     setTextMsg("");
@@ -133,7 +237,8 @@ export default function WhatsAppChat() {
       contactId: "",
       contractId: "",
       applicationId: "",
-      contactType: ""
+      contactType: "",
+      isRepeat: null
     });
   }, []);
 
@@ -141,7 +246,7 @@ export default function WhatsAppChat() {
     async (e: ListTypes.SelectionChangedEvent) => {
       try {
         const contact = e.addedItems?.[0] as Contact;
-        if (!contact) return;
+        if (!contact || contact.phoneNumber === currentContact.phoneNumber) return;
 
         setLoadPanelVisible(true);
         setCurrentContact(contact);
@@ -153,20 +258,19 @@ export default function WhatsAppChat() {
           setIsListOpen(false);
         }
 
-        const messages = await getMessage(contact.phoneNumber);
-        setMessages(Array.isArray(messages) ? messages : []);
+        setHasMore(true);
 
-        navigate(`?phone=${contact.phoneNumber}`, { replace: true });
-
-        e.component?.scrollToItem(contact);
-      } catch (error) {
-        console.error("Failed to load messages:", error);
+        await handleGetMessages(contact.phoneNumber);
+        // Don't trigger reset scroll receiver
+        window.history.replaceState(null, "", `?phone=${contact.phoneNumber}`);
+      } catch (err) {
         setMessages([]);
+        console.error("Error loading message:", err);
       } finally {
         setLoadPanelVisible(false);
       }
     },
-    [isMobileView, resetActionButton, navigate]
+    [currentContact.phoneNumber, handleGetMessages, isMobileView, resetActionButton]
   );
 
   const handleTextAreaValueChanged = useCallback((value: string) => {
@@ -252,15 +356,14 @@ export default function WhatsAppChat() {
       };
 
       await sendMessageText(waReq);
-      const updatedMessages = await getMessage(currentContact.phoneNumber);
-      setMessages(Array.isArray(updatedMessages) ? updatedMessages : []);
+      await handleGetMessages(currentContact.phoneNumber);
       setTextMsg("");
     } catch (error) {
       console.error("Failed to send message:", error);
     } finally {
       setIsLoading(false);
     }
-  }, [textMsg, currentContact.phoneNumber, isLoading]);
+  }, [textMsg, currentContact.phoneNumber, isLoading, handleGetMessages]);
 
   const hideLoadPanel = useCallback(() => {
     setLoadPanelVisible(false);
@@ -293,8 +396,7 @@ export default function WhatsAppChat() {
             setReceiver(receivers);
             setCurrentContact(selectedContact);
             setSelectedItemKeys([selectedContact.phoneNumber]);
-            const messages = await getMessage(phone);
-            setMessages(Array.isArray(messages) ? messages : []);
+            handleGetMessages(selectedContact.phoneNumber);
 
             if (isMobileView) {
               setIsListOpen(false);
@@ -310,7 +412,7 @@ export default function WhatsAppChat() {
     };
 
     initChatFromUrl();
-  }, [searchParams, isMobileView]);
+  }, [searchParams, isMobileView, handleGetMessages]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -352,14 +454,6 @@ export default function WhatsAppChat() {
   }, []);
 
   useEffect(() => {
-    scrollToLatestMessage();
-  }, [scrollToLatestMessage]);
-
-  useEffect(() => {
-    scrollToCurrentContact();
-  }, [scrollToCurrentContact]);
-
-  useEffect(() => {
     const element = document.querySelector(".open-button") as HTMLElement;
     setTargetElement(element);
   }, []);
@@ -396,8 +490,7 @@ export default function WhatsAppChat() {
           };
 
           await sendMessageFile(attachType.id, waReq);
-          const updatedMessages = await getMessage(currentContact.phoneNumber);
-          setMessages(Array.isArray(updatedMessages) ? updatedMessages : []);
+          await handleGetMessages(currentContact.phoneNumber);
         }
       } catch (error) {
         console.error("Failed to upload file:", error);
@@ -409,7 +502,17 @@ export default function WhatsAppChat() {
     };
 
     handleFileUpload();
-  }, [attachType, currentContact.phoneNumber, fileAttach]);
+  }, [attachType, currentContact.phoneNumber, fileAttach, handleGetMessages]);
+
+  const repeatChipElement = useMemo(
+    () => (
+      <Chip
+        label={profile.isRepeat ? "RO" : "New"}
+        variant={profile.isRepeat ? "warning" : "success"}
+      />
+    ),
+    [profile.isRepeat]
+  );
 
   const renderListItem = useCallback(
     (item: Contact) => (
@@ -430,14 +533,20 @@ export default function WhatsAppChat() {
         }
       >
         <div className="contact">
-          <div className="name">{item.contactName}</div>
-          {item.unreadTotal > 0 && <div className="unread">{item.unreadTotal}</div>}
-          <br />
-          <div className="receive pull-right">{item.receiveAt && dateHandler(item.receiveAt)}</div>
+          <div className="wrapper-contact">
+            <div className="wrapper-contact-name">
+              {profile.isRepeat != null && repeatChipElement}
+              <div className="name">{item.contactName}</div>
+            </div>
+            {item.unreadTotal > 0 && <div className="unread">{item.unreadTotal}</div>}
+          </div>
+          <div className="wrapper-message-meta">
+            <div className="message-meta">{item.receiveAt && dateHandler(item.receiveAt)}</div>
+          </div>
         </div>
       </div>
     ),
-    [currentContact.phoneNumber]
+    [currentContact.phoneNumber, profile.isRepeat, repeatChipElement]
   );
 
   const renderMessage = useCallback((item: Message, index: number) => {
@@ -447,56 +556,47 @@ export default function WhatsAppChat() {
     const hasMediaUrl = item.mediaUrl && item.mediaUrl !== "";
     const isExternalUrl = item.mediaUrl?.includes("http");
 
+    const url = isExternalUrl
+      ? `${item.mediaUrl}`
+      : `${process.env.REACT_APP_BACKEND}api/file/get/${item.mediaUrl}`;
+
     return (
-      <div key={`${item.id}-msg-key`} id={`msg-${index}`}>
-        <div className="row message-body">
-          <div className={`col-sm-12 message-main-${isReceiver ? "receiver" : "sender"}`}>
-            <div className={`${isReceiver ? "receiver" : "sender pull-right"}`}>
-              {item.text && (
-                <div className="message-text">
-                  <span
-                    dangerouslySetInnerHTML={{
-                      __html: item.text.replace(/\n/g, "<br />")
-                    }}
-                  />
-                </div>
-              )}
+      <div
+        key={`${item.id}-msg-key`}
+        id={`msg-${index}`}
+        className={`chat-message ${isReceiver ? "receiver" : "sender"}`}
+      >
+        <div className={`bubble ${isReceiver ? "receiver" : "sender"}`}>
+          {item.text && (
+            <div
+              className="message-text"
+              dangerouslySetInnerHTML={{
+                __html: item.text.replace(/\n/g, "<br />")
+              }}
+            />
+          )}
 
-              {isMediaMessage && hasMediaUrl && (
-                <img
-                  src={
-                    isExternalUrl
-                      ? item.mediaUrl
-                      : `${process.env.REACT_APP_BACKEND}api/file/get/${item.mediaUrl}`
-                  }
-                  alt={item.messageType}
-                  style={{ maxWidth: "200px", height: "auto", borderRadius: "10px" }}
-                />
-              )}
-
-              {isDocumentMessage && hasMediaUrl && (
-                <a
-                  href={
-                    isExternalUrl
-                      ? item.mediaUrl
-                      : `${process.env.REACT_APP_BACKEND}api/file/get/${item.mediaUrl}`
-                  }
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  download
-                >
-                  <Button icon="file" text="Download File" type="default" />
-                </a>
-              )}
-
-              <div className="message-time pull-right">
-                {item.createdOn && dateHandler(item.createdOn)}
-              </div>
-
-              {!isReceiver && item.sentBy && (
-                <div className="message-time pull-right">Sent by: {item.sentBy}</div>
-              )}
+          {isMediaMessage && hasMediaUrl && (
+            <div
+              style={{ cursor: "pointer" }}
+              onClick={() => {
+                setMediaUrl(url);
+                setPopupImageVisible(true);
+              }}
+            >
+              <img className="chat-image" src={url} alt={item.messageType} />
             </div>
+          )}
+
+          {isDocumentMessage && hasMediaUrl && (
+            <a href={url} target="_blank" rel="noopener noreferrer" download>
+              <Button icon="file" text="Download File" />
+            </a>
+          )}
+
+          <div className="message-meta">
+            <span>{item.createdOn && dateHandler(item.createdOn)}</span>
+            {!isReceiver && item.sentBy && <span> • {item.sentBy}</span>}
           </div>
         </div>
       </div>
@@ -517,9 +617,8 @@ export default function WhatsAppChat() {
             itemRender={renderListItem}
             elementAttr={listAttrs}
             searchExpr="contactName"
-            searchMode={"contains"}
+            searchMode="contains"
             pageLoadMode="scrollBottom"
-            searchEditorOptions={{ height: 50 }}
           />
         </div>
       )}
@@ -541,7 +640,10 @@ export default function WhatsAppChat() {
                       hint={isListOpen ? "Tutup daftar kontak" : "Buka daftar kontak"}
                     />
                   )}
-                  <div className="name">{currentContact.contactName}</div>
+                  <div className="wrapper-contact-name">
+                    <div className="name">{currentContact.contactName}</div>
+                    {profile.isRepeat != null && repeatChipElement}
+                  </div>
                 </div>
                 <div className="action-container">
                   <Button
@@ -574,14 +676,14 @@ export default function WhatsAppChat() {
                 </div>
               </div>
 
-              <div id="whatsapp-container" className="chat-container">
+              <div ref={messageContainerRef} id="whatsapp-container" className="chat-container">
                 <div className="description">
                   {messages.map((item, index) => renderMessage(item, index))}
                 </div>
               </div>
 
               <LoadPanel
-                shadingColor="rgba(255,255,255,0.8)"
+                shadingColor="rgb(242, 242, 242, 0.8)"
                 position={{ of: "#whatsapp-container" }}
                 onHiding={hideLoadPanel}
                 visible={loadPanelVisible}
@@ -678,6 +780,26 @@ export default function WhatsAppChat() {
         multiple={false}
         visible={false}
       />
+
+      <Popup
+        visible={isPopupImageVisible}
+        onHiding={() => setPopupImageVisible(false)}
+        showTitle={false}
+        dragEnabled={false}
+        hideOnOutsideClick
+        maxWidth={700}
+        height={"auto"}
+        maxHeight={"80vh"}
+      >
+        <div
+          style={{
+            position: "relative",
+            overflow: "hidden"
+          }}
+        >
+          <img src={mediaUrl} alt="Document" style={{ maxWidth: "100%" }} />
+        </div>
+      </Popup>
     </div>
   );
 }

@@ -227,39 +227,34 @@ export const getMonthString = (datetime: Date | string): string => {
 };
 
 export const dateHandler = (date: Date | string) => {
-    let now = moment();
-    let momentDate = moment(date);
-    let time = momentDate.fromNow(true);
-    let dateByHourAndMin = momentDate.format("HH:mm");
-    const getDay = () => {
-        let days = time.split(" ")[0];
-        if (Number(days) < 8) {
-            return DayNameIndo[now.subtract(Number(days), "day").format("dddd").toLowerCase()];
-        } else {
-            return momentDate.format("DD/MM/YYYY");
-        }
-    };
-    // if (time === "a few seconds") {
-    //     return "Sekarang";
-    // }
-    // if (time.search("minute") !== -1) {
-    //     let mins = time.split(" ")[0];
-    //     if (mins === "a") {
-    //         return "1 min";
-    //     } else {
-    //         return `${mins} min`;
-    //     }
-    // }
-    // if (time.search("hour") !== -1) {
-    //     return dateByHourAndMin;
-    // }
-    if (time === "a day") {
-        return "Kemarin";
-    }
-    if (time.search("days") !== -1) {
-        return getDay();
-    }
-    return dateByHourAndMin;
+  const now = moment(); // jangan dimodifikasi langsung
+  const momentDate = moment(date);
+  const diffInMinutes = now.diff(momentDate, "minutes");
+  const diffInHours = now.diff(momentDate, "hours");
+  const diffInDays = now.diff(momentDate, "days");
+
+  if (diffInMinutes < 1) {
+    return "Sekarang";
+  }
+
+//   if (diffInMinutes < 60) {
+//     return `${diffInMinutes} menit`;
+//   }
+
+  if (diffInHours < 24 && now.isSame(momentDate, "day")) {
+    return momentDate.format("HH:mm");
+  }
+
+  if (diffInDays === 1) {
+    return "Kemarin";
+  }
+
+  if (diffInDays < 8) {
+    const dayName = momentDate.format("dddd").toLowerCase();
+    return DayNameIndo[dayName] || momentDate.format("dddd");
+  }
+
+  return momentDate.format("DD/MM/YYYY");
 };
 
 /**

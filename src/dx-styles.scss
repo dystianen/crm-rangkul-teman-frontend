@@ -1,48 +1,65 @@
 @import "./themes/generated/variables.base.scss";
-
-.app {
-  background-color: darken($base-bg, 5);
-  display: flex;
+html,
+body,
+#root {
+  margin: 0;
+  padding: 0;
   height: 100%;
   width: 100%;
   overflow: hidden;
+}
 
-  .content {
-    line-height: 1.5;
-    flex-grow: 1;
+* {
+  box-sizing: border-box;
+}
 
-    h2 {
-      font-size: 20px;
-      font-weight: 400;
-      margin-top: 10px;
-      margin-bottom: 10px;
-    }
-  }
+.app {
+  background-color: darken($base-bg, 5%);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
 
   .container {
-    height: 100%;
-    flex-direction: column;
     display: flex;
+    flex-direction: column;
+    height: 100%;
   }
 
   .layout-body {
     flex: 1;
     min-height: 0;
+    overflow-y: auto;
+  }
+
+  .content {
+    flex-grow: 1;
+    line-height: 1.5;
+
+    h2 {
+      font-size: 20px;
+      font-weight: 400;
+      margin: 10px 0;
+    }
   }
 
   .content-block {
-    padding-left: 15px;
-    padding-right: 15px;
-    padding-top: 5px;
+    padding: 0 15px;
     z-index: 999;
+
+    @media (max-width: 768px) {
+      padding: 0;
+    }
   }
 
-  .dx-layout-manager .dx-field-item:not(.dx-last-col) {
-    padding-right: 5px;
-  }
+  .dx-layout-manager {
+    .dx-field-item:not(.dx-last-col) {
+      padding-right: 5px;
+    }
 
-  .dx-layout-manager .dx-field-item:not(.dx-first-col) {
-    padding-left: 5px;
+    .dx-field-item:not(.dx-first-col) {
+      padding-left: 5px;
+    }
   }
 }
 
@@ -177,6 +194,10 @@
   }
 }
 
+.dx-scrollable-native.dx-scrollable-native-ios .dx-scrollable-content {
+  min-height: 100% !important;
+}
+
 .dx-widget {
   line-height: 1.2 !important;
 }
@@ -222,21 +243,6 @@ $side-panel-min-width: 24px;
 
 .dx-row-focused a {
   color: #fff;
-}
-
-html,
-body {
-  margin: 0px;
-  min-height: 99.7%;
-  height: 99.7%;
-}
-
-#root {
-  height: 100%;
-}
-
-* {
-  box-sizing: border-box;
 }
 
 .menu-container {
