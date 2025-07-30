@@ -110,19 +110,107 @@ export default function WhatsAppChat() {
     contactType: "",
     isRepeat: null
   });
+  const [hasMore, setHasMore] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [page, setPage] = useState(0);
+  const limit = 50;
 
   // Refs
   const textRef = useRef<any>(null);
   const listRefs = useRef<Record<string, HTMLElement>>({});
   const fileUploaderRef = useRef<any>(null);
   const emojiPickerRef = useRef<HTMLDivElement | null>(null);
+  const messageContainerRef = useRef<HTMLDivElement>(null);
+  const oldScrollHeightRef = useRef(0);
+  const oldScrollTopRef = useRef(0);
 
-  const scrollToLatestMessage = useCallback(() => {
+  const scrollToLatestMessage = useCallback((messages: Message[]) => {
     if (messages.length > 0) {
+      oldScrollHeightRef.current = 0;
+      oldScrollTopRef.current = 0;
       const latestMsgElement = document.querySelector(`#msg-${messages.length - 1}`);
       latestMsgElement?.scrollIntoView(true);
     }
-  }, [messages.length]);
+  }, []);
+
+  const handleGetMessages = useCallback(
+    async (phoneNumber: string) => {
+      const res = await getMessage(phoneNumber);
+      const messages = res.data;
+      setMessages(messages);
+      setPage(res.totalCount);
+      scrollToLatestMessage(messages);
+    },
+    [scrollToLatestMessage]
+  );
+
+  const loadMoreMessages = useCallback(
+    async (phoneNumber: string, pageToLoad: number) => {
+      const container = messageContainerRef.current;
+      if (!container || isLoadingMore || !hasMore) return;
+
+      // Jangan load jika pageToLoad < 0
+      if (pageToLoad < 0) return;
+
+      setIsLoadingMore(true);
+      try {
+        const res = await getMessage(phoneNumber, pageToLoad);
+
+        if (res.data.length === 0) {
+          setHasMore(false);
+        } else {
+          setMessages((prev) => [...res.data, ...prev]);
+          setPage(pageToLoad);
+        }
+      } catch (err) {
+        console.error("Error loading more messages:", err);
+      } finally {
+        setIsLoadingMore(false);
+      }
+    },
+    [hasMore, isLoadingMore]
+  );
+
+  const handleLoadMore = useCallback(async () => {
+    const container = messageContainerRef.current;
+    if (!container) return;
+
+    // Cegah load lagi jika page sudah 0
+    if (page === 0) return;
+
+    // Simpan posisi scroll lama
+    oldScrollHeightRef.current = container.scrollHeight;
+    oldScrollTopRef.current = container.scrollTop;
+
+    // Hitung page baru, tapi jangan sampai < 0
+    const newPage = Math.max(page - limit, 0);
+
+    await loadMoreMessages(currentContact.phoneNumber, newPage);
+  }, [loadMoreMessages, currentContact.phoneNumber, page, limit]);
+
+  useEffect(() => {
+    const container = messageContainerRef.current;
+    if (!container) return;
+
+    const handleScroll = () => {
+      if (container.scrollTop === 0 && hasMore && !isLoadingMore) {
+        handleLoadMore();
+      }
+    };
+
+    container.addEventListener("scroll", handleScroll);
+    return () => container.removeEventListener("scroll", handleScroll);
+  }, [handleLoadMore, hasMore, isLoadingMore, loadMoreMessages]);
+
+  useEffect(() => {
+    if (!isLoadingMore && messageContainerRef.current) {
+      const newScrollHeight = messageContainerRef.current.scrollHeight;
+      const delta = newScrollHeight - oldScrollHeightRef.current;
+
+      // Jaga posisi agar tetap pada pesan sebelumnya
+      messageContainerRef.current.scrollTop = oldScrollTopRef.current + delta;
+    }
+  }, [isLoadingMore, messages]);
 
   const resetMessageState = () => {
     setTextMsg("");
@@ -158,8 +246,10 @@ export default function WhatsAppChat() {
           setIsListOpen(false);
         }
 
-        const res = await getMessage(contact.phoneNumber);
-        setMessages(res);
+        setHasMore(true);
+
+        await handleGetMessages(contact.phoneNumber);
+        // Don't trigger reset scroll receiver
         window.history.replaceState(null, "", `?phone=${contact.phoneNumber}`);
       } catch (err) {
         setMessages([]);
@@ -168,7 +258,7 @@ export default function WhatsAppChat() {
         setLoadPanelVisible(false);
       }
     },
-    [currentContact.phoneNumber, isMobileView, resetActionButton]
+    [currentContact.phoneNumber, handleGetMessages, isMobileView, resetActionButton]
   );
 
   const handleTextAreaValueChanged = useCallback((value: string) => {
@@ -254,15 +344,14 @@ export default function WhatsAppChat() {
       };
 
       await sendMessageText(waReq);
-      const updatedMessages = await getMessage(currentContact.phoneNumber);
-      setMessages(Array.isArray(updatedMessages) ? updatedMessages : []);
+      await handleGetMessages(currentContact.phoneNumber);
       setTextMsg("");
     } catch (error) {
       console.error("Failed to send message:", error);
     } finally {
       setIsLoading(false);
     }
-  }, [textMsg, currentContact.phoneNumber, isLoading]);
+  }, [textMsg, currentContact.phoneNumber, isLoading, handleGetMessages]);
 
   const hideLoadPanel = useCallback(() => {
     setLoadPanelVisible(false);
@@ -295,8 +384,7 @@ export default function WhatsAppChat() {
             setReceiver(receivers);
             setCurrentContact(selectedContact);
             setSelectedItemKeys([selectedContact.phoneNumber]);
-            const messages = await getMessage(phone);
-            setMessages(Array.isArray(messages) ? messages : []);
+            handleGetMessages(selectedContact.phoneNumber);
 
             if (isMobileView) {
               setIsListOpen(false);
@@ -312,7 +400,7 @@ export default function WhatsAppChat() {
     };
 
     initChatFromUrl();
-  }, [searchParams, isMobileView]);
+  }, [searchParams, isMobileView, handleGetMessages]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -354,10 +442,6 @@ export default function WhatsAppChat() {
   }, []);
 
   useEffect(() => {
-    scrollToLatestMessage();
-  }, [scrollToLatestMessage]);
-
-  useEffect(() => {
     const element = document.querySelector(".open-button") as HTMLElement;
     setTargetElement(element);
   }, []);
@@ -394,8 +478,7 @@ export default function WhatsAppChat() {
           };
 
           await sendMessageFile(attachType.id, waReq);
-          const updatedMessages = await getMessage(currentContact.phoneNumber);
-          setMessages(Array.isArray(updatedMessages) ? updatedMessages : []);
+          await handleGetMessages(currentContact.phoneNumber);
         }
       } catch (error) {
         console.error("Failed to upload file:", error);
@@ -407,7 +490,7 @@ export default function WhatsAppChat() {
     };
 
     handleFileUpload();
-  }, [attachType, currentContact.phoneNumber, fileAttach]);
+  }, [attachType, currentContact.phoneNumber, fileAttach, handleGetMessages]);
 
   const repeatChipElement = useMemo(
     () => (
@@ -581,7 +664,7 @@ export default function WhatsAppChat() {
                 </div>
               </div>
 
-              <div id="whatsapp-container" className="chat-container">
+              <div ref={messageContainerRef} id="whatsapp-container" className="chat-container">
                 <div className="description">
                   {messages.map((item, index) => renderMessage(item, index))}
                 </div>

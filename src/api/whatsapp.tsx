@@ -1,9 +1,18 @@
 import { ajaxGet, ajaxPost } from "./http.api";
 import { API_PATH } from "./path_url";
 
-export const getMessage = async (phoneNumber: string): Promise<any[]> => {
-  const resp = await ajaxGet(`${API_PATH.MESSAGE_WHATSAPP}/${phoneNumber}`);
-  return resp.data;
+export const getMessage = async (
+  phoneNumber: string,
+  start?: number,
+  length?: number
+): Promise<any> => {
+  const resp = await ajaxGet(`${API_PATH.MESSAGE_WHATSAPP}/${phoneNumber}`, {
+    params: {
+      start,
+      length: length || 50
+    }
+  });
+  return resp;
 };
 
 export const uploadFile = async (payload: any): Promise<any> => {
