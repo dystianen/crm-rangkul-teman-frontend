@@ -1,4 +1,3 @@
-import { Client } from "@stomp/stompjs";
 import { Popover, Popup } from "devextreme-react";
 import { Button } from "devextreme-react/button";
 import DropDownButton, { DropDownButtonTypes } from "devextreme-react/drop-down-button";
@@ -9,7 +8,6 @@ import TextArea from "devextreme-react/text-area";
 import EmojiPicker from "emoji-picker-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import SockJS from "sockjs-client";
 import {
   getMessage,
   getMessageProfile,
@@ -119,9 +117,6 @@ export default function WhatsAppChat() {
   const [page, setPage] = useState(0);
   const limit = 50;
 
-  // SOCKET
-  const [waitingToReconnect, setWaitingToReconnect] = useState(false);
-
   // Refs
   const textRef = useRef<any>(null);
   const listRefs = useRef<Record<string, HTMLElement>>({});
@@ -130,70 +125,21 @@ export default function WhatsAppChat() {
   const messageContainerRef = useRef<HTMLDivElement>(null);
   const oldScrollHeightRef = useRef(0);
   const oldScrollTopRef = useRef(0);
-
-  const stompClientRef = useRef<any>(null);
-
-  // setReceiver((prevReceivers) => {
-  //   const existingContact = prevReceivers.find((r) => r.phoneNumber === phoneNumber);
-  //   const updatedReceivers = [...prevReceivers];
-
-  //   if (!existingContact) {
-  //     updatedReceivers.unshift(updatedReceiver); // Masukkan ke atas karena pesan baru
-  //   } else {
-  //     const index = updatedReceivers.findIndex((c) => c.phoneNumber === phoneNumber);
-  //     updatedReceivers.splice(index, 1); // Hapus yang lama
-  //     updatedReceivers.unshift(updatedReceiver); // Masukkan ke atas
-  //   }
-
-  //   return updatedReceivers; // ✅ return yang benar
-  // });
-
-  useEffect(() => {
-    const socket = new SockJS(`https://little-stars-kneel.loca.lt/ws`);
-
-    const stompClient = new Client({
-      webSocketFactory: () => socket,
-      reconnectDelay: 5000,
-      debug: (str) => {
-        console.log(str);
-      },
-      onDisconnect: () => {
-        if (waitingToReconnect) {
-          return;
-        }
-        setWaitingToReconnect(true);
-      },
-      onConnect: () => {
-        console.log("Connected to WebSocket");
-        stompClient.subscribe(`/topic/public`, (response) => {
-          console.log("Received message:", response.body);
-        });
-      },
-      onStompError: (frame) => {
-        console.error("Broker reported error: " + frame.headers["message"]);
-        console.error("Additional details: " + frame.body);
-      }
-    });
-
-    stompClient.activate();
-    stompClientRef.current = stompClient;
-
-    return () => {
-      // Dereference, so it will set up next time
-      console.log("Cleanup");
-      if (stompClientRef.current) {
-        stompClientRef.current.deactivate();
-        stompClientRef.current = null;
-      }
-    };
-  }, [waitingToReconnect]);
+  const isAutoScrollingRef = useRef(false);
 
   const scrollToLatestMessage = useCallback((messages: Message[]) => {
     if (messages.length > 0) {
       oldScrollHeightRef.current = 0;
       oldScrollTopRef.current = 0;
+      isAutoScrollingRef.current = true;
+
       const latestMsgElement = document.querySelector(`#msg-${messages.length - 1}`);
       latestMsgElement?.scrollIntoView(true);
+
+      // Reset flag setelah scroll otomatis
+      setTimeout(() => {
+        isAutoScrollingRef.current = false;
+      }, 300);
     }
   }, []);
 
@@ -257,6 +203,8 @@ export default function WhatsAppChat() {
     if (!container) return;
 
     const handleScroll = () => {
+      if (isAutoScrollingRef.current) return;
+
       if (container.scrollTop === 0 && hasMore && !isLoadingMore) {
         handleLoadMore();
       }
