@@ -2,7 +2,6 @@ import Button from "devextreme-react/button";
 import { Template } from "devextreme-react/core/template";
 import Toolbar, { Item } from "devextreme-react/toolbar";
 import type { HeaderProps } from "../../types";
-import Notification from "../notification";
 import UserPanel from "../user-panel/UserPanel";
 import "./Header.scss";
 
@@ -19,9 +18,6 @@ export default function Header({ menuToggleEnabled, title, toggleMenu }: HeaderP
           <Button icon="menu" stylingMode="text" onClick={toggleMenu} />
         </Item>
         <Item location={"before"} cssClass={"header-title"} text={title} visible={!!title} />
-        <Item location={"after"}>
-          <Notification />
-        </Item>
         <Item location={"after"} locateInMenu={"auto"} menuItemTemplate={"userPanelTemplate"}>
           <Button className={"user-button authorization"} height={"100%"} stylingMode={"text"}>
             <UserPanel menuMode={"context"} />
