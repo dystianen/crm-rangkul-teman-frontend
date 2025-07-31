@@ -6,7 +6,7 @@ import List, { ListTypes } from "devextreme-react/list";
 import { LoadPanel } from "devextreme-react/load-panel";
 import TextArea from "devextreme-react/text-area";
 import EmojiPicker from "emoji-picker-react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   getMessage,
@@ -27,6 +27,7 @@ interface Contact {
   contactName: string;
   receiveAt: string;
   unreadTotal: number;
+  isRepeat: boolean;
 }
 
 interface Message {
@@ -75,7 +76,8 @@ const INITIAL_CONTACT: Contact = {
   phoneNumber: "",
   contactName: "",
   receiveAt: new Date().toDateString(),
-  unreadTotal: 0
+  unreadTotal: 0,
+  isRepeat: false
 };
 
 export default function WhatsAppChat() {
@@ -504,14 +506,8 @@ export default function WhatsAppChat() {
     handleFileUpload();
   }, [attachType, currentContact.phoneNumber, fileAttach, handleGetMessages]);
 
-  const repeatChipElement = useMemo(
-    () => (
-      <Chip
-        label={profile.isRepeat ? "RO" : "New"}
-        variant={profile.isRepeat ? "warning" : "success"}
-      />
-    ),
-    [profile.isRepeat]
+  const RepeatChipElement = ({ isRepeat }: { isRepeat: boolean }) => (
+    <Chip label={isRepeat ? "RO" : "New"} variant={isRepeat ? "warning" : "success"} />
   );
 
   const renderListItem = useCallback(
@@ -535,7 +531,7 @@ export default function WhatsAppChat() {
         <div className="contact">
           <div className="wrapper-contact">
             <div className="wrapper-contact-name">
-              {profile.isRepeat != null && repeatChipElement}
+              {item.isRepeat != null && <RepeatChipElement isRepeat={item.isRepeat} />}
               <div className="name">{item.contactName}</div>
             </div>
             {item.unreadTotal > 0 && <div className="unread">{item.unreadTotal}</div>}
@@ -546,7 +542,7 @@ export default function WhatsAppChat() {
         </div>
       </div>
     ),
-    [currentContact.phoneNumber, profile.isRepeat, repeatChipElement]
+    [currentContact.phoneNumber]
   );
 
   const renderMessage = useCallback((item: Message, index: number) => {
@@ -642,7 +638,7 @@ export default function WhatsAppChat() {
                   )}
                   <div className="wrapper-contact-name">
                     <div className="name">{currentContact.contactName}</div>
-                    {profile.isRepeat != null && repeatChipElement}
+                    {profile.isRepeat != null && <RepeatChipElement isRepeat={profile.isRepeat} />}
                   </div>
                 </div>
                 <div className="action-container">
