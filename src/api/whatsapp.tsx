@@ -53,3 +53,8 @@ export const getMessageProfile = async (
   const resp = await ajaxGet(`${API_PATH.MESSAGE_WHATSAPP}/profile/${id}`);
   return resp.data;
 };
+
+export const getNotification = async (): Promise<any> => {
+  const resp = await ajaxGet(`${API_PATH.NOTIFICATION}`);
+  return resp.data;
+};

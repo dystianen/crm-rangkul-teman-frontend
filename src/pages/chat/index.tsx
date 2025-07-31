@@ -1,3 +1,4 @@
+import { StompSubscription } from "@stomp/stompjs";
 import { Popover, Popup } from "devextreme-react";
 import { Button } from "devextreme-react/button";
 import DropDownButton, { DropDownButtonTypes } from "devextreme-react/drop-down-button";
@@ -11,13 +12,14 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   getMessage,
   getMessageProfile,
-  getReceiver,
   sendMessageFile,
   sendMessageText,
   uploadFile
 } from "src/api/whatsapp";
 import IconChat from "src/assets/images/chat.png";
 import Chip from "src/components/chip";
+import { useAuth } from "src/contexts/auth";
+import ChatWebSocketManager from "src/services/ChatWebSocketManager";
 import { dateHandler } from "../../utils/dateUtils";
 import "./index.scss";
 
@@ -80,9 +82,12 @@ const INITIAL_CONTACT: Contact = {
   isRepeat: false
 };
 
+const ws = ChatWebSocketManager.getInstance();
+
 export default function WhatsAppChat() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const auth = useAuth();
 
   // State management
   const [textMsg, setTextMsg] = useState<string>("");
@@ -128,6 +133,59 @@ export default function WhatsAppChat() {
   const oldScrollHeightRef = useRef(0);
   const oldScrollTopRef = useRef(0);
   const isAutoScrollingRef = useRef(false);
+
+  useEffect(() => {
+    let subscription: StompSubscription;
+    let subsReceiver: StompSubscription;
+
+    const subscribe = async () => {
+      subscription = await ws.subscribeWhenConnected("/api/receiver", (msg) => {
+        const res = JSON.parse(msg.body);
+        console.log("🚀 ~ subscribe ~ res:", res);
+        setReceiver(res.receivers);
+      });
+    };
+
+    const subs = async () => {
+      subsReceiver = await ws.subscribeWhenConnected("/topic/receiver", (msg) => {
+        const res = JSON.parse(msg.body);
+        console.log("🚀 ~ subs ~ res:", res);
+
+        setReceiver((prev) => {
+          const filtered = prev.filter((r) => r.phoneNumber !== res.receiver.phoneNumber);
+          return [res.receiver, ...filtered];
+        });
+      });
+    };
+
+    subscribe();
+    subs();
+
+    return () => {
+      subscription?.unsubscribe();
+      subsReceiver?.unsubscribe();
+    };
+  }, []);
+
+  // useEffect(() => {
+  //   if (!currentContact.phoneNumber) return;
+
+  //   const ws = ChatWebSocketManager.getInstance();
+  //   const chatTopic = `/topic/chat/${currentContact.phoneNumber}`;
+
+  //   const chatSub = ws.subscribe(chatTopic, (msg) => {
+  //     try {
+  //       const data = JSON.parse(msg.body);
+  //       // Update chat message state...
+  //     } catch (err) {
+  //       console.error("Invalid JSON from", chatTopic, err);
+  //     }
+  //   });
+
+  //   return () => {
+  //     chatSub?.unsubscribe();
+  //   };
+  // }, [currentContact.phoneNumber]);
 
   const scrollToLatestMessage = useCallback((messages: Message[]) => {
     if (messages.length > 0) {
@@ -392,10 +450,10 @@ export default function WhatsAppChat() {
       const phone = searchParams.get("phone");
       if (phone) {
         try {
-          const receivers = await getReceiver();
-          const selectedContact = receivers.find((r: Contact) => r.phoneNumber === phone);
+          // const receivers = await getReceiver();
+          const selectedContact = receiver.find((r: Contact) => r.phoneNumber === phone);
           if (selectedContact) {
-            setReceiver(receivers);
+            // setReceiver(receivers);
             setCurrentContact(selectedContact);
             setSelectedItemKeys([selectedContact.phoneNumber]);
             handleGetMessages(selectedContact.phoneNumber);
@@ -408,13 +466,13 @@ export default function WhatsAppChat() {
           console.error("Failed to load chat from URL", err);
         }
       } else {
-        const receivers = await getReceiver();
-        setReceiver(Array.isArray(receivers) ? receivers : []);
+        // const receivers = await getReceiver();
+        // setReceiver(Array.isArray(receivers) ? receivers : []);
       }
     };
 
     initChatFromUrl();
-  }, [searchParams, isMobileView, handleGetMessages]);
+  }, [searchParams, isMobileView, handleGetMessages, receiver]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -441,19 +499,19 @@ export default function WhatsAppChat() {
     }
   }, [currentContact.phoneNumber, resetActionButton]);
 
-  useEffect(() => {
-    const loadReceivers = async () => {
-      try {
-        const receivers = await getReceiver();
-        setReceiver(Array.isArray(receivers) ? receivers : []);
-      } catch (error) {
-        console.error("Failed to load receivers:", error);
-        setReceiver([]);
-      }
-    };
+  // useEffect(() => {
+  //   const loadReceivers = async () => {
+  //     try {
+  //       const receivers = await getReceiver();
+  //       setReceiver(Array.isArray(receivers) ? receivers : []);
+  //     } catch (error) {
+  //       console.error("Failed to load receivers:", error);
+  //       setReceiver([]);
+  //     }
+  //   };
 
-    loadReceivers();
-  }, []);
+  //   loadReceivers();
+  // }, []);
 
   useEffect(() => {
     const element = document.querySelector(".open-button") as HTMLElement;
@@ -599,8 +657,13 @@ export default function WhatsAppChat() {
     );
   }, []);
 
+  const handleSend = () => {
+    ws.send("/api/receiver", JSON.stringify({ sessionId: auth.user?.id }));
+  };
+
   return (
     <div className="chat-card">
+      <Button onClick={handleSend}>handleSend</Button>
       {(!isMobileView || isListOpen) && (
         <div className={`left ${!isListOpen ? "closed" : ""}`}>
           <List
