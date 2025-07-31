@@ -226,35 +226,47 @@ export const getMonthString = (datetime: Date | string): string => {
     return moment(datetime).format('MMMM');
 };
 
+/**
+ * Mengubah tanggal menjadi representasi waktu yang ramah pengguna dalam bahasa Indonesia.
+ * 
+ * Logika:
+ * - Jika waktu kurang dari 1 menit yang lalu → "Sekarang"
+ * - Jika masih di hari yang sama → format jam (HH:mm)
+ * - Jika tanggalnya adalah kemarin → "Kemarin"
+ * - Jika dalam 6 hari terakhir → nama hari (Senin, Selasa, dst)
+ * - Selain itu → format `DD/MM/YYYY`
+ * 
+ * Catatan: Tanggal dikonversi ke waktu lokal menggunakan `moment(date).local()`.
+ * 
+ * @param date Tanggal dalam bentuk `Date` atau `string` ISO.
+ * @returns String representasi waktu dalam bahasa Indonesia.
+ */
 export const dateHandler = (date: Date | string) => {
-  const now = moment(); // jangan dimodifikasi langsung
-  const momentDate = moment(date);
-  const diffInMinutes = now.diff(momentDate, "minutes");
-  const diffInHours = now.diff(momentDate, "hours");
-  const diffInDays = now.diff(momentDate, "days");
+    const now = moment();
+    const momentDate = moment(date).local();
+    const diffInMinutes = now.diff(momentDate, "minutes");
 
-  if (diffInMinutes < 1) {
-    return "Sekarang";
-  }
+    if (diffInMinutes < 1) {
+        return "Sekarang";
+    }
 
-//   if (diffInMinutes < 60) {
-//     return `${diffInMinutes} menit`;
-//   }
+    if (now.isSame(momentDate, "day")) {
+        return momentDate.format("HH:mm");
+    }
 
-  if (diffInHours < 24 && now.isSame(momentDate, "day")) {
-    return momentDate.format("HH:mm");
-  }
+    // Kalau tanggalnya adalah kemarin (berdasarkan kalender, bukan jam)
+    if (now.clone().subtract(1, "day").isSame(momentDate, "day")) {
+        return "Kemarin";
+    }
 
-  if (diffInDays === 1) {
-    return "Kemarin";
-  }
+    // Dalam seminggu terakhir
+    if (now.diff(momentDate, "days") < 6) {
+        const dayName = momentDate.format("dddd").toLowerCase();
+        return DayNameIndo[dayName] || momentDate.format("dddd");
+    }
 
-  if (diffInDays < 8) {
-    const dayName = momentDate.format("dddd").toLowerCase();
-    return DayNameIndo[dayName] || momentDate.format("dddd");
-  }
-
-  return momentDate.format("DD/MM/YYYY");
+    // Format default
+    return momentDate.format("DD/MM/YYYY");
 };
 
 /**
