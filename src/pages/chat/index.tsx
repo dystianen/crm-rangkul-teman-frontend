@@ -531,7 +531,7 @@ export default function WhatsAppChat() {
         <div className="contact">
           <div className="wrapper-contact">
             <div className="wrapper-contact-name">
-              {item.isRepeat != null && <RepeatChipElement isRepeat={item.isRepeat} />}
+              <RepeatChipElement isRepeat={item.isRepeat} />
               <div className="name">{item.contactName}</div>
             </div>
             {item.unreadTotal > 0 && <div className="unread">{item.unreadTotal}</div>}
