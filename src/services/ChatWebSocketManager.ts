@@ -5,13 +5,11 @@ class ChatWebSocketManager {
   private static instance: ChatWebSocketManager;
   private client: Client;
 
-  // 🔁 Simpan callback+headers untuk resubscribe
   private subscriptionConfigs: Map<
     string,
     { callback: (msg: IMessage) => void; headers?: StompHeaders }
   > = new Map();
 
-  // 🧭 Simpan subscription aktif (untuk mencegah duplikasi)
   private activeSubscriptions: Map<string, StompSubscription> = new Map();
 
   private constructor() {
@@ -19,20 +17,34 @@ class ChatWebSocketManager {
       webSocketFactory: () => new SockJS(`${process.env.REACT_APP_BACKEND}api/chatRtj`),
       reconnectDelay: 5000,
       debug: (str) => console.log(str),
+
       onConnect: () => {
         console.log("🟢 WebSocket Connected");
 
-        // 🔁 Resubscribe semua topic dengan data lama
+        // 🔁 Resubscribe semua topic jika reconnect
         this.subscriptionConfigs.forEach((config, topic) => {
-          // Hindari double subscribe
           if (!this.activeSubscriptions.has(topic)) {
             const sub = this.client.subscribe(topic, config.callback, config.headers);
             this.activeSubscriptions.set(topic, sub);
+            console.log("📩 Resubscribed to", topic);
           }
         });
       },
+
+      onDisconnect: () => {
+        console.warn("🔴 WebSocket disconnected");
+      },
+
       onStompError: (frame) => {
-        console.error("Broker error", frame);
+        console.error("💥 STOMP error:", frame);
+      },
+
+      onWebSocketClose: (event) => {
+        console.warn("🔌 WebSocket closed:", event.reason);
+      },
+
+      onWebSocketError: (event) => {
+        console.error("🛑 WebSocket error:", event);
       }
     });
 
@@ -55,14 +67,14 @@ class ChatWebSocketManager {
       const alreadySubscribed = this.activeSubscriptions.has(topic);
 
       const doSubscribe = () => {
-        // ✅ Subscribe hanya jika belum ada
         if (!alreadySubscribed) {
           const sub = this.client.subscribe(topic, callback, headers);
           this.activeSubscriptions.set(topic, sub);
           this.subscriptionConfigs.set(topic, { callback, headers });
+          console.log("📩 Subscribed to", topic);
           resolve(sub);
         } else {
-          // ✅ Jika sudah, resolve dengan existing subscription
+          console.log("🟡 Already subscribed to", topic);
           resolve(this.activeSubscriptions.get(topic)!);
         }
       };
@@ -70,29 +82,46 @@ class ChatWebSocketManager {
       if (this.client.connected) {
         doSubscribe();
       } else {
-        const originalOnConnect = this.client.onConnect;
-        this.client.onConnect = (frame) => {
-          doSubscribe();
-          if (originalOnConnect) originalOnConnect(frame);
-        };
+        // ⏳ Tunggu hingga terhubung, lalu subscribe
+        const interval = setInterval(() => {
+          if (this.client.connected) {
+            clearInterval(interval);
+            doSubscribe();
+          }
+        }, 100);
       }
     });
   }
 
   public unsubscribe(topic: string) {
     const sub = this.activeSubscriptions.get(topic);
-    sub?.unsubscribe();
+    if (sub) {
+      sub.unsubscribe();
+      console.log("❌ Unsubscribed from", topic);
+    }
     this.activeSubscriptions.delete(topic);
     this.subscriptionConfigs.delete(topic);
   }
 
+  public removeSubscription(topic: string) {
+    this.activeSubscriptions.delete(topic);
+    this.subscriptionConfigs.delete(topic);
+    console.log("🧹 Removed subscription entry for", topic);
+  }
+
   public send(destination: string, body: string) {
+    if (!this.client.connected) {
+      console.warn("Cannot send message, WebSocket is not connected.");
+      return;
+    }
     this.client.publish({ destination, body });
   }
 
   public disconnect() {
     this.client.deactivate();
     this.activeSubscriptions.clear();
+    this.subscriptionConfigs.clear();
+    console.log("🔌 Disconnected WebSocket and cleared subscriptions");
   }
 }
 

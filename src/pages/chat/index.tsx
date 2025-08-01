@@ -19,7 +19,6 @@ import {
 } from "src/api/whatsapp";
 import IconChat from "src/assets/images/chat.png";
 import Chip from "src/components/chip";
-import { useAuth } from "src/contexts/auth";
 import ChatWebSocketManager from "src/services/ChatWebSocketManager";
 import { dateHandler } from "../../utils/dateUtils";
 import "./index.scss";
@@ -83,12 +82,11 @@ const INITIAL_CONTACT: Contact = {
   isRepeat: false
 };
 
-const ws = ChatWebSocketManager.getInstance();
-
 export default function WhatsAppChat() {
+  const ws = ChatWebSocketManager.getInstance();
+
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const auth = useAuth();
 
   // State management
   const [textMsg, setTextMsg] = useState<string>("");
@@ -135,13 +133,19 @@ export default function WhatsAppChat() {
   const oldScrollTopRef = useRef(0);
   const isAutoScrollingRef = useRef(false);
 
+  const handleUpdateTotalUnread = useCallback((phoneNumber: string) => {
+    setReceiver((prev) =>
+      prev.map((r) => (r.phoneNumber === phoneNumber ? { ...r, unreadTotal: 0 } : r))
+    );
+  }, []);
+
   useEffect(() => {
     let subsReceiver: StompSubscription;
 
     const subscribe = async () => {
       subsReceiver = await ws.subscribeWhenConnected("/api/receiver", (msg) => {
         const res = JSON.parse(msg.body);
-        console.log("🚀 ~ subs ~ res:", res);
+        console.log("👤 Receiver:", res);
 
         setReceiver((prev) => {
           const filtered = prev.filter((r) => r.phoneNumber !== res.receiver.phoneNumber);
@@ -155,20 +159,19 @@ export default function WhatsAppChat() {
     return () => {
       subsReceiver?.unsubscribe();
     };
-  }, []);
+  }, [ws]);
 
   useEffect(() => {
     const selectedReceiver = currentContact.phoneNumber;
     if (!selectedReceiver) return;
-
     let subscription: StompSubscription;
+    const topic = `/api/whatsapp/${selectedReceiver}`;
 
     const subscribe = async () => {
-      const topic = `/topic/chat/${selectedReceiver}`;
       subscription = await ws.subscribeWhenConnected(topic, (msg) => {
         const res = JSON.parse(msg.body);
         console.log("💬 New message:", res);
-        setMessages((prevMessages) => [...prevMessages, res.message]);
+        setMessages((prevMessages) => [...prevMessages, res.content]);
       });
     };
 
@@ -176,9 +179,11 @@ export default function WhatsAppChat() {
 
     return () => {
       subscription?.unsubscribe(); // unsubscribe saat receiver berubah
+      ws.removeSubscription(topic);
       console.log("❌ Unsubscribed from", selectedReceiver);
+      handleUpdateTotalUnread(currentContact.phoneNumber);
     };
-  }, [currentContact.phoneNumber]);
+  }, [currentContact.phoneNumber, handleUpdateTotalUnread, ws]);
 
   const scrollToLatestMessage = useCallback((messages: Message[]) => {
     if (messages.length > 0) {
@@ -299,9 +304,11 @@ export default function WhatsAppChat() {
     async (e: ListTypes.SelectionChangedEvent) => {
       try {
         const contact = e.addedItems?.[0] as Contact;
-        if (!contact || contact.phoneNumber === currentContact.phoneNumber) return;
+        const phoneNumber = contact.phoneNumber;
+        if (!contact || phoneNumber === currentContact.phoneNumber) return;
 
         setLoadPanelVisible(true);
+        handleUpdateTotalUnread(phoneNumber);
         setCurrentContact(contact);
         setSelectedItemKeys([contact.phoneNumber]);
         resetMessageState();
@@ -313,9 +320,9 @@ export default function WhatsAppChat() {
 
         setHasMore(true);
 
-        await handleGetMessages(contact.phoneNumber);
+        await handleGetMessages(phoneNumber);
         // Don't trigger reset scroll receiver
-        window.history.replaceState(null, "", `?phone=${contact.phoneNumber}`);
+        window.history.replaceState(null, "", `?phone=${phoneNumber}`);
       } catch (err) {
         setMessages([]);
         console.error("Error loading message:", err);
@@ -323,7 +330,13 @@ export default function WhatsAppChat() {
         setLoadPanelVisible(false);
       }
     },
-    [currentContact.phoneNumber, handleGetMessages, isMobileView, resetActionButton]
+    [
+      currentContact.phoneNumber,
+      handleGetMessages,
+      handleUpdateTotalUnread,
+      isMobileView,
+      resetActionButton
+    ]
   );
 
   const handleTextAreaValueChanged = useCallback((value: string) => {
@@ -409,14 +422,13 @@ export default function WhatsAppChat() {
       };
 
       await sendMessageText(waReq);
-      await handleGetMessages(currentContact.phoneNumber);
       setTextMsg("");
     } catch (error) {
       console.error("Failed to send message:", error);
     } finally {
       setIsLoading(false);
     }
-  }, [textMsg, currentContact.phoneNumber, isLoading, handleGetMessages]);
+  }, [textMsg, currentContact.phoneNumber, isLoading]);
 
   const hideLoadPanel = useCallback(() => {
     setLoadPanelVisible(false);
@@ -529,7 +541,6 @@ export default function WhatsAppChat() {
           };
 
           await sendMessageFile(attachType.id, waReq);
-          await handleGetMessages(currentContact.phoneNumber);
         }
       } catch (error) {
         console.error("Failed to upload file:", error);
@@ -571,7 +582,7 @@ export default function WhatsAppChat() {
               <RepeatChipElement isRepeat={item.isRepeat} />
               <div className="name">{item.contactName}</div>
             </div>
-            <div>{item.unreadTotal > 0 && <div className="unread">{item.unreadTotal}</div>}</div>
+            {item.unreadTotal > 0 && <div className="unread">{item.unreadTotal}</div>}
           </div>
           <div className="wrapper-message-meta">
             <div className="message-meta">{item.receiveAt && dateHandler(item.receiveAt)}</div>
