@@ -139,6 +139,22 @@ export default function WhatsAppChat() {
     );
   }, []);
 
+  const scrollToLatestMessage = useCallback((messages: Message[]) => {
+    if (messages.length > 0) {
+      oldScrollHeightRef.current = 0;
+      oldScrollTopRef.current = 0;
+      isAutoScrollingRef.current = true;
+
+      const latestMsgElement = document.querySelector(`#msg-${messages.length - 1}`);
+      latestMsgElement?.scrollIntoView(true);
+
+      // Reset flag setelah scroll otomatis
+      setTimeout(() => {
+        isAutoScrollingRef.current = false;
+      }, 300);
+    }
+  }, []);
+
   useEffect(() => {
     let subsReceiver: StompSubscription;
 
@@ -171,7 +187,11 @@ export default function WhatsAppChat() {
       subscription = await ws.subscribeWhenConnected(topic, (msg) => {
         const res = JSON.parse(msg.body);
         console.log("💬 New message:", res);
-        setMessages((prevMessages) => [...prevMessages, res.content]);
+        setMessages((prevMessages) => {
+          const newMessages = [...prevMessages, res.content];
+          scrollToLatestMessage(newMessages);
+          return newMessages;
+        });
       });
     };
 
@@ -183,23 +203,7 @@ export default function WhatsAppChat() {
       console.log("❌ Unsubscribed from", selectedReceiver);
       handleUpdateTotalUnread(currentContact.phoneNumber);
     };
-  }, [currentContact.phoneNumber, handleUpdateTotalUnread, ws]);
-
-  const scrollToLatestMessage = useCallback((messages: Message[]) => {
-    if (messages.length > 0) {
-      oldScrollHeightRef.current = 0;
-      oldScrollTopRef.current = 0;
-      isAutoScrollingRef.current = true;
-
-      const latestMsgElement = document.querySelector(`#msg-${messages.length - 1}`);
-      latestMsgElement?.scrollIntoView(true);
-
-      // Reset flag setelah scroll otomatis
-      setTimeout(() => {
-        isAutoScrollingRef.current = false;
-      }, 300);
-    }
-  }, []);
+  }, [currentContact.phoneNumber, handleUpdateTotalUnread, scrollToLatestMessage, ws]);
 
   const handleGetMessages = useCallback(
     async (phoneNumber: string) => {
@@ -216,9 +220,6 @@ export default function WhatsAppChat() {
     async (phoneNumber: string, pageToLoad: number) => {
       const container = messageContainerRef.current;
       if (!container || isLoadingMore || !hasMore) return;
-
-      // Jangan load jika pageToLoad < 0
-      if (pageToLoad < 0) return;
 
       setIsLoadingMore(true);
       try {
@@ -249,6 +250,9 @@ export default function WhatsAppChat() {
     // Simpan posisi scroll lama
     oldScrollHeightRef.current = container.scrollHeight;
     oldScrollTopRef.current = container.scrollTop;
+
+    // Jangan load jika pageToLoad < 0
+    if (page - limit < 0) return;
 
     // Hitung page baru, tapi jangan sampai < 0
     const newPage = Math.max(page - limit, 0);
