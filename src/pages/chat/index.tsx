@@ -1,3 +1,4 @@
+import { StompSubscription } from "@stomp/stompjs";
 import { Popover, Popup } from "devextreme-react";
 import { Button } from "devextreme-react/button";
 import DropDownButton, { DropDownButtonTypes } from "devextreme-react/drop-down-button";
@@ -18,6 +19,7 @@ import {
 } from "src/api/whatsapp";
 import IconChat from "src/assets/images/chat.png";
 import Chip from "src/components/chip";
+import ChatWebSocketManager from "src/services/ChatWebSocketManager";
 import { dateHandler } from "../../utils/dateUtils";
 import "./index.scss";
 
@@ -81,6 +83,8 @@ const INITIAL_CONTACT: Contact = {
 };
 
 export default function WhatsAppChat() {
+  const ws = ChatWebSocketManager.getInstance();
+
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
@@ -128,6 +132,58 @@ export default function WhatsAppChat() {
   const oldScrollHeightRef = useRef(0);
   const oldScrollTopRef = useRef(0);
   const isAutoScrollingRef = useRef(false);
+
+  const handleUpdateTotalUnread = useCallback((phoneNumber: string) => {
+    setReceiver((prev) =>
+      prev.map((r) => (r.phoneNumber === phoneNumber ? { ...r, unreadTotal: 0 } : r))
+    );
+  }, []);
+
+  useEffect(() => {
+    let subsReceiver: StompSubscription;
+
+    const subscribe = async () => {
+      subsReceiver = await ws.subscribeWhenConnected("/api/receiver", (msg) => {
+        const res = JSON.parse(msg.body);
+        console.log("👤 Receiver:", res);
+
+        setReceiver((prev) => {
+          const filtered = prev.filter((r) => r.phoneNumber !== res.receiver.phoneNumber);
+          return [res.receiver, ...filtered];
+        });
+      });
+    };
+
+    subscribe();
+
+    return () => {
+      subsReceiver?.unsubscribe();
+    };
+  }, [ws]);
+
+  useEffect(() => {
+    const selectedReceiver = currentContact.phoneNumber;
+    if (!selectedReceiver) return;
+    let subscription: StompSubscription;
+    const topic = `/api/whatsapp/${selectedReceiver}`;
+
+    const subscribe = async () => {
+      subscription = await ws.subscribeWhenConnected(topic, (msg) => {
+        const res = JSON.parse(msg.body);
+        console.log("💬 New message:", res);
+        setMessages((prevMessages) => [...prevMessages, res.content]);
+      });
+    };
+
+    subscribe();
+
+    return () => {
+      subscription?.unsubscribe(); // unsubscribe saat receiver berubah
+      ws.removeSubscription(topic);
+      console.log("❌ Unsubscribed from", selectedReceiver);
+      handleUpdateTotalUnread(currentContact.phoneNumber);
+    };
+  }, [currentContact.phoneNumber, handleUpdateTotalUnread, ws]);
 
   const scrollToLatestMessage = useCallback((messages: Message[]) => {
     if (messages.length > 0) {
@@ -248,9 +304,11 @@ export default function WhatsAppChat() {
     async (e: ListTypes.SelectionChangedEvent) => {
       try {
         const contact = e.addedItems?.[0] as Contact;
-        if (!contact || contact.phoneNumber === currentContact.phoneNumber) return;
+        const phoneNumber = contact.phoneNumber;
+        if (!contact || phoneNumber === currentContact.phoneNumber) return;
 
         setLoadPanelVisible(true);
+        handleUpdateTotalUnread(phoneNumber);
         setCurrentContact(contact);
         setSelectedItemKeys([contact.phoneNumber]);
         resetMessageState();
@@ -262,9 +320,9 @@ export default function WhatsAppChat() {
 
         setHasMore(true);
 
-        await handleGetMessages(contact.phoneNumber);
+        await handleGetMessages(phoneNumber);
         // Don't trigger reset scroll receiver
-        window.history.replaceState(null, "", `?phone=${contact.phoneNumber}`);
+        window.history.replaceState(null, "", `?phone=${phoneNumber}`);
       } catch (err) {
         setMessages([]);
         console.error("Error loading message:", err);
@@ -272,7 +330,13 @@ export default function WhatsAppChat() {
         setLoadPanelVisible(false);
       }
     },
-    [currentContact.phoneNumber, handleGetMessages, isMobileView, resetActionButton]
+    [
+      currentContact.phoneNumber,
+      handleGetMessages,
+      handleUpdateTotalUnread,
+      isMobileView,
+      resetActionButton
+    ]
   );
 
   const handleTextAreaValueChanged = useCallback((value: string) => {
@@ -358,14 +422,13 @@ export default function WhatsAppChat() {
       };
 
       await sendMessageText(waReq);
-      await handleGetMessages(currentContact.phoneNumber);
       setTextMsg("");
     } catch (error) {
       console.error("Failed to send message:", error);
     } finally {
       setIsLoading(false);
     }
-  }, [textMsg, currentContact.phoneNumber, isLoading, handleGetMessages]);
+  }, [textMsg, currentContact.phoneNumber, isLoading]);
 
   const hideLoadPanel = useCallback(() => {
     setLoadPanelVisible(false);
@@ -442,20 +505,6 @@ export default function WhatsAppChat() {
   }, [currentContact.phoneNumber, resetActionButton]);
 
   useEffect(() => {
-    const loadReceivers = async () => {
-      try {
-        const receivers = await getReceiver();
-        setReceiver(Array.isArray(receivers) ? receivers : []);
-      } catch (error) {
-        console.error("Failed to load receivers:", error);
-        setReceiver([]);
-      }
-    };
-
-    loadReceivers();
-  }, []);
-
-  useEffect(() => {
     const element = document.querySelector(".open-button") as HTMLElement;
     setTargetElement(element);
   }, []);
@@ -492,7 +541,6 @@ export default function WhatsAppChat() {
           };
 
           await sendMessageFile(attachType.id, waReq);
-          await handleGetMessages(currentContact.phoneNumber);
         }
       } catch (error) {
         console.error("Failed to upload file:", error);
@@ -783,18 +831,19 @@ export default function WhatsAppChat() {
         showTitle={false}
         dragEnabled={false}
         hideOnOutsideClick
-        maxWidth={700}
-        height={"auto"}
-        maxHeight={"80vh"}
+        width="auto"
+        height="auto"
       >
-        <div
+        <img
+          src={mediaUrl}
+          alt="Document"
           style={{
-            position: "relative",
-            overflow: "hidden"
+            maxWidth: "100%",
+            maxHeight: "500px",
+            objectFit: "contain",
+            display: "block"
           }}
-        >
-          <img src={mediaUrl} alt="Document" style={{ maxWidth: "100%" }} />
-        </div>
+        />
       </Popup>
     </div>
   );
