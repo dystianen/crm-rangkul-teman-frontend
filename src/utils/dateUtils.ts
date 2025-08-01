@@ -226,40 +226,47 @@ export const getMonthString = (datetime: Date | string): string => {
     return moment(datetime).format('MMMM');
 };
 
+/**
+ * Mengubah tanggal menjadi representasi waktu yang ramah pengguna dalam bahasa Indonesia.
+ * 
+ * Logika:
+ * - Jika waktu kurang dari 1 menit yang lalu → "Sekarang"
+ * - Jika masih di hari yang sama → format jam (HH:mm)
+ * - Jika tanggalnya adalah kemarin → "Kemarin"
+ * - Jika dalam 6 hari terakhir → nama hari (Senin, Selasa, dst)
+ * - Selain itu → format `DD/MM/YYYY`
+ * 
+ * Catatan: Tanggal dikonversi ke waktu lokal menggunakan `moment(date).local()`.
+ * 
+ * @param date Tanggal dalam bentuk `Date` atau `string` ISO.
+ * @returns String representasi waktu dalam bahasa Indonesia.
+ */
 export const dateHandler = (date: Date | string) => {
-    let now = moment();
-    let momentDate = moment(date);
-    let time = momentDate.fromNow(true);
-    let dateByHourAndMin = momentDate.format("HH:mm");
-    const getDay = () => {
-        let days = time.split(" ")[0];
-        if (Number(days) < 8) {
-            return DayNameIndo[now.subtract(Number(days), "day").format("dddd").toLowerCase()];
-        } else {
-            return momentDate.format("DD/MM/YYYY");
-        }
-    };
-    // if (time === "a few seconds") {
-    //     return "Sekarang";
-    // }
-    // if (time.search("minute") !== -1) {
-    //     let mins = time.split(" ")[0];
-    //     if (mins === "a") {
-    //         return "1 min";
-    //     } else {
-    //         return `${mins} min`;
-    //     }
-    // }
-    // if (time.search("hour") !== -1) {
-    //     return dateByHourAndMin;
-    // }
-    if (time === "a day") {
+    const now = moment();
+    const momentDate = moment(date).local();
+    const diffInMinutes = now.diff(momentDate, "minutes");
+
+    if (diffInMinutes < 1) {
+        return "Sekarang";
+    }
+
+    if (now.isSame(momentDate, "day")) {
+        return momentDate.format("HH:mm");
+    }
+
+    // Kalau tanggalnya adalah kemarin (berdasarkan kalender, bukan jam)
+    if (now.clone().subtract(1, "day").isSame(momentDate, "day")) {
         return "Kemarin";
     }
-    if (time.search("days") !== -1) {
-        return getDay();
+
+    // Dalam seminggu terakhir
+    if (now.diff(momentDate, "days") < 6) {
+        const dayName = momentDate.format("dddd").toLowerCase();
+        return DayNameIndo[dayName] || momentDate.format("dddd");
     }
-    return dateByHourAndMin;
+
+    // Format default
+    return momentDate.format("DD/MM/YYYY");
 };
 
 /**
