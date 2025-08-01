@@ -820,18 +820,19 @@ export default function WhatsAppChat() {
         showTitle={false}
         dragEnabled={false}
         hideOnOutsideClick
-        maxWidth={700}
-        height={"auto"}
-        maxHeight={"80vh"}
+        width="auto"
+        height="auto"
       >
-        <div
+        <img
+          src={mediaUrl}
+          alt="Document"
           style={{
-            position: "relative",
-            overflow: "hidden"
+            maxWidth: "100%",
+            maxHeight: "500px",
+            objectFit: "contain",
+            display: "block"
           }}
-        >
-          <img src={mediaUrl} alt="Document" style={{ maxWidth: "100%" }} />
-        </div>
+        />
       </Popup>
     </div>
   );

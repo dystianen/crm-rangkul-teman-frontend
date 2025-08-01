@@ -6,14 +6,17 @@ class ChatWebSocketManager {
   private client: Client;
 
   // 🔁 Simpan callback+headers untuk resubscribe
-  private subscriptionConfigs: Map<string, { callback: (msg: IMessage) => void; headers?: StompHeaders }> = new Map();
+  private subscriptionConfigs: Map<
+    string,
+    { callback: (msg: IMessage) => void; headers?: StompHeaders }
+  > = new Map();
 
   // 🧭 Simpan subscription aktif (untuk mencegah duplikasi)
   private activeSubscriptions: Map<string, StompSubscription> = new Map();
 
   private constructor() {
     this.client = new Client({
-      webSocketFactory: () => new SockJS(`${process.env.REACT_APP_BACKEND}/api/chatRtj`),
+      webSocketFactory: () => new SockJS(`${process.env.REACT_APP_BACKEND}api/chatRtj`),
       reconnectDelay: 5000,
       debug: (str) => console.log(str),
       onConnect: () => {
