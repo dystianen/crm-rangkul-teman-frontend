@@ -308,8 +308,8 @@ export default function WhatsAppChat() {
     async (e: ListTypes.SelectionChangedEvent) => {
       try {
         const contact = e.addedItems?.[0] as Contact;
+        if (!contact || contact.phoneNumber === currentContact.phoneNumber) return;
         const phoneNumber = contact.phoneNumber;
-        if (!contact || phoneNumber === currentContact.phoneNumber) return;
 
         setLoadPanelVisible(true);
         handleUpdateTotalUnread(phoneNumber);
