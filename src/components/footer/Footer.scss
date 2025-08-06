@@ -3,5 +3,6 @@
 .footer {
   display: block;
   color: rgba($base-text-color, alpha($base-text-color) * 0.7);
-  padding: 16px 0;
+  padding-top: 16px;
+  padding-bottom: 24px;
 }
