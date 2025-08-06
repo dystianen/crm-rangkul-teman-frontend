@@ -24,7 +24,6 @@ export const API_PATH = {
   SAVING_DEPOSIT: `${process.env.REACT_APP_BACKEND_SAVING}api/saving`,
   ROLE: "/api/bo/role",
   ACCESS: "/api/bo/access",
-
   PRODUCT_MANAGE: "/api/product/loan/manage",
-  
+  NOTIFICATION: "/api/notification"
 };
